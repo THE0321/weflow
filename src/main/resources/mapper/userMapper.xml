@@ -24,7 +24,7 @@
     </select>
 
     <select id="getUserByEmail" parameterType="string" resultMap="UserMap">
-        SELECT *
+        SELECT user_idx, email, password
         FROM user
         WHERE email = #{email}
     </select>
