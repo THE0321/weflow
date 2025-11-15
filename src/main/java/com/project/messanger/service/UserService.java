@@ -2,9 +2,13 @@ package com.project.messanger.service;
 
 import com.project.messanger.dto.UserDto;
 import com.project.messanger.mapper.UserMapper;
+import org.apache.catalina.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class UserService {
@@ -92,5 +96,20 @@ public class UserService {
         } else {
             return 0;
         }
+    }
+
+    /*
+     * get user list
+     * @param Map<String, Object>
+     * return List<UserDto>
+     */
+    public List<UserDto> getUserList(Map<String, Object> param) {
+        int page = param.get("page") != null ? (int)param.get("page") : 1;
+
+        param.putIfAbsent("limit", 10);
+        int limit = (int)param.get("limit");
+        param.put("offset", (page-1) * limit);
+
+        return userMapper.getUserList(param);
     }
 }

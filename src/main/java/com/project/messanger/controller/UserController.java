@@ -20,6 +20,42 @@ public class UserController {
         this.userService = userService;
     }
 
+    @GetMapping("/list")
+    public Map<String, Object> getUserList(HttpServletRequest request,
+                                           @RequestParam("page") int page,
+                                           @RequestParam("limit") int limit,
+                                           @RequestParam("email") String email,
+                                           @RequestParam("user_name") String userName,
+                                           @RequestParam("phone_number") String phoneNumber) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        // 세션에서 로그인 데이터 꺼내서 권한 체크
+        UserDto loginInfo = (UserDto)session.getAttribute("login_info");
+        if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N")) {
+            result.put("success", false);
+            result.put("error", "회원을 조회할 권한이 없습니다.");
+
+            return result;
+        }
+
+        try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("page", page);
+            param.put("email", email);
+            param.put("user_name", userName);
+            param.put("phone_number", phoneNumber);
+
+            result.put("success", true);
+            result.put("list", userService.getUserList(param));
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "회원 정보를 불러올 수 없습니다.");
+        }
+
+        return result;
+    }
+
     @PostMapping("/create")
     public Map<String, Object> createUser(HttpServletRequest request,
                                           @RequestParam("email") String email,
@@ -221,6 +257,43 @@ public class UserController {
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "내 정보를 수정하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/edit/password")
+    public Map<String, Object> editPassword(HttpServletRequest request,
+                                            @RequestParam("password") String password) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        // 로그인 정보 확인
+        UserDto loginInfo = (UserDto) session.getAttribute("login_info");
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+        
+        try {
+            // UserDto 객체 생성
+            UserDto userDto = UserDto.builder()
+                    .userIdx(loginInfo.getUserIdx())
+                    .password(password)
+                    .build();
+
+            // 내 비밀번호 수정
+            int success = userService.updateUser(userDto);
+
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "내 비밀번호를 수정하는데 실패했습니다.");
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "내 비밀번호를 수정하는데 실패했습니다.");
         }
 
         return result;

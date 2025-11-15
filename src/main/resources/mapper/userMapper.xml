@@ -17,6 +17,22 @@
         <result property="updatedDate" column="updated_date"/>
     </resultMap>
 
+    <select id="getUserList" parameterType="hashmap" resultMap="UserMap">
+        SELECT *
+        FROM user
+        WHERE is_deleted = 'N'
+            <if test="email != null">
+                AND UPPER(email) LIKE CONCAT('%', UPPER(#{email}), '%')
+            </if>
+            <if test="userName != null">
+                AND UPPER(user_name) LIKE CONCAT('%', UPPER(#{user_name}), '%')
+            </if>
+            <if test="phoneNumber != null">
+                AND UPPER(phone_number) LIKE CONCAT('%', UPPER(#{phone_number}), '%')
+            </if>
+        LIMIT ${limit} OFFSET ${offset}
+    </select>
+
     <select id="getUserByIdx" parameterType="long" resultMap="UserMap">
         SELECT user_idx, email, user_name, admin_yn, leader_yn
         FROM user
