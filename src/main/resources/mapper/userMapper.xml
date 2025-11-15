@@ -18,7 +18,7 @@
     </resultMap>
 
     <select id="getUserByIdx" parameterType="long" resultMap="UserMap">
-        SELECT *
+        SELECT user_idx, email, user_name, admin_yn, leader_yn
         FROM user
         WHERE user_idx = #{userIdx}
     </select>
@@ -31,34 +31,33 @@
 
     <insert id="insertUser" parameterType="com.project.messanger.dto.UserDto" useGeneratedKeys="true" keyProperty="userIdx" keyColumn="user_idx">
         INSERT user
-        SET email           = #{email},
-            <if test="password != null">
-                password = #{password},
-            </if>
-            user_name       = #{userName},
-            phone_number    = #{phoneNumber},
-            admin_yn        = #{adminYn},
-            leader_yn       = #{leaderYn},
-            created_date    = NOW(),
-            updated_date    = NOW()
+        SET email = #{email},
+            <if test="password != null"> password = #{password},</if>
+            <if test="userName != null"> user_name = #{userName},</if>
+            <if test="phoneNumber != null"> phone_number = #{phoneNumber},</if>
+            <if test="adminYn != null"> admin_yn = #{adminYn},</if>
+            <if test="leaderYn != null"> leader_yn = #{leaderYn},</if>
+            created_date = NOW(),
+            updated_date = NOW()
     </insert>
 
     <update id="updateUser" parameterType="com.project.messanger.dto.UserDto">
         UPDATE user
-        SET email           = #{email},
-            <choose>
-                <when test="password == null">
-                    password = NULL
-                </when>
-                <otherwise>
-                    password = #{password},
-                </otherwise>
-            </choose>
-            user_name       = #{userName},
-            phone_number    = #{phoneNumber},
-            admin_yn        = #{adminYn},
-            leader_yn       = #{leaderYn},
-            updated_date    = NOW()
+        SET <if test="password != null"> password = #{password},</if>
+            <if test="userName != null"> user_name = #{userName},</if>
+            <if test="phoneNumber != null"> phone_number = #{phoneNumber},</if>
+            <if test="adminYn != null"> admin_yn = #{adminYn},</if>
+            <if test="leaderYn != null"> leader_yn = #{leaderYn},</if>
+            updated_date = NOW()
+        WHERE user_idx = #{userIdx}
+    </update>
+
+    <update id="deleteUser" parameterType="com.project.messanger.dto.UserDto">
+        UPDATE user
+        SET password = NULL,
+            phone_number = NULL,
+            is_deleted = 'Y',
+            updated_date = NOW()
         WHERE user_idx = #{userIdx}
     </update>
 

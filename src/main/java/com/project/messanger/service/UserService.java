@@ -43,8 +43,7 @@ public class UserService {
      */
     @Transactional
     public long insertUser(UserDto userDto) {
-        if (userDto.getPassword() != null)
-        {
+        if (userDto.getPassword() != null) {
             String encodedPassword = passwordEncoder.encode(userDto.getPassword());
             userDto.setPassword(encodedPassword);
         }
@@ -59,13 +58,22 @@ public class UserService {
      */
     @Transactional
     public int updateUser(UserDto userDto) {
-        if (userDto.getPassword() != null)
-        {
+        if (userDto.getPassword() != null) {
             String encodedPassword = passwordEncoder.encode(userDto.getPassword());
             userDto.setPassword(encodedPassword);
         }
 
         return userMapper.updateUser(userDto);
+    }
+
+    /*
+     * delete user
+     * @param long
+     * return int
+     */
+    @Transactional
+    public int deleteUser(long userIdx) {
+        return userMapper.deleteUser(userIdx);
     }
 
     /*
