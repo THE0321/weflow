@@ -1,5 +1,6 @@
 package com.project.messanger.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.messanger.dto.UserDto;
 import com.project.messanger.service.UserService;
 import com.project.messanger.util.AuthUtil;
@@ -23,13 +24,13 @@ public class UserController {
         this.authUtil = authUtil;
     }
 
-    @GetMapping("/list")
+    @PostMapping("/list")
     public Map<String, Object> getUserList(HttpServletRequest request,
-                                           @RequestParam("page") int page,
-                                           @RequestParam("limit") int limit,
-                                           @RequestParam("email") String email,
-                                           @RequestParam("user_name") String userName,
-                                           @RequestParam("phone_number") String phoneNumber) {
+                                           @RequestParam(value = "page", required = false) int page,
+                                           @RequestParam(value = "limit", required = false) int limit,
+                                           @RequestParam(value = "email", required = false) String email,
+                                           @RequestParam(value = "user_name", required = false) String userName,
+                                           @RequestParam(value = "phone_number", required = false) String phoneNumber) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -58,7 +59,7 @@ public class UserController {
         return result;
     }
 
-    @GetMapping("/detail")
+    @PostMapping("/detail")
     public Map<String, Object> getUserDetail(HttpServletRequest request,
                                              @RequestParam("user_idx") long userIdx) {
         Map<String, Object> result = new HashMap<>();
@@ -86,15 +87,14 @@ public class UserController {
     @PostMapping("/create")
     public Map<String, Object> createUser(HttpServletRequest request,
                                           @RequestParam("email") String email,
-                                          @RequestParam("password") String password,
-                                          @RequestParam("user_name") String userName,
-                                          @RequestParam("phone_number") String phoneNumber,
-                                          @RequestParam("admin_yn") String adminYn,
-                                          @RequestParam("leader_yn") String leaderYn) {
+                                          @RequestParam(value = "password", required = false) String password,
+                                          @RequestParam(value = "user_name", required = false) String userName,
+                                          @RequestParam(value = "phone_number", required = false) String phoneNumber,
+                                          @RequestParam(value = "admin_yn", required = false, defaultValue = "N") String adminYn,
+                                          @RequestParam(value = "leader_yn", required = false, defaultValue = "N") String leaderYn) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
-        UserDto loginInfo = (UserDto)session.getAttribute("login_info");
         // 권한 체크
         if (!authUtil.authCheck(session)) {
             result.put("success", false);
@@ -112,6 +112,11 @@ public class UserController {
                     .phoneNumber(phoneNumber)
                     .build();
 
+            // 관리자만 설정 가능
+            String jsonString = (String)session.getAttribute("login_info");
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            UserDto loginInfo = objectMapper.readValue(jsonString, UserDto.class);
             if (loginInfo.getAdminYn().equals("Y")) {
                 userDto.setLeaderYn(leaderYn);
                 userDto.setAdminYn(adminYn);
@@ -133,15 +138,14 @@ public class UserController {
     @PostMapping("/modify")
     public Map<String, Object> modifyUser(HttpServletRequest request,
                                           @RequestParam("user_idx") long userIdx,
-                                          @RequestParam("password") String password,
-                                          @RequestParam("user_name") String userName,
-                                          @RequestParam("phone_number") String phoneNumber,
-                                          @RequestParam("admin_yn") String adminYn,
-                                          @RequestParam("leader_yn") String leaderYn) {
+                                          @RequestParam(value = "password", required = false) String password,
+                                          @RequestParam(value = "user_name", required = false) String userName,
+                                          @RequestParam(value = "phone_number", required = false) String phoneNumber,
+                                          @RequestParam(value = "admin_yn", required = false, defaultValue = "N") String adminYn,
+                                          @RequestParam(value = "leader_yn", required = false, defaultValue = "N") String leaderYn) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
-        UserDto loginInfo = (UserDto)session.getAttribute("login_info");
         // 권한 체크
         if (!authUtil.authCheck(session)) {
             result.put("success", false);
@@ -159,6 +163,11 @@ public class UserController {
                     .phoneNumber(phoneNumber)
                     .build();
 
+            // 관리자만 설정 가능
+            String jsonString = (String)session.getAttribute("login_info");
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            UserDto loginInfo = objectMapper.readValue(jsonString, UserDto.class);
             if (loginInfo.getAdminYn().equals("Y")) {
                 userDto.setLeaderYn(leaderYn);
                 userDto.setAdminYn(adminYn);
@@ -226,7 +235,11 @@ public class UserController {
             } else {
                 // 로그인 정보 저장
                 UserDto userDto = userService.getUserByIdx(userIdx);
-                session.setAttribute("login_info", userDto);
+
+                ObjectMapper objectMapper = new ObjectMapper();
+                String jsonData = objectMapper.writeValueAsString(userDto);
+
+                session.setAttribute("login_info", jsonData);
             }
         } catch (Exception e) {
             result.put("success", false);
@@ -249,22 +262,25 @@ public class UserController {
 
     @PostMapping("/edit")
     public Map<String, Object> modifyMyInfo(HttpServletRequest request,
-                                            @RequestParam("password") String password,
+                                            @RequestParam(value = "password", required = false) String password,
                                             @RequestParam("user_name") String userName,
                                             @RequestParam("phone_number") String phoneNumber) {
         HashMap<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
-        
-        // 로그인 정보 확인
-        UserDto loginInfo = (UserDto) session.getAttribute("login_info");
-        if (loginInfo == null) {
-            result.put("success", false);
-            result.put("error", "로그인 해주세요.");
-
-            return result;
-        }
 
         try {
+            // 로그인 정보 확인
+            String jsonString = (String)session.getAttribute("login_info");
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            UserDto loginInfo = objectMapper.readValue(jsonString, UserDto.class);
+            if (loginInfo == null) {
+                result.put("success", false);
+                result.put("error", "로그인 해주세요.");
+
+                return result;
+            }
+
             // UserDto 객체 생성
             UserDto userDto = UserDto.builder()
                     .userIdx(loginInfo.getUserIdx())
