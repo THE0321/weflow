@@ -34,7 +34,7 @@
     </select>
 
     <select id="getUserByIdx" parameterType="long" resultMap="UserMap">
-        SELECT user_idx, email, user_name, admin_yn, leader_yn
+        SELECT user_idx, email, user_name, phone_number, admin_yn, leader_yn
         FROM user
         WHERE user_idx = #{userIdx}
     </select>

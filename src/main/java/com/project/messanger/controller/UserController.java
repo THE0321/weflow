@@ -2,6 +2,7 @@ package com.project.messanger.controller;
 
 import com.project.messanger.dto.UserDto;
 import com.project.messanger.service.UserService;
+import com.project.messanger.util.AuthUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.apache.catalina.User;
@@ -15,9 +16,11 @@ import java.util.Map;
 @RequestMapping("/user")
 public class UserController {
     private final UserService userService;
+    private final AuthUtil authUtil;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, AuthUtil authUtil) {
         this.userService = userService;
+        this.authUtil = authUtil;
     }
 
     @GetMapping("/list")
@@ -30,11 +33,10 @@ public class UserController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
-        // 세션에서 로그인 데이터 꺼내서 권한 체크
-        UserDto loginInfo = (UserDto)session.getAttribute("login_info");
-        if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N")) {
+        // 권한 체크
+        if (!authUtil.authCheck(session)) {
             result.put("success", false);
-            result.put("error", "회원을 조회할 권한이 없습니다.");
+            result.put("error", "회원 목록을 조회할 권한이 없습니다.");
 
             return result;
         }
@@ -56,6 +58,31 @@ public class UserController {
         return result;
     }
 
+    @GetMapping("/detail")
+    public Map<String, Object> getUserDetail(HttpServletRequest request,
+                                             @RequestParam("user_idx") long userIdx) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        // 권한 체크
+        if (!authUtil.authCheck(session)) {
+            result.put("success", false);
+            result.put("error", "회원을 조회할 권한이 없습니다.");
+
+            return result;
+        }
+
+        try {
+            result.put("success", true);
+            result.put("detail", userService.getUserByIdx(userIdx));
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "회원 상세를 불러올 수 없습니다.");
+        }
+
+        return result;
+    }
+
     @PostMapping("/create")
     public Map<String, Object> createUser(HttpServletRequest request,
                                           @RequestParam("email") String email,
@@ -67,11 +94,11 @@ public class UserController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
-        // 세션에서 로그인 데이터 꺼내서 권한 체크
         UserDto loginInfo = (UserDto)session.getAttribute("login_info");
-        if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N")) {
+        // 권한 체크
+        if (!authUtil.authCheck(session)) {
             result.put("success", false);
-            result.put("error", "회원을 등록할 권한이 없습니다.");
+            result.put("error", "회원을 조회할 권한이 없습니다.");
 
             return result;
         }
@@ -114,11 +141,11 @@ public class UserController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
-        // 세션에서 로그인 데이터 꺼내서 권한 체크
         UserDto loginInfo = (UserDto)session.getAttribute("login_info");
-        if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N")) {
+        // 권한 체크
+        if (!authUtil.authCheck(session)) {
             result.put("success", false);
-            result.put("error", "회원을 수정할 권한이 없습니다.");
+            result.put("error", "회원을 조회할 권한이 없습니다.");
 
             return result;
         }
@@ -158,11 +185,10 @@ public class UserController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
-        // 세션에서 로그인 데이터 꺼내서 권한 체크
-        UserDto loginInfo = (UserDto)session.getAttribute("login_info");
-        if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N")) {
+        // 권한 체크
+        if (!authUtil.authCheck(session)) {
             result.put("success", false);
-            result.put("error", "회원을 삭제할 권한이 없습니다.");
+            result.put("error", "회원을 조회할 권한이 없습니다.");
 
             return result;
         }
