@@ -1,4 +1,152 @@
 package com.project.messanger.controller;
 
+import com.project.messanger.dto.GoalDto;
+import com.project.messanger.dto.UserDto;
+import com.project.messanger.service.GoalService;
+import com.project.messanger.util.AuthUtil;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/goal")
 public class GoalController {
+    private final GoalService goalService;
+    private final AuthUtil authUtil;
+
+    public GoalController(GoalService goalService, AuthUtil authUtil) {
+        this.goalService = goalService;
+        this.authUtil = authUtil;
+    }
+
+    @PostMapping("/create")
+    public Map<String, Object> saveGoal(HttpServletRequest request,
+                                        @RequestParam(value = "title", required = false) String title,
+                                        @RequestParam(value = "description", required = false) String description,
+                                        @RequestParam(value = "status", required = false) String status,
+                                        @RequestParam(value = "target_value", required = false) long targetValue,
+                                        @RequestParam(value = "current_value", required = false) long currentValue,
+                                        @RequestParam(value = "start_date", required = false) String startDate,
+                                        @RequestParam(value = "end_date", required = false) String endDate){
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        // 권한 체크
+        if (!authUtil.authCheck(session)) {
+            result.put("success", false);
+            result.put("error", "목표를 등록할 권한이 없습니다.");
+
+            return result;
+        }
+
+        try {
+            UserDto loginInfo = authUtil.getLoginInfo(session);
+
+            // GoalDto 객체 생성
+            GoalDto goalDto = GoalDto.builder()
+                    .title(title)
+                    .description(description)
+                    .status(status)
+                    .targetValue(targetValue)
+                    .currentValue(currentValue)
+                    .startDate(startDate)
+                    .endDate(endDate)
+                    .creatorIdx(loginInfo.getUserIdx())
+                    .build();
+
+            long creatorIdx = goalService.insertGoal(goalDto);
+
+            result.put("success", true);
+            result.put("idx", creatorIdx);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", e.getMessage());
+        }
+
+        return result;
+    }
+
+    @PostMapping("/modify")
+    public Map<String, Object> updateGoal(HttpServletRequest request,
+                                        @RequestParam(value = "goal_idx") Long goalIdx,
+                                        @RequestParam(value = "title", required = false) String title,
+                                        @RequestParam(value = "description", required = false) String description,
+                                        @RequestParam(value = "status", required = false) String status,
+                                        @RequestParam(value = "target_value", required = false) long targetValue,
+                                        @RequestParam(value = "current_value", required = false) long currentValue,
+                                        @RequestParam(value = "start_date", required = false) String startDate,
+                                        @RequestParam(value = "end_date", required = false) String endDate){
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        // 권한 체크
+        if (!authUtil.authCheck(session)) {
+            result.put("success", false);
+            result.put("error", "목표를 수정할 권한이 없습니다.");
+
+            return result;
+        }
+
+        try {
+            // GoalDto 객체 생성
+            GoalDto goalDto = GoalDto.builder()
+                    .title(title)
+                    .description(description)
+                    .status(status)
+                    .targetValue(targetValue)
+                    .currentValue(currentValue)
+                    .startDate(startDate)
+                    .endDate(endDate)
+                    .build();
+
+            // 목표 수정
+            int success = goalService.updateGoal(goalDto);
+
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "목표를 수정하는데 실패했습니다.");
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", e.getMessage());
+        }
+
+        return result;
+    }
+
+    @PostMapping("/delete")
+    public Map<String, Object> deleteGoal(HttpServletRequest request,
+                                          @RequestParam("goal_idx") long goalIdx) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        // 권한 체크
+        if (!authUtil.authCheck(session)) {
+            result.put("success", false);
+            result.put("error", "목표를 삭제할 권한이 없습니다.");
+
+            return result;
+        }
+
+        try {
+            // 회원 삭제
+            int success = goalService.deleteGoal(goalIdx);
+
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "목표를 삭제하는데 실패했습니다.");
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "목표를 삭제하는데 실패했습니다.");
+        }
+
+        return result;
+    }
 }

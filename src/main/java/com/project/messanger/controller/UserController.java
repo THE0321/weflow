@@ -6,8 +6,6 @@ import com.project.messanger.service.UserService;
 import com.project.messanger.util.AuthUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import org.apache.catalina.User;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -104,6 +102,14 @@ public class UserController {
         }
 
         try {
+            // 이메일 중복 체크
+            if (userService.getUserByEmail(email) != null) {
+                result.put("success", false);
+                result.put("error", "이미 동일한 이메일이 등록되어 있습니다.");
+
+                return result;
+            }
+
             // UserDto 객체 생성
             UserDto userDto = UserDto.builder()
                     .email(email)
@@ -113,10 +119,7 @@ public class UserController {
                     .build();
 
             // 관리자만 설정 가능
-            String jsonString = (String)session.getAttribute("login_info");
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            UserDto loginInfo = objectMapper.readValue(jsonString, UserDto.class);
+            UserDto loginInfo = authUtil.getLoginInfo(session);
             if (loginInfo.getAdminYn().equals("Y")) {
                 userDto.setLeaderYn(leaderYn);
                 userDto.setAdminYn(adminYn);
@@ -164,10 +167,7 @@ public class UserController {
                     .build();
 
             // 관리자만 설정 가능
-            String jsonString = (String)session.getAttribute("login_info");
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            UserDto loginInfo = objectMapper.readValue(jsonString, UserDto.class);
+            UserDto loginInfo = authUtil.getLoginInfo(session);
             if (loginInfo.getAdminYn().equals("Y")) {
                 userDto.setLeaderYn(leaderYn);
                 userDto.setAdminYn(adminYn);
@@ -270,10 +270,7 @@ public class UserController {
 
         try {
             // 로그인 정보 확인
-            String jsonString = (String)session.getAttribute("login_info");
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            UserDto loginInfo = objectMapper.readValue(jsonString, UserDto.class);
+            UserDto loginInfo = authUtil.getLoginInfo(session);
             if (loginInfo == null) {
                 result.put("success", false);
                 result.put("error", "로그인 해주세요.");

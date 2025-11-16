@@ -70,7 +70,8 @@
 
     <update id="deleteUser" parameterType="com.project.messanger.dto.UserDto">
         UPDATE user
-        SET password = NULL,
+        SET email = '',
+            password = NULL,
             phone_number = NULL,
             is_deleted = 'Y',
             updated_date = NOW()
