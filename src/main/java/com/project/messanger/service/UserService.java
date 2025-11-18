@@ -85,6 +85,7 @@ public class UserService {
      * @param String, String
      * return long
      */
+    @Transactional(readOnly = true)
     public long getLoginUserIdx(String email, String password) {
         UserDto user = this.getUserByEmail(email);
         if (user == null) {

@@ -1,7 +1,11 @@
 package com.project.messanger.mapper;
 
 import com.project.messanger.dto.GoalDto;
+import com.project.messanger.dto.GoalLogDto;
+import com.project.messanger.dto.GoalUserLinkDto;
 import org.apache.ibatis.annotations.Mapper;
+
+import java.util.List;
 
 @Mapper
 public interface GoalMapper {
@@ -10,4 +14,16 @@ public interface GoalMapper {
     int updateGoal(GoalDto goalDto);
 
     int deleteGoal(long goalIdx);
+
+    int insertGoalUserLink(List<String> list);
+
+    int deleteGoalUserLink(List<Long> list);
+
+    int deleteGoalUserLinkByGoalIdx(long goalIdx);
+
+    long insertGoalLog(GoalLogDto goalLogDto);
+
+    int updateGoalLog(GoalLogDto goalLogDto);
+
+    int deleteGoalLog(long logIdx);
 }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -33,7 +34,9 @@ public class GoalController {
                                         @RequestParam(value = "target_value", required = false) long targetValue,
                                         @RequestParam(value = "current_value", required = false) long currentValue,
                                         @RequestParam(value = "start_date", required = false) String startDate,
-                                        @RequestParam(value = "end_date", required = false) String endDate){
+                                        @RequestParam(value = "end_date", required = false) String endDate,
+                                        @RequestParam(value = "user_idx", required = false) List<Long> userIdxList,
+                                        @RequestParam(value = "team_idx", required = false) List<Long> teamIdxList){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -60,10 +63,20 @@ public class GoalController {
                     .creatorIdx(loginInfo.getUserIdx())
                     .build();
 
-            long creatorIdx = goalService.insertGoal(goalDto);
+            long goalIdx = goalService.insertGoal(goalDto);
+
+            // 담당자 팀 추가
+            if (teamIdxList != null) {
+                goalService.insertGoalUserLinkByTeamIdx(goalIdx, teamIdxList);
+            }
+
+            // 담당자 유저 추가
+            if (userIdxList != null) {
+                goalService.insertGoalUserLinkByUserIdx(goalIdx, userIdxList);
+            }
 
             result.put("success", true);
-            result.put("idx", creatorIdx);
+            result.put("idx", goalIdx);
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", e.getMessage());
@@ -74,14 +87,17 @@ public class GoalController {
 
     @PostMapping("/modify")
     public Map<String, Object> updateGoal(HttpServletRequest request,
-                                        @RequestParam(value = "goal_idx") Long goalIdx,
-                                        @RequestParam(value = "title", required = false) String title,
-                                        @RequestParam(value = "description", required = false) String description,
-                                        @RequestParam(value = "status", required = false) String status,
-                                        @RequestParam(value = "target_value", required = false) long targetValue,
-                                        @RequestParam(value = "current_value", required = false) long currentValue,
-                                        @RequestParam(value = "start_date", required = false) String startDate,
-                                        @RequestParam(value = "end_date", required = false) String endDate){
+                                          @RequestParam(value = "goal_idx") Long goalIdx,
+                                          @RequestParam(value = "title", required = false) String title,
+                                          @RequestParam(value = "description", required = false) String description,
+                                          @RequestParam(value = "status", required = false) String status,
+                                          @RequestParam(value = "target_value", required = false) long targetValue,
+                                          @RequestParam(value = "current_value", required = false) long currentValue,
+                                          @RequestParam(value = "start_date", required = false) String startDate,
+                                          @RequestParam(value = "end_date", required = false) String endDate,
+                                          @RequestParam(value = "user_idx", required = false) List<Long> userIdxList,
+                                          @RequestParam(value = "team_idx", required = false) List<Long> teamIdxList,
+                                          @RequestParam(value = "delete_link_idx", required = false) List<Long> deleteLinkIdxList){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -107,6 +123,21 @@ public class GoalController {
 
             // 목표 수정
             int success = goalService.updateGoal(goalDto);
+
+            // 담당자 팀 추가
+            if (teamIdxList != null) {
+                goalService.insertGoalUserLinkByTeamIdx(goalIdx, teamIdxList);
+            }
+
+            // 담당자 유저 추가
+            if (userIdxList != null) {
+                goalService.insertGoalUserLinkByUserIdx(goalIdx, userIdxList);
+            }
+
+            // 담당자 삭제
+            if (deleteLinkIdxList != null) {
+                goalService.deleteGoalUserLink(deleteLinkIdxList);
+            }
 
             result.put("success", success == 1);
             if (success == 0) {
@@ -137,6 +168,9 @@ public class GoalController {
         try {
             // 회원 삭제
             int success = goalService.deleteGoal(goalIdx);
+
+            // 담당자 삭제
+            goalService.deleteGoalUserLinkByGoalIdx(goalIdx);
 
             result.put("success", success == 1);
             if (success == 0) {

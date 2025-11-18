@@ -18,6 +18,21 @@
         <result property="updatedDate" column="updated_date"/>
     </resultMap>
 
+    <resultMap id="GoalUserLinkMap" type="com.project.messanger.dto.GoalUserLinkDto">
+        <id property="linkIdx" column="link_idx"/>
+        <result property="goalIdx" column="goal_idx"/>
+        <result property="teamIdx" column="team_idx"/>
+        <result property="userIdx" column="user_idx"/>
+    </resultMap>
+
+    <resultMap id="GoalLogMap" type="com.project.messanger.dto.GoalLogDto">
+        <id property="logIdx" column="log_idx"/>
+        <result property="progressValue" column="progress_value"/>
+        <result property="content" column="content"/>
+        <result property="creatorIdx" column="creator_idx"/>
+        <result property="createdDate" column="created_date"/>
+    </resultMap>
+
     <insert id="insertGoal" parameterType="com.project.messanger.dto.GoalDto" useGeneratedKeys="true" keyProperty="goalIdx" keyColumn="goal_idx">
         INSERT goal
         SET title = #{title},
@@ -51,6 +66,55 @@
     <delete id="deleteGoal" parameterType="long">
         DELETE FROM goal
         WHERE goal_idx = #{goalIdx}
+    </delete>
+
+    <insert id="insertGoalUserLink" parameterType="com.project.messanger.dto.GoalUserLinkDto">
+        INSERT INTO goal_user_link (goal_idx, team_idx, user_idx)
+        VALUES <foreach collection="list" item="value" separator=",">${value}</foreach>
+    </insert>
+
+    <delete id="deleteGoalUserLink" parameterType="long">
+        DELETE FROM goal_user_link
+        WHERE link_idx IN <foreach collection="list" item="value" open="(" close=")" separator=",">#{value}</foreach>
+    </delete>
+
+    <delete id="deleteGoalUserLinkByGoalIdx" parameterType="long">
+        DELETE FROM goal_user_link
+        WHERE goal_idx = #{goalIdx}
+    </delete>
+
+    <insert id="insertGoalLog" parameterType="com.project.messanger.dto.GoalLogDto">
+        INSERT goal_log
+        SET log_idx = #{logIdx},
+            goal_idx = #{goalIdx},
+            <choose>
+                <when test="progressValue != null"> progress_value = #{progressValue},</when>
+                <otherwise>
+                    progress_value = (
+                        SELECT progress_value
+                        FROM goal_log
+                        WHERE goal_idx = #{goal_idx}
+                        ORDER BY created_date DESC
+                        LIMIT 1
+                    ),
+                </otherwise>
+            </choose>
+            <if test="content != null"> content = #{content},</if>
+            creator_idx = #{creatorIdx},
+            created_date = NOW()
+    </insert>
+
+    <update id="updateGoalLog" parameterType="com.project.messanger.dto.GoalLogDto">
+        UPDATE goal_log
+        SET <if test="content != null"> content = #{content},</if>
+            <if test="progressValue != null"> progress_value = #{progressValue},</if>
+            created_date = NOW()
+        WHERE log_idx = #{logIdx}
+    </update>
+
+    <delete id="deleteGoalLog" parameterType="long">
+        DELETE FROM goal_log
+        WHERE log_idx = #{logIdx}
     </delete>
 
 </mapper>
