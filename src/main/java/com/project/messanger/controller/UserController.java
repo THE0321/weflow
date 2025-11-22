@@ -1,6 +1,7 @@
 package com.project.messanger.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.messanger.dto.TeamDto;
 import com.project.messanger.dto.UserDto;
 import com.project.messanger.service.UserService;
 import com.project.messanger.util.AuthUtil;
@@ -152,7 +153,7 @@ public class UserController {
         // 권한 체크
         if (!authUtil.authCheck(session)) {
             result.put("success", false);
-            result.put("error", "회원을 조회할 권한이 없습니다.");
+            result.put("error", "회원을 수정할 권한이 없습니다.");
 
             return result;
         }
@@ -197,7 +198,7 @@ public class UserController {
         // 권한 체크
         if (!authUtil.authCheck(session)) {
             result.put("success", false);
-            result.put("error", "회원을 조회할 권한이 없습니다.");
+            result.put("error", "회원을 삭제할 권한이 없습니다.");
 
             return result;
         }
@@ -213,6 +214,101 @@ public class UserController {
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "회원을 삭제하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/team/create")
+    public Map<String, Object> teamCreate(HttpServletRequest request,
+                                          @RequestParam(value = "team_name", required = false) String teamName) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        // 권한 체크
+        if (!authUtil.authCheck(session)) {
+            result.put("success", false);
+            result.put("error", "팀을 등록할 권한이 없습니다.");
+
+            return result;
+        }
+
+        try {
+            // 팀 등록
+            long teamIdx = userService.insertTeam(teamName);
+
+            result.put("success", true);
+            result.put("idx", teamIdx);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "팀을 등록하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/team/modify")
+    public Map<String, Object> teamModify(HttpServletRequest request,
+                                          @RequestParam("team_idx") long teamIdx,
+                                          @RequestParam(value = "team_name", required = false) String teamName) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        // 권한 체크
+        if (!authUtil.authCheck(session)) {
+            result.put("success", false);
+            result.put("error", "팀을 수정할 권한이 없습니다.");
+
+            return result;
+        }
+
+        try {
+            // TeamDto 객체 생성
+            TeamDto teamDto = TeamDto.builder()
+                    .teamIdx(teamIdx)
+                    .teamName(teamName)
+                    .build();
+
+            // 팀 수정
+            long success = userService.updateTeam(teamDto);
+
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "팀을 수정하는데 실패했습니다.");
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "팀을 수정하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/team/delete")
+    public Map<String, Object> deleteTeam(HttpServletRequest request,
+                                          @RequestParam("team_idx") long teamIdx) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        // 권한 체크
+        if (!authUtil.authCheck(session)) {
+            result.put("success", false);
+            result.put("error", "팀을 삭제할 권한이 없습니다.");
+
+            return result;
+        }
+
+        try {
+            // 팀 삭제
+            int success = userService.deleteTeam(teamIdx);
+
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "팀을 삭제하는데 실패했습니다.");
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "팀을 삭제하는데 실패했습니다.");
         }
 
         return result;

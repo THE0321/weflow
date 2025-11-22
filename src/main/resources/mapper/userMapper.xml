@@ -78,4 +78,23 @@
         WHERE user_idx = #{userIdx}
     </update>
 
+    <insert id="insertTeam" parameterType="string" useGeneratedKeys="true" keyProperty="teamIdx" keyColumn="team_idx">
+        INSERT team
+        SET team_name = #{teamName},
+            created_date = NOW(),
+            updated_date = NOW()
+    </insert>
+
+    <update id="updateTeam" parameterType="com.project.messanger.dto.TeamDto">
+        UPDATE team
+        SET team_name = #{teamName},
+            updated_date = NOW()
+        WHERE team_idx = #{teamIdx}
+    </update>
+
+    <delete id="deleteTeam" parameterType="long">
+        DELETE FROM team
+        WHERE team_idx = #{teamIdx}
+    </delete>
+
 </mapper>

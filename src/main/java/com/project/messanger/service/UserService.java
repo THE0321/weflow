@@ -1,5 +1,6 @@
 package com.project.messanger.service;
 
+import com.project.messanger.dto.TeamDto;
 import com.project.messanger.dto.UserDto;
 import com.project.messanger.mapper.UserMapper;
 import org.apache.catalina.User;
@@ -79,6 +80,30 @@ public class UserService {
     public int deleteUser(long userIdx) {
         return userMapper.deleteUser(userIdx);
     }
+
+    /*
+     * insert team
+     * @param String
+     * return long
+     */
+    @Transactional
+    public long insertTeam(String teamName) { return userMapper.insertTeam(teamName); }
+
+    /*
+     * update team
+     * @param TeamDto
+     * return long
+     */
+    @Transactional
+    public long updateTeam(TeamDto teamDto) { return userMapper.updateTeam(teamDto); }
+
+    /*
+     * delete team
+     * @param long
+     * return int
+     */
+    @Transactional
+    public int deleteTeam(long teamIdx) { return userMapper.deleteTeam(teamIdx); }
 
     /*
      * get login user idx

@@ -169,9 +169,6 @@ public class GoalController {
             // 회원 삭제
             int success = goalService.deleteGoal(goalIdx);
 
-            // 담당자 삭제
-            goalService.deleteGoalUserLinkByGoalIdx(goalIdx);
-
             result.put("success", success == 1);
             if (success == 0) {
                 result.put("error", "목표를 삭제하는데 실패했습니다.");

@@ -19,8 +19,6 @@ public interface GoalMapper {
 
     int deleteGoalUserLink(List<Long> list);
 
-    int deleteGoalUserLinkByGoalIdx(long goalIdx);
-
     long insertGoalLog(GoalLogDto goalLogDto);
 
     int updateGoalLog(GoalLogDto goalLogDto);

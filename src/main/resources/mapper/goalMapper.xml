@@ -78,11 +78,6 @@
         WHERE link_idx IN <foreach collection="list" item="value" open="(" close=")" separator=",">#{value}</foreach>
     </delete>
 
-    <delete id="deleteGoalUserLinkByGoalIdx" parameterType="long">
-        DELETE FROM goal_user_link
-        WHERE goal_idx = #{goalIdx}
-    </delete>
-
     <insert id="insertGoalLog" parameterType="com.project.messanger.dto.GoalLogDto">
         INSERT goal_log
         SET log_idx = #{logIdx},

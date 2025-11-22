@@ -67,16 +67,6 @@ public class GoalService {
     }
 
     /*
-     * delete goal user link by goal idx
-     * @param long
-     * return int
-     */
-    @Transactional
-    public int deleteGoalUserLinkByGoalIdx(long goalIdx) {
-        return goalMapper.deleteGoalUserLinkByGoalIdx(goalIdx);
-    }
-
-    /*
      * insert goal user link by team idx
      * @param long, List<Long>
      * return int
