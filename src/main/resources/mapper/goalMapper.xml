@@ -68,7 +68,7 @@
         WHERE goal_idx = #{goalIdx}
     </delete>
 
-    <insert id="insertGoalUserLink" parameterType="com.project.messanger.dto.GoalUserLinkDto">
+    <insert id="insertGoalUserLink" parameterType="string">
         INSERT INTO goal_user_link (goal_idx, team_idx, user_idx)
         VALUES <foreach collection="list" item="value" separator=",">${value}</foreach>
     </insert>

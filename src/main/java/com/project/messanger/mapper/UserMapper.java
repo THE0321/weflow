@@ -26,4 +26,8 @@ public interface UserMapper {
     long updateTeam(TeamDto teamDto);
 
     int deleteTeam(long teamIdx);
+
+    int insertTeamUserLink(List<String> list);
+
+    int deleteTeamUserLink(List<Long> list);
 }

@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -90,7 +91,8 @@ public class UserController {
                                           @RequestParam(value = "user_name", required = false) String userName,
                                           @RequestParam(value = "phone_number", required = false) String phoneNumber,
                                           @RequestParam(value = "admin_yn", required = false, defaultValue = "N") String adminYn,
-                                          @RequestParam(value = "leader_yn", required = false, defaultValue = "N") String leaderYn) {
+                                          @RequestParam(value = "leader_yn", required = false, defaultValue = "N") String leaderYn,
+                                          @RequestParam(value = "team_idx", required = false) List<Long> teamIdxList) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -129,6 +131,11 @@ public class UserController {
             // 회원등록
             long userIdx = userService.insertUser(userDto);
 
+            // 회원 팀 추가
+            if (teamIdxList != null) {
+                userService.insertUserLinkByTeamIdx(userIdx, teamIdxList);
+            }
+
             result.put("success", true);
             result.put("idx", userIdx);
         } catch (Exception e) {
@@ -146,7 +153,9 @@ public class UserController {
                                           @RequestParam(value = "user_name", required = false) String userName,
                                           @RequestParam(value = "phone_number", required = false) String phoneNumber,
                                           @RequestParam(value = "admin_yn", required = false, defaultValue = "N") String adminYn,
-                                          @RequestParam(value = "leader_yn", required = false, defaultValue = "N") String leaderYn) {
+                                          @RequestParam(value = "leader_yn", required = false, defaultValue = "N") String leaderYn,
+                                          @RequestParam(value = "team_idx", required = false) List<Long> teamIdxList,
+                                          @RequestParam(value = "delete_link_idx", required = false) List<Long> deleteLinkIdxList) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -176,6 +185,16 @@ public class UserController {
 
             // 회원 정보 수정
             int success = userService.updateUser(userDto);
+
+            // 회원 팀 추가
+            if (teamIdxList != null) {
+                userService.insertUserLinkByTeamIdx(userIdx, teamIdxList);
+            }
+
+            // 회원 삭제
+            if (deleteLinkIdxList != null) {
+                userService.deleteTeamUserLink(deleteLinkIdxList);
+            }
 
             result.put("success", success == 1);
             if (success == 0) {

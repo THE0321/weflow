@@ -8,6 +8,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -137,5 +138,42 @@ public class UserService {
         param.put("offset", (page-1) * limit);
 
         return userMapper.getUserList(param);
+    }
+
+    /*
+     * insert goal user link
+     * @param List<String>
+     * return int
+     */
+    @Transactional
+    public int insertTeamUserLink(List<String> valueList) {
+        return userMapper.insertTeamUserLink(valueList);
+    }
+
+    /*
+     * insert user link by team idx
+     * @param long, List<Long>
+     * return int
+     */
+    @Transactional
+    public int insertUserLinkByTeamIdx(long userIdx, List<Long> teamIdxList) {
+        List<String> valueList = new ArrayList<>();
+
+        // 값 리스트
+        for (long teamIdx : teamIdxList) {
+            valueList.add("("+ userIdx +", "+ teamIdx +")");
+        }
+
+        return insertTeamUserLink(valueList);
+    }
+
+    /*
+     * delete team user link
+     * @param List<Long>
+     * return int
+     */
+    @Transactional
+    public int deleteTeamUserLink(List<Long> deleteLinkIdxList) {
+        return userMapper.deleteTeamUserLink(deleteLinkIdxList);
     }
 }
