@@ -1,6 +1,7 @@
 package com.project.messanger.controller;
 
 import com.project.messanger.dto.GoalDto;
+import com.project.messanger.dto.GoalUserLinkDto;
 import com.project.messanger.dto.UserDto;
 import com.project.messanger.service.GoalService;
 import com.project.messanger.util.AuthUtil;
@@ -24,6 +25,96 @@ public class GoalController {
     public GoalController(GoalService goalService, AuthUtil authUtil) {
         this.goalService = goalService;
         this.authUtil = authUtil;
+    }
+
+    @PostMapping("/list")
+    public Map<String, Object> getGoalList(HttpServletRequest request,
+                                           @RequestParam(value = "page", required = false) int page,
+                                           @RequestParam(value = "limit", required = false) int limit,
+                                           @RequestParam(value = "title", required = false) String title,
+                                           @RequestParam(value = "status", required = false) String status,
+                                           @RequestParam(value = "my", required = false) boolean my) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        // 권한 체크
+        if (!authUtil.authCheck(session)) {
+            my = true;
+        }
+
+        try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("page", page);
+            param.put("limit", limit);
+            param.put("title", title);
+            param.put("status", status);
+
+            if (my) {
+                param.put("user_idx", authUtil.getLoginInfo(session).getUserIdx());
+                param.put("team_idx_list", authUtil.getTeamList(session));
+            }
+
+            result.put("success", true);
+            result.put("list", goalService.getGoalList(param));
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "목표를 불러올 수 없습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/detail")
+    public Map<String, Object> getGoalDetail(HttpServletRequest request,
+                                             @RequestParam("goal_idx") long goalIdx) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        try {
+            GoalDto goalDto = goalService.getGoalByIdx(goalIdx);
+            if(goalDto == null) {
+                result.put("success", false);
+                result.put("error", "목표 상세를 불러올 수 없습니다.");
+
+                return result;
+            }
+
+            List<GoalUserLinkDto> goalUserLinkList = goalService.getGoalUserLink(goalIdx);
+            if (goalUserLinkList == null) {
+                result.put("success", false);
+                result.put("error", "목표 상세를 불러올 수 없습니다.");
+
+                return result;
+            } else {
+                UserDto loginInfo = authUtil.getLoginInfo(session);
+                List<Long> teamIdxList = authUtil.getTeamList(session);
+                boolean isMyGoal = false;
+                for (GoalUserLinkDto goalUserLinkDto : goalUserLinkList) {
+                    if (goalUserLinkDto.getUserIdx() == loginInfo.getUserIdx() ||
+                            teamIdxList.contains(goalUserLinkDto.getTeamIdx())) {
+                        isMyGoal = true;
+                        break;
+                    }
+                }
+
+                if (!isMyGoal) {
+                    result.put("success", false);
+                    result.put("error", "목표 상세를 불러올 수 없습니다.");
+
+                    return result;
+                }
+            }
+
+            result.put("success", true);
+            result.put("detail", goalDto);
+            result.put("user_link_list", goalUserLinkList);
+            result.put("log_list", goalService.getGoalLog(goalIdx));
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "목표 상세를 불러올 수 없습니다.");
+        }
+
+        return result;
     }
 
     @PostMapping("/create")

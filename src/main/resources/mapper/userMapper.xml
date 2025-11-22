@@ -45,6 +45,12 @@
         WHERE email = #{email}
     </select>
 
+    <select id="getTeamListByUserIdx" parameterType="long" resultType="long">
+        SELECT team_idx
+        FROM team_user_link
+        WHERE user_idx = #{userIdx}
+    </select>
+
     <insert id="insertUser" parameterType="com.project.messanger.dto.UserDto" useGeneratedKeys="true" keyProperty="userIdx" keyColumn="user_idx">
         INSERT user
         SET email = #{email},

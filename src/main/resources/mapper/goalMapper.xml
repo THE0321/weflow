@@ -33,6 +33,56 @@
         <result property="createdDate" column="created_date"/>
     </resultMap>
 
+    <select id="getGoalList" parameterType="hashmap" resultMap="GoalMap">
+        SELECT *
+        FROM goal
+        <where>
+            <if test="title != null">
+                AND UPPER(title) LIKE CONCAT('%', UPPER(#{title}), '%')
+            </if>
+            <if test="status != null">
+                AND UPPER(status) LIKE CONCAT('%', UPPER(#{status}), '%')
+            </if>
+            <if test="user_idx != null">
+                AND (
+                    EXISTS (
+                        SELECT 1
+                        FROM goal_user_link
+                        WHERE goal_idx = goal.goal_idx
+                        AND user_idx = #{user_idx}
+                    )
+                <if test="team_idx_list != null">
+                    OR EXISTS (
+                        SELECT 1
+                        FROM goal_user_link
+                        WHERE goal_idx = goal.goal_idx
+                        AND team_idx IN <foreach collection="team_idx_list" item="teamIdx" open="(" close=")" separator=",">#{teamIdx}</foreach>
+                    )
+                </if>
+                )
+            </if>
+        </where>
+        LIMIT ${limit} OFFSET ${offset}
+    </select>
+
+    <select id="getGoalByIdx" parameterType="long" resultMap="GoalMap">
+        SELECT *
+        FROM goal
+        WHERE goal_idx = #{goalIdx}
+    </select>
+
+    <select id="getGoalLog" parameterType="long" resultMap="GoalMap">
+        SELECT *
+        FROM goal_log
+        WHERE goal_idx = #{goalIdx}
+    </select>
+
+    <select id="getGoalUserLink" parameterType="long" resultMap="GoalMap">
+        SELECT *
+        FROM goal_user_link
+        WHERE goal_idx = #{goalIdx}
+    </select>
+
     <insert id="insertGoal" parameterType="com.project.messanger.dto.GoalDto" useGeneratedKeys="true" keyProperty="goalIdx" keyColumn="goal_idx">
         INSERT goal
         SET title = #{title},

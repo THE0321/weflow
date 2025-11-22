@@ -43,6 +43,16 @@ public class UserService {
     }
 
     /*
+     * get team list by user idx
+     * @param long
+     * return long
+     */
+    @Transactional(readOnly = true)
+    public List<Long> getTeamListByUserIdx(long userIdx) {
+        return userMapper.getTeamListByUserIdx(userIdx);
+    }
+
+    /*
      * insert user
      * @param UserDto
      * return long

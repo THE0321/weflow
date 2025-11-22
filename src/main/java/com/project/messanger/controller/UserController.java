@@ -45,6 +45,7 @@ public class UserController {
         try {
             Map<String, Object> param = new HashMap<>();
             param.put("page", page);
+            param.put("limit", limit);
             param.put("email", email);
             param.put("user_name", userName);
             param.put("phone_number", phoneNumber);
@@ -350,11 +351,14 @@ public class UserController {
             } else {
                 // 로그인 정보 저장
                 UserDto userDto = userService.getUserByIdx(userIdx);
+                List<Long> teamIdxList = userService.getTeamListByUserIdx(userIdx);
 
                 ObjectMapper objectMapper = new ObjectMapper();
                 String jsonData = objectMapper.writeValueAsString(userDto);
+                String teamJsonData = objectMapper.writeValueAsString(teamIdxList);
 
                 session.setAttribute("login_info", jsonData);
+                session.setAttribute("team_idx_list", teamJsonData);
             }
         } catch (Exception e) {
             result.put("success", false);
@@ -423,7 +427,7 @@ public class UserController {
         HttpSession session = request.getSession();
 
         // 로그인 정보 확인
-        UserDto loginInfo = (UserDto) session.getAttribute("login_info");
+        UserDto loginInfo = authUtil.getLoginInfo(session);
         if (loginInfo == null) {
             result.put("success", false);
             result.put("error", "로그인 해주세요.");

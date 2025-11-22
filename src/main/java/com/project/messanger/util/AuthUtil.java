@@ -6,8 +6,8 @@ import jakarta.servlet.http.HttpSession;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @NoArgsConstructor
@@ -44,12 +44,27 @@ public class AuthUtil {
         }
     }
 
+    public boolean loginCheck(HttpSession session){
+        return getLoginInfo(session) != null;
+    }
+
     public UserDto getLoginInfo(HttpSession session){
         try {
             String jsonString = (String)session.getAttribute("login_info");
 
             ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.readValue(jsonString, UserDto.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public List<Long> getTeamList(HttpSession session) {
+        try {
+            String jsonString = (String)session.getAttribute("team_idx_list");
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.readValue(jsonString, ArrayList.class);
         } catch (Exception e) {
             return null;
         }

@@ -15,6 +15,8 @@ public interface UserMapper {
 
     UserDto getUserByEmail(String email);
 
+    List<Long> getTeamListByUserIdx(long userIdx);
+
     long insertUser(UserDto userDto);
 
     int updateUser(UserDto userDto);
