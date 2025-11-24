@@ -71,10 +71,11 @@
         WHERE goal_idx = #{goalIdx}
     </select>
 
-    <select id="getGoalLog" parameterType="long" resultMap="GoalMap">
+    <select id="getGoalLog" parameterType="long" resultMap="GoalLogMap">
         SELECT *
         FROM goal_log
         WHERE goal_idx = #{goalIdx}
+        ORDER BY log_idx DESC
     </select>
 
     <select id="getGoalUserLink" parameterType="long" resultMap="GoalMap">
@@ -139,7 +140,7 @@
                         SELECT progress_value
                         FROM goal_log
                         WHERE goal_idx = #{goal_idx}
-                        ORDER BY created_date DESC
+                        ORDER BY log_idx DESC
                         LIMIT 1
                     ),
                 </otherwise>

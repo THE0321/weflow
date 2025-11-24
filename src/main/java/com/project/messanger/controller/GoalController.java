@@ -1,6 +1,7 @@
 package com.project.messanger.controller;
 
 import com.project.messanger.dto.GoalDto;
+import com.project.messanger.dto.GoalLogDto;
 import com.project.messanger.dto.GoalUserLinkDto;
 import com.project.messanger.dto.UserDto;
 import com.project.messanger.service.GoalService;
@@ -108,7 +109,6 @@ public class GoalController {
             result.put("success", true);
             result.put("detail", goalDto);
             result.put("user_link_list", goalUserLinkList);
-            result.put("log_list", goalService.getGoalLog(goalIdx));
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "목표 상세를 불러올 수 없습니다.");
@@ -267,6 +267,241 @@ public class GoalController {
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "목표를 삭제하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/log/list")
+    public Map<String, Object> getGoalLogList(HttpServletRequest request,
+                                              @RequestParam(value = "goal_idx", required = false) long goalIdx) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        try {
+            UserDto loginInfo = authUtil.getLoginInfo(session);
+
+            List<GoalUserLinkDto> goalUserLinkList = goalService.getGoalUserLink(goalIdx);
+            if (goalUserLinkList == null) {
+                result.put("success", false);
+                result.put("error", "실적을 조회할 수 없습니다.");
+
+                return result;
+            } else if (loginInfo.getLeaderYn().equals("N") && loginInfo.getAdminYn().equals("N")) {
+                List<Long> teamIdxList = authUtil.getTeamList(session);
+                boolean isMyGoal = false;
+                for (GoalUserLinkDto goalUserLinkDto : goalUserLinkList) {
+                    if (goalUserLinkDto.getUserIdx() == loginInfo.getUserIdx() ||
+                            teamIdxList.contains(goalUserLinkDto.getTeamIdx())) {
+                        isMyGoal = true;
+                        break;
+                    }
+                }
+
+                if (!isMyGoal) {
+                    result.put("success", false);
+                    result.put("error", "실적을 조회할 수 없습니다.");
+
+                    return result;
+                }
+            }
+
+            result.put("success", true);
+            result.put("list", goalService.getGoalLog(goalIdx));
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", e.getMessage());
+        }
+
+        return result;
+    }
+
+    @PostMapping("/log/create")
+    public Map<String, Object> saveGoalLog(HttpServletRequest request,
+                                           @RequestParam(value = "goal_idx", required = false) long goalIdx,
+                                           @RequestParam(value = "progress_value", required = false) long progressValue,
+                                           @RequestParam(value = "content", required = false) String content
+                                        ){
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        try {
+            UserDto loginInfo = authUtil.getLoginInfo(session);
+
+            List<GoalUserLinkDto> goalUserLinkList = goalService.getGoalUserLink(goalIdx);
+            if (goalUserLinkList == null) {
+                result.put("success", false);
+                result.put("error", "실적을 등록할 수 없습니다.");
+
+                return result;
+            } else if (loginInfo.getLeaderYn().equals("N") && loginInfo.getAdminYn().equals("N")) {
+                List<Long> teamIdxList = authUtil.getTeamList(session);
+                boolean isMyGoal = false;
+                for (GoalUserLinkDto goalUserLinkDto : goalUserLinkList) {
+                    if (goalUserLinkDto.getUserIdx() == loginInfo.getUserIdx() ||
+                            teamIdxList.contains(goalUserLinkDto.getTeamIdx())) {
+                        isMyGoal = true;
+                        break;
+                    }
+                }
+
+                if (!isMyGoal) {
+                    result.put("success", false);
+                    result.put("error", "실적을 등록할 수 없습니다.");
+
+                    return result;
+                }
+            }
+
+            // GoalLogDto 객체 생성
+            GoalLogDto goalLogDto = GoalLogDto.builder()
+                    .goalIdx(goalIdx)
+                    .progressValue(progressValue)
+                    .content(content)
+                    .creatorIdx(loginInfo.getUserIdx())
+                    .build();
+
+            long logIdx = goalService.insertGoalLog(goalLogDto);
+            if(logIdx == 0) {
+                result.put("success", false);
+                result.put("error", "실적이 등록되지 않았습니다.");
+
+                return result;
+            }
+
+            result.put("success", true);
+            result.put("idx", logIdx);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", e.getMessage());
+        }
+
+        return result;
+    }
+
+    @PostMapping("/log/modify")
+    public Map<String, Object> updateGoalLog(HttpServletRequest request,
+                                             @RequestParam(value = "goal_idx") Long goalIdx,
+                                             @RequestParam(value = "log_idx") Long logIdx,
+                                             @RequestParam(value = "content", required = false) String content,
+                                             @RequestParam(value = "progress_value", required = false) long progressValue){
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        try {
+            UserDto loginInfo = authUtil.getLoginInfo(session);
+
+            List<GoalUserLinkDto> goalUserLinkList = goalService.getGoalUserLink(goalIdx);
+            if (goalUserLinkList == null) {
+                result.put("success", false);
+                result.put("error", "실적을 수정할 수 없습니다.");
+
+                return result;
+            } else if (loginInfo.getLeaderYn().equals("N") && loginInfo.getAdminYn().equals("N")) {
+                List<Long> teamIdxList = authUtil.getTeamList(session);
+                boolean isMyGoal = false;
+                for (GoalUserLinkDto goalUserLinkDto : goalUserLinkList) {
+                    if (goalUserLinkDto.getUserIdx() == loginInfo.getUserIdx() ||
+                            teamIdxList.contains(goalUserLinkDto.getTeamIdx())) {
+                        isMyGoal = true;
+                        break;
+                    }
+                }
+
+                if (!isMyGoal) {
+                    result.put("success", false);
+                    result.put("error", "실적을 수정할 수 없습니다.");
+
+                    return result;
+                }
+            }
+
+            List<GoalLogDto> goalLogList = goalService.getGoalLog(goalIdx);
+            if (goalLogList.getFirst().getLogIdx() == logIdx) {
+                result.put("success", false);
+                result.put("error", "실적을 수정할 수 없습니다.");
+
+                return result;
+            }
+
+            // GoalLogDto 객체 생성
+            GoalLogDto goalLogDto = GoalLogDto.builder()
+                        .logIdx(logIdx)
+                        .progressValue(progressValue)
+                        .content(content)
+                        .build();
+
+            // 실적 수정
+            int success = goalService.updateGoalLog(goalLogDto);
+
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "실적을 수정하는데 실패했습니다.");
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "실적을 삭제하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/log/delete")
+    public Map<String, Object> deleteGoalLog(HttpServletRequest request,
+                                             @RequestParam("goal_idx") long goalIdx,
+                                             @RequestParam("log_idx") long logIdx) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        try {
+            UserDto loginInfo = authUtil.getLoginInfo(session);
+
+            List<GoalUserLinkDto> goalUserLinkList = goalService.getGoalUserLink(goalIdx);
+            if (goalUserLinkList == null) {
+                result.put("success", false);
+                result.put("error", "실적을 삭제할 수 없습니다.");
+
+                return result;
+            } else if (loginInfo.getLeaderYn().equals("N") && loginInfo.getAdminYn().equals("N")) {
+                List<Long> teamIdxList = authUtil.getTeamList(session);
+                boolean isMyGoal = false;
+                for (GoalUserLinkDto goalUserLinkDto : goalUserLinkList) {
+                    if (goalUserLinkDto.getUserIdx() == loginInfo.getUserIdx() ||
+                            teamIdxList.contains(goalUserLinkDto.getTeamIdx())) {
+                        isMyGoal = true;
+                        break;
+                    }
+                }
+
+                if (!isMyGoal) {
+                    result.put("success", false);
+                    result.put("error", "실적을 삭제할 수 없습니다.");
+
+                    return result;
+                }
+            }
+
+            List<GoalLogDto> goalLogList = goalService.getGoalLog(goalIdx);
+            if (goalLogList.getFirst().getLogIdx() == logIdx) {
+                result.put("success", false);
+                result.put("error", "실적을 삭제할 수 없습니다.");
+
+                return result;
+            }
+
+            // 실적 삭제
+            int success = goalService.deleteGoalLog(logIdx);
+
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "실적을 삭제하는데 실패했습니다.");
+            }
+
+            result.put("success", true);
+            result.put("idx", success);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "실적을 삭제하는데 실패했습니다.");
         }
 
         return result;

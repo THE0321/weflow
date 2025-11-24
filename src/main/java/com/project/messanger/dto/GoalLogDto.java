@@ -9,6 +9,7 @@ import lombok.*;
 @NoArgsConstructor
 public class GoalLogDto {
     private long logIdx;
+    private long goalIdx;
     private long progressValue;
     private String content;
     private long creatorIdx;
