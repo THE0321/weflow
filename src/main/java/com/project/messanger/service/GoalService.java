@@ -1,9 +1,6 @@
 package com.project.messanger.service;
 
-import com.project.messanger.dto.GoalDto;
-import com.project.messanger.dto.GoalLogDto;
-import com.project.messanger.dto.GoalUserLinkDto;
-import com.project.messanger.dto.UserDto;
+import com.project.messanger.dto.*;
 import com.project.messanger.mapper.GoalMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +22,7 @@ public class GoalService {
      * @param Map<String, Object>
      * return List<UserDto>
      */
-    public List<GoalDto> getGoalList(Map<String, Object> param) {
+    public List<GoalAndLogDto> getGoalList(Map<String, Object> param) {
         int page = param.get("page") != null ? (int)param.get("page") : 1;
 
         param.putIfAbsent("limit", 10);
@@ -41,7 +38,7 @@ public class GoalService {
      * return goalDto
      */
     @Transactional(readOnly = true)
-    public GoalDto getGoalByIdx(long goalIdx) {
+    public GoalAndLogDto getGoalByIdx(long goalIdx) {
         return goalMapper.getGoalByIdx(goalIdx);
     }
 

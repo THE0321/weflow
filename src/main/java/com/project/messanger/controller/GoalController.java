@@ -1,17 +1,11 @@
 package com.project.messanger.controller;
 
-import com.project.messanger.dto.GoalDto;
-import com.project.messanger.dto.GoalLogDto;
-import com.project.messanger.dto.GoalUserLinkDto;
-import com.project.messanger.dto.UserDto;
+import com.project.messanger.dto.*;
 import com.project.messanger.service.GoalService;
 import com.project.messanger.util.AuthUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
@@ -72,8 +66,8 @@ public class GoalController {
         HttpSession session = request.getSession();
 
         try {
-            GoalDto goalDto = goalService.getGoalByIdx(goalIdx);
-            if(goalDto == null) {
+            GoalAndLogDto goalAndLogDto = goalService.getGoalByIdx(goalIdx);
+            if(goalAndLogDto == null) {
                 result.put("success", false);
                 result.put("error", "목표 상세를 불러올 수 없습니다.");
 
@@ -107,7 +101,7 @@ public class GoalController {
             }
 
             result.put("success", true);
-            result.put("detail", goalDto);
+            result.put("detail", goalAndLogDto);
             result.put("user_link_list", goalUserLinkList);
         } catch (Exception e) {
             result.put("success", false);
