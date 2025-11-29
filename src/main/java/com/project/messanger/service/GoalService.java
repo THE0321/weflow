@@ -20,7 +20,7 @@ public class GoalService {
     /*
      * get goal list
      * @param Map<String, Object>
-     * return List<UserDto>
+     * return List<GoalAndLogDto>
      */
     public List<GoalAndLogDto> getGoalList(Map<String, Object> param) {
         int page = param.get("page") != null ? (int)param.get("page") : 1;

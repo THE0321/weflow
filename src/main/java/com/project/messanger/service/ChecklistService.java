@@ -1,14 +1,13 @@
 package com.project.messanger.service;
 
-import com.project.messanger.dto.ChecklistDto;
-import com.project.messanger.dto.ChecklistItemDto;
-import com.project.messanger.dto.GoalDto;
+import com.project.messanger.dto.*;
 import com.project.messanger.mapper.ChecklistMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ChecklistService {
@@ -16,6 +15,51 @@ public class ChecklistService {
 
     public ChecklistService(ChecklistMapper checklistMapper) {
         this.checklistMapper = checklistMapper;
+    }
+
+    /*
+     * get checklist list
+     * @param Map<String, Object>
+     * return List<ChecklistDto>
+     */
+    public List<ChecklistAndLogDto> getChecklistList(Map<String, Object> param) {
+        int page = param.get("page") != null ? (int)param.get("page") : 1;
+
+        param.putIfAbsent("limit", 10);
+        int limit = (int)param.get("limit");
+        param.put("offset", (page-1) * limit);
+
+        return checklistMapper.getChecklistList(param);
+    }
+
+    /*
+     * get goal by goal idx
+     * @param long
+     * return goalDto
+     */
+    @Transactional(readOnly = true)
+    public ChecklistAndLogDto getChecklistByIdx(long checklistIdx) {
+        return checklistMapper.getChecklistByIdx(checklistIdx);
+    }
+
+    /*
+     * get checklist list log
+     * @param long
+     * return List<ChecklistLogDto>
+     */
+    @Transactional(readOnly = true)
+    public List<ChecklistLogDto> getChecklistLog(long itemIdx) {
+        return checklistMapper.getChecklistLog(itemIdx);
+    }
+
+    /*
+     * get checklist user link
+     * @param long
+     * return List<ChecklistUserLinkDto>
+     */
+    @Transactional(readOnly = true)
+    public List<ChecklistUserLinkDto> getChecklistUserLink(long checklistIdx) {
+        return checklistMapper.getChecklistUserLink(checklistIdx);
     }
 
     /*
@@ -72,11 +116,41 @@ public class ChecklistService {
 
     /*
      * update checklist item
-     * @param List<String>
+     * @param ChecklistItemDto
      * return int
      */
     @Transactional
     public int updateChecklistItem(ChecklistItemDto checklistItemDto) {
         return checklistMapper.updateChecklistItem(checklistItemDto);
+    }
+
+    /*
+     * insert checklist log
+     * @param ChecklistLogDto
+     * return int
+     */
+    @Transactional
+    public int insertChecklistLog(ChecklistLogDto checklistLogDto) {
+        return checklistMapper.insertChecklistLog(checklistLogDto);
+    }
+
+    /*
+     * update checklist log
+     * @param ChecklistLogDto
+     * return int
+     */
+    @Transactional
+    public int updateChecklistLog(ChecklistLogDto checklistLogDto) {
+        return checklistMapper.updateChecklistLog(checklistLogDto);
+    }
+
+    /*
+     * delete checklist log
+     * @param long
+     * return int
+     */
+    @Transactional
+    public int deleteChecklistLog(long logIdx) {
+        return checklistMapper.deleteChecklistLog(logIdx);
     }
 }

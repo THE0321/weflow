@@ -104,7 +104,7 @@
         ORDER BY log_idx DESC
     </select>
 
-    <select id="getGoalUserLink" parameterType="long" resultMap="GoalMap">
+    <select id="getGoalUserLink" parameterType="long" resultMap="GoalUserLinkMap">
         SELECT *
         FROM goal_user_link
         WHERE goal_idx = #{goalIdx}
@@ -175,7 +175,7 @@
                     progress_value = (
                         SELECT progress_value
                         FROM goal_log
-                        WHERE goal_idx = #{goal_idx}
+                        WHERE goal_idx = #{goalIdx}
                         ORDER BY log_idx DESC
                         LIMIT 1
                     ),

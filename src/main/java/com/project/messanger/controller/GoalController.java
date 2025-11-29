@@ -371,8 +371,8 @@ public class GoalController {
 
     @PostMapping("/log/modify")
     public Map<String, Object> updateGoalLog(HttpServletRequest request,
-                                             @RequestParam(value = "goal_idx") Long goalIdx,
-                                             @RequestParam(value = "log_idx") Long logIdx,
+                                             @RequestParam(value = "goal_idx") long goalIdx,
+                                             @RequestParam(value = "log_idx") long logIdx,
                                              @RequestParam(value = "content", required = false) String content,
                                              @RequestParam(value = "progress_value", required = false) long progressValue){
         Map<String, Object> result = new HashMap<>();

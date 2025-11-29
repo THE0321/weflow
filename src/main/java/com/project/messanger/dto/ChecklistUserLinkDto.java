@@ -10,5 +10,6 @@ import lombok.*;
 public class ChecklistUserLinkDto {
     private long linkIdx;
     private long checklistIdx;
+    private long teamIdx;
     private long userIdx;
 }
