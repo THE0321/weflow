@@ -1,6 +1,7 @@
 package com.project.messanger.mapper;
 
 import com.project.messanger.dto.TeamDto;
+import com.project.messanger.dto.TeamUserLinkDto;
 import com.project.messanger.dto.UserDto;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -29,7 +30,7 @@ public interface UserMapper {
 
     int deleteTeam(long teamIdx);
 
-    int insertTeamUserLink(List<String> list);
+    int insertTeamUserLink(List<TeamUserLinkDto> list);
 
     int deleteTeamUserLink(List<Long> list);
 }

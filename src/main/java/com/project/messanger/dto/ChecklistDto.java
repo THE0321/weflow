@@ -7,19 +7,12 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class GoalAndLogDto {
-    private long goalIdx;
+public class ChecklistDto {
+    private long checklistIdx;
     private String title;
     private String description;
     private String status;
-    private long targetValue;
-    private String startDate;
-    private String endDate;
     private long creatorIdx;
     private String createdDate;
     private String updatedDate;
-
-    private long progressValue;
-    private String content;
-    private String logDate;
 }

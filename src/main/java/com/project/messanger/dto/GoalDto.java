@@ -13,7 +13,6 @@ public class GoalDto {
     private String description;
     private String status;
     private long targetValue;
-    private long currentValue;
     private String startDate;
     private String endDate;
     private long creatorIdx;

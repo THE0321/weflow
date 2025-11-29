@@ -117,7 +117,6 @@ public class GoalController {
                                         @RequestParam(value = "description", required = false) String description,
                                         @RequestParam(value = "status", required = false) String status,
                                         @RequestParam(value = "target_value", required = false) long targetValue,
-                                        @RequestParam(value = "current_value", required = false) long currentValue,
                                         @RequestParam(value = "start_date", required = false) String startDate,
                                         @RequestParam(value = "end_date", required = false) String endDate,
                                         @RequestParam(value = "user_idx", required = false) List<Long> userIdxList,
@@ -142,7 +141,6 @@ public class GoalController {
                     .description(description)
                     .status(status)
                     .targetValue(targetValue)
-                    .currentValue(currentValue)
                     .startDate(startDate)
                     .endDate(endDate)
                     .creatorIdx(loginInfo.getUserIdx())
@@ -164,7 +162,7 @@ public class GoalController {
             result.put("idx", goalIdx);
         } catch (Exception e) {
             result.put("success", false);
-            result.put("error", e.getMessage());
+            result.put("error", "목표를 등록할 수 없습니다.");
         }
 
         return result;
@@ -177,7 +175,6 @@ public class GoalController {
                                           @RequestParam(value = "description", required = false) String description,
                                           @RequestParam(value = "status", required = false) String status,
                                           @RequestParam(value = "target_value", required = false) long targetValue,
-                                          @RequestParam(value = "current_value", required = false) long currentValue,
                                           @RequestParam(value = "start_date", required = false) String startDate,
                                           @RequestParam(value = "end_date", required = false) String endDate,
                                           @RequestParam(value = "user_idx", required = false) List<Long> userIdxList,
@@ -201,7 +198,6 @@ public class GoalController {
                     .description(description)
                     .status(status)
                     .targetValue(targetValue)
-                    .currentValue(currentValue)
                     .startDate(startDate)
                     .endDate(endDate)
                     .build();
@@ -230,7 +226,7 @@ public class GoalController {
             }
         } catch (Exception e) {
             result.put("success", false);
-            result.put("error", e.getMessage());
+            result.put("error", "목표를 수정하는데 실패했습니다.");
         }
 
         return result;
@@ -304,7 +300,7 @@ public class GoalController {
             result.put("list", goalService.getGoalLog(goalIdx));
         } catch (Exception e) {
             result.put("success", false);
-            result.put("error", e.getMessage());
+            result.put("error", "실적을 조회할 수 없습니다.");
         }
 
         return result;
@@ -367,7 +363,7 @@ public class GoalController {
             result.put("idx", logIdx);
         } catch (Exception e) {
             result.put("success", false);
-            result.put("error", e.getMessage());
+            result.put("error", "실적이 등록되지 않았습니다.");
         }
 
         return result;

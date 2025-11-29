@@ -10,7 +10,6 @@
         <result property="description" column="description"/>
         <result property="status" column="status"/>
         <result property="targetValue" column="targetValue"/>
-        <result property="currentValue" column="currentValue"/>
         <result property="startDate" column="startDate"/>
         <result property="endDate" column="endDate"/>
         <result property="creatorIdx" column="creator_idx"/>
@@ -39,7 +38,6 @@
         <result property="description" column="description"/>
         <result property="status" column="status"/>
         <result property="targetValue" column="targetValue"/>
-        <result property="currentValue" column="currentValue"/>
         <result property="startDate" column="startDate"/>
         <result property="endDate" column="endDate"/>
         <result property="creatorIdx" column="creator_idx"/>
@@ -116,7 +114,6 @@
         INSERT goal
         SET title = #{title},
             target_value = #{targetValue},
-            current_value = #{currentValue},
             creator_idx = #{creatorIdx},
             <choose>
                 <when test="status != null"> status = #{status},</when>
@@ -131,9 +128,8 @@
 
     <update id="updateGoal" parameterType="com.project.messanger.dto.GoalDto">
         UPDATE goal
-        SET title = #{title},
-            target_value = #{targetValue},
-            current_value = #{currentValue},
+        SET <if test="title != null"> title = #{title},</if>
+            <if test="targetValue != null">target_value = #{targetValue},</if>
             <if test="status != null">status = #{status},</if>
             <if test="description != null"> description = #{description},</if>
             <if test="startDate != null"> start_date = #{startDate},</if>
@@ -147,9 +143,21 @@
         WHERE goal_idx = #{goalIdx}
     </delete>
 
-    <insert id="insertGoalUserLink" parameterType="string">
-        INSERT INTO goal_user_link (goal_idx, team_idx, user_idx)
-        VALUES <foreach collection="list" item="value" separator=",">${value}</foreach>
+    <insert id="insertGoalUserLink" parameterType="com.project.messanger.dto.GoalUserLinkDto">
+        INSERT INTO goal_user_link
+        (
+            goal_idx,
+            team_idx,
+            user_idx
+        )
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+        (
+            #{item.goalIdx},
+            #{item.teamIdx},
+            #{item.userIdx}
+        )
+        </foreach>
     </insert>
 
     <delete id="deleteGoalUserLink" parameterType="long">

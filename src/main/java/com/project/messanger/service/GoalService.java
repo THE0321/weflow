@@ -94,12 +94,12 @@ public class GoalService {
 
     /*
      * insert goal user link
-     * @param List<String>
+     * @param List<GoalUserLinkDto>
      * return int
      */
     @Transactional
-    public int insertGoalUserLink(List<String> valueList) {
-        return goalMapper.insertGoalUserLink(valueList);
+    public int insertGoalUserLink(List<GoalUserLinkDto> list) {
+        return goalMapper.insertGoalUserLink(list);
     }
 
     /*
@@ -119,14 +119,18 @@ public class GoalService {
      */
     @Transactional
     public int insertGoalUserLinkByTeamIdx(long goalIdx, List<Long> teamIdxList) {
-        List<String> valueList = new ArrayList<>();
+        List<GoalUserLinkDto> insertList = new ArrayList<>();
 
         // 값 리스트
         for (long teamIdx : teamIdxList) {
-            valueList.add("("+ goalIdx +", "+ teamIdx +", null)");
+            GoalUserLinkDto goalUserLinkDto = GoalUserLinkDto.builder()
+                    .goalIdx(goalIdx)
+                    .teamIdx(teamIdx)
+                    .build();
+            insertList.add(goalUserLinkDto);
         }
 
-        return insertGoalUserLink(valueList);
+        return insertGoalUserLink(insertList);
     }
 
     /*
@@ -136,14 +140,18 @@ public class GoalService {
      */
     @Transactional
     public int insertGoalUserLinkByUserIdx(long goalIdx, List<Long> userIdxList) {
-        List<String> valueList = new ArrayList<>();
+        List<GoalUserLinkDto> insertList = new ArrayList<>();
 
         // 값 리스트
         for (long userIdx : userIdxList) {
-            valueList.add("("+ goalIdx +", null, "+ userIdx +")");
+            GoalUserLinkDto goalUserLinkDto = GoalUserLinkDto.builder()
+                    .goalIdx(goalIdx)
+                    .userIdx(userIdx)
+                    .build();
+            insertList.add(goalUserLinkDto);
         }
 
-        return insertGoalUserLink(valueList);
+        return insertGoalUserLink(insertList);
     }
 
     /*

@@ -103,9 +103,19 @@
         WHERE team_idx = #{teamIdx}
     </delete>
 
-    <insert id="insertTeamUserLink" parameterType="string">
-        INSERT INTO team_user_link (user_idx, team_idx)
-        VALUES <foreach collection="list" item="value" separator=",">${value}</foreach>
+    <insert id="insertTeamUserLink" parameterType="com.project.messanger.dto.TeamUserLinkDto">
+        INSERT INTO team_user_link
+        (
+            user_idx,
+            team_idx
+        )
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+        (
+            #{item.userIdx},
+            #{item.teamIdx}
+        )
+        </foreach>
     </insert>
 
     <delete id="deleteTeamUserLink" parameterType="long">

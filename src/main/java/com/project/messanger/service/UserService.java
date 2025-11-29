@@ -1,6 +1,7 @@
 package com.project.messanger.service;
 
 import com.project.messanger.dto.TeamDto;
+import com.project.messanger.dto.TeamUserLinkDto;
 import com.project.messanger.dto.UserDto;
 import com.project.messanger.mapper.UserMapper;
 import org.apache.catalina.User;
@@ -152,12 +153,12 @@ public class UserService {
 
     /*
      * insert goal user link
-     * @param List<String>
+     * @param List<TeamUserLinkDto>
      * return int
      */
     @Transactional
-    public int insertTeamUserLink(List<String> valueList) {
-        return userMapper.insertTeamUserLink(valueList);
+    public int insertTeamUserLink(List<TeamUserLinkDto> list) {
+        return userMapper.insertTeamUserLink(list);
     }
 
     /*
@@ -167,14 +168,18 @@ public class UserService {
      */
     @Transactional
     public int insertUserLinkByTeamIdx(long userIdx, List<Long> teamIdxList) {
-        List<String> valueList = new ArrayList<>();
+        List<TeamUserLinkDto> insertList = new ArrayList<>();
 
         // 값 리스트
         for (long teamIdx : teamIdxList) {
-            valueList.add("("+ userIdx +", "+ teamIdx +")");
+            TeamUserLinkDto teamUserLinkDto = TeamUserLinkDto.builder()
+                    .userIdx(userIdx)
+                    .teamIdx(teamIdx)
+                    .build();
+            insertList.add(teamUserLinkDto);
         }
 
-        return insertTeamUserLink(valueList);
+        return insertTeamUserLink(insertList);
     }
 
     /*

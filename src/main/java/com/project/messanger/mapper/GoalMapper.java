@@ -22,7 +22,7 @@ public interface GoalMapper {
 
     int deleteGoal(long goalIdx);
 
-    int insertGoalUserLink(List<String> list);
+    int insertGoalUserLink(List<GoalUserLinkDto> list);
 
     int deleteGoalUserLink(List<Long> list);
 
