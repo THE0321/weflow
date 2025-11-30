@@ -55,7 +55,17 @@
                 goal_log.content,
                 goal_log.created_date AS log_date
         FROM goal
-        LEFT JOIN goal_log
+        LEFT JOIN
+        (
+            SELECT *
+            FROM goal_log
+            WHERE log_idx IN
+            (
+                SELECT MAX(log_idx)
+                FR0M goal_log
+                GROUP BY goal_idx
+            )
+        ) goal_log
         ON goal.goal_idx = goal_log.goal_idx
         <where>
             <if test="title != null">
@@ -86,15 +96,69 @@
         LIMIT ${limit} OFFSET ${offset}
     </select>
 
+    <select id="getGoalMainList" parameterType="hashmap" resultMap="GoalAndLogMap">
+        SELECT goal.*,
+                goal_log.progress_value,
+                goal_log.content,
+                goal_log.created_date AS log_date
+        FROM goal
+        LEFT JOIN
+        (
+            SELECT *
+            FROM goal_log
+            WHERE log_idx IN
+            (
+                SELECT MAX(log_idx)
+                FR0M goal_log
+                GROUP BY goal_idx
+            )
+        ) goal_log
+        ON goal.goal_idx = goal_log.goal_idx
+        WHERE status != 'COMPLETED'
+        AND (
+            EXISTS (
+                SELECT 1
+                FROM goal_user_link
+                WHERE goal_idx = goal.goal_idx
+                AND user_idx = #{user_idx}
+            )
+            <if test="team_idx_list != null">
+                OR EXISTS (
+                    SELECT 1
+                    FROM goal_user_link
+                    WHERE goal_idx = goal.goal_idx
+                    AND team_idx IN <foreach collection="team_idx_list" item="teamIdx" open="(" close=")" separator=",">#{teamIdx}</foreach>
+                )
+            </if>
+        )
+        ORDER BY DATEDIFF(SYSDATE(), end_date) DESC
+        LIMIT 10
+    </select>
+
     <select id="getGoalByIdx" parameterType="long" resultMap="GoalAndLogMap">
         SELECT goal.*,
                 goal_log.progress_value,
                 goal_log.content,
                 goal_log.created_date AS log_date
         FROM goal
-        LEFT JOIN goal_log
+        LEFT JOIN
+        (
+            SELECT *
+            FROM goal_log
+            WHERE log_idx IN
+            (
+                SELECT MAX(log_idx)
+                FR0M goal_log
+                GROUP BY goal_idx
+            )
+        ) goal_log
         ON goal.goal_idx = goal_log.goal_ix
         WHERE goal_idx = #{goalIdx}
+    </select>
+
+    <select id="getGoalGraph" parameterType="hashmap" resultMap="hashmap">
+        SELECT *
+        FROM goal_log
     </select>
 
     <select id="getGoalLog" parameterType="long" resultMap="GoalLogMap">

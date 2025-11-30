@@ -36,14 +36,9 @@
         <result property="createdDate" column="created_date"/>
     </resultMap>
 
-    <select id="getChecklistList" parameterType="hashmap" resultMap="ChecklistAndLogMap">
-        SELECT checklist.*,
-                checklist_log.is_checked,
-                checklist_log.content,
-                checklist_log.created_date AS log_date
+    <select id="getChecklistList" parameterType="hashmap" resultMap="ChecklistMap">
+        SELECT *
         FROM checklist
-        LEFT JOIN checklist_log
-        ON checklist.checklist_idx = checklist_log.checklist_idx
         <where>
             <if test="title != null">
                 AND UPPER(title) LIKE CONCAT('%', UPPER(#{title}), '%')
@@ -73,14 +68,33 @@
         LIMIT ${limit} OFFSET ${offset}
     </select>
 
-    <select id="getChecklistByIdx" parameterType="long" resultMap="ChecklistAndLogMap">
-        SELECT checklist.*,
-                checklist_log.is_checked,
-                checklist_log.content,
-                checklist_log.created_date AS log_date
+    <select id="getChecklistMainList" parameterType="hashmap" resultMap="ChecklistMap">
+        SELECT *
         FROM checklist
-        LEFT JOIN checklist_log
-        ON checklist.checklist_idx = checklist_log.checklist_idx
+        WHERE status != 'COMPLETED'
+        AND (
+            EXISTS (
+                SELECT 1
+                FROM checklist_user_link
+                WHERE checklist_idx = checklist.checklist_idx
+                AND user_idx = #{user_idx}
+            )
+            <if test="team_idx_list != null">
+                OR EXISTS (
+                    SELECT 1
+                    FROM checklist_user_link
+                    WHERE checklist_idx = checklist.checklist_idx
+                    AND team_idx IN <foreach collection="team_idx_list" item="teamIdx" open="(" close=")" separator=",">#{teamIdx}</foreach>
+                )
+            </if>
+        )
+        ORDER BY created_date DESC
+        LIMIT 10
+    </select>
+
+    <select id="getChecklistByIdx" parameterType="long" resultMap="ChecklistMap">
+        SELECT checklist.*
+        FROM checklist
         WHERE checklist_idx = #{checklistIdx}
     </select>
 

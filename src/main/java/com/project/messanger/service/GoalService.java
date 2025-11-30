@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +34,15 @@ public class GoalService {
     }
 
     /*
+     * get goal main list
+     * @param Map<String, Object>
+     * return List<GoalAndLogDto>
+     */
+    public List<GoalAndLogDto> getGoalMainList(Map<String, Object> param) {
+        return goalMapper.getGoalMainList(param);
+    }
+
+    /*
      * get goal by goal idx
      * @param long
      * return goalDto
@@ -40,6 +50,16 @@ public class GoalService {
     @Transactional(readOnly = true)
     public GoalAndLogDto getGoalByIdx(long goalIdx) {
         return goalMapper.getGoalByIdx(goalIdx);
+    }
+
+    /*
+     * get goal graph
+     * @param Map<String, Object>
+     * return goalDto
+     */
+    @Transactional(readOnly = true)
+    public HashMap<String, Object> getGoalGraph(Map<String, Object> param) {
+        return goalMapper.getGoalGraph(param);
     }
 
     /*

@@ -62,6 +62,26 @@ public class ChecklistController {
         return result;
     }
 
+    @PostMapping("/main/list")
+    public Map<String, Object> getChecklistList(HttpServletRequest request) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("user_idx", authUtil.getLoginInfo(session).getUserIdx());
+            param.put("team_idx_list", authUtil.getTeamList(session));
+
+            result.put("success", true);
+            result.put("list", checklistService.getChecklistMainList(param));
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "체크리스트를 불러올 수 없습니다.");
+        }
+
+        return result;
+    }
+
     @PostMapping("/detail")
     public Map<String, Object> getChecklistDetail(HttpServletRequest request,
                                                   @RequestParam(value = "checklist_idx") Long checklistIdx) {
@@ -69,8 +89,8 @@ public class ChecklistController {
         HttpSession session = request.getSession();
 
         try {
-            ChecklistAndLogDto checklistAndLogDto = checklistService.getChecklistByIdx(checklistIdx);
-            if(checklistAndLogDto == null) {
+            ChecklistDto checklistDto = checklistService.getChecklistByIdx(checklistIdx);
+            if(checklistDto == null) {
                 result.put("success", false);
                 result.put("error", "체크리스트 상세를 불러올 수 없습니다.");
 
@@ -104,7 +124,7 @@ public class ChecklistController {
             }
 
             result.put("success", true);
-            result.put("detail", checklistAndLogDto);
+            result.put("detail", checklistDto);
             result.put("user_link_list", goalUserLinkList);
         } catch (Exception e) {
             result.put("success", false);

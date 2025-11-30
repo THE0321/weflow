@@ -22,7 +22,7 @@ public class ChecklistService {
      * @param Map<String, Object>
      * return List<ChecklistDto>
      */
-    public List<ChecklistAndLogDto> getChecklistList(Map<String, Object> param) {
+    public List<ChecklistDto> getChecklistList(Map<String, Object> param) {
         int page = param.get("page") != null ? (int)param.get("page") : 1;
 
         param.putIfAbsent("limit", 10);
@@ -33,12 +33,21 @@ public class ChecklistService {
     }
 
     /*
+     * get checklist main list
+     * @param Map<String, Object>
+     * return List<ChecklistDto>
+     */
+    public List<ChecklistDto> getChecklistMainList(Map<String, Object> param) {
+        return checklistMapper.getChecklistMainList(param);
+    }
+
+    /*
      * get goal by goal idx
      * @param long
      * return goalDto
      */
     @Transactional(readOnly = true)
-    public ChecklistAndLogDto getChecklistByIdx(long checklistIdx) {
+    public ChecklistDto getChecklistByIdx(long checklistIdx) {
         return checklistMapper.getChecklistByIdx(checklistIdx);
     }
 

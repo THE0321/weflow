@@ -3,6 +3,7 @@ package com.project.messanger.mapper;
 import com.project.messanger.dto.*;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -10,7 +11,11 @@ import java.util.Map;
 public interface GoalMapper {
     List<GoalAndLogDto> getGoalList(Map<String, Object> param);
 
+    List<GoalAndLogDto> getGoalMainList(Map<String, Object> param);
+
     GoalAndLogDto getGoalByIdx(long goalIdx);
+
+    HashMap<String, Object> getGoalGraph(Map<String, Object> param);
 
     List<GoalLogDto> getGoalLog(long logIdx);
 

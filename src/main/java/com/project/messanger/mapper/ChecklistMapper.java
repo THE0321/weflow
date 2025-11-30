@@ -8,9 +8,11 @@ import java.util.Map;
 
 @Mapper
 public interface ChecklistMapper {
-    List<ChecklistAndLogDto> getChecklistList(Map<String, Object> param);
+    List<ChecklistDto> getChecklistList(Map<String, Object> param);
 
-    ChecklistAndLogDto getChecklistByIdx(long checklistIdx);
+    List<ChecklistDto> getChecklistMainList(Map<String, Object> param);
+
+    ChecklistDto getChecklistByIdx(long checklistIdx);
 
     List<ChecklistUserLinkDto> getChecklistUserLink(long checklistIdx);
 

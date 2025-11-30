@@ -59,6 +59,33 @@ public class GoalController {
         return result;
     }
 
+    @PostMapping("/list/main")
+    public Map<String, Object> getGoalMainList(HttpServletRequest request) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        if (!authUtil.loginCheck(session)) {
+            result.put("success", false);
+            result.put("error", "목표를 불러올 수 없습니다.");
+
+            return result;
+        }
+
+        try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("user_idx", authUtil.getLoginInfo(session).getUserIdx());
+            param.put("team_idx_list", authUtil.getTeamList(session));
+
+            result.put("success", true);
+            result.put("list", goalService.getGoalMainList(param));
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "목표를 불러올 수 없습니다.");
+        }
+
+        return result;
+    }
+
     @PostMapping("/detail")
     public Map<String, Object> getGoalDetail(HttpServletRequest request,
                                              @RequestParam("goal_idx") long goalIdx) {
@@ -106,6 +133,33 @@ public class GoalController {
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "목표 상세를 불러올 수 없습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/graph")
+    public Map<String, Object> getGoalGraph(HttpServletRequest request) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        if (!authUtil.loginCheck(session)) {
+            result.put("success", false);
+            result.put("error", "목표 그래프를 불러올 수 없습니다.");
+
+            return result;
+        }
+
+        try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("user_idx", authUtil.getLoginInfo(session).getUserIdx());
+            param.put("team_idx_list", authUtil.getTeamList(session));
+
+            result.put("success", true);
+            result.put("list", goalService.getGoalGraph(param));
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "목표 그래프를 불러올 수 없습니다.");
         }
 
         return result;
