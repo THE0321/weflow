@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,52 @@ public class NoticeController {
     public NoticeController(NoticeService noticeService, AuthUtil authUtil) {
         this.noticeService = noticeService;
         this.authUtil = authUtil;
+    }
+
+    @PostMapping("/list")
+    public Map<String, Object> getNoticeList(HttpServletRequest request,
+                                             @RequestParam(value = "page", required = false) int page,
+                                             @RequestParam(value = "limit", required = false) int limit,
+                                             @RequestParam(value = "title", required = false) String title) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("page", page);
+            param.put("limit", limit);
+            param.put("title", title);
+            param.put("is_admin", authUtil.authCheck(session, true));
+
+            result.put("success", true);
+            result.put("list", noticeService.getNoticeList(param));
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "공지사항을 불러올 수 없습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/detail")
+    public Map<String, Object> getNoticeDetail(HttpServletRequest request,
+                                               @RequestParam("notice_idx") long noticeIdx) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("notice_idx", noticeIdx);
+            param.put("is_admin", authUtil.authCheck(session, true));
+
+            result.put("success", true);
+            result.put("detail", noticeService.getNoticeDetail(param));
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "공지사항 상세를 불러올 수 없습니다.");
+        }
+
+        return result;
     }
 
     @PostMapping("/create")
@@ -135,7 +182,7 @@ public class NoticeController {
 
         try {
             // 체크리스트 삭제
-            int success = noticeService.deleteChecklist(noticeIdx);
+            int success = noticeService.deleteNotice(noticeIdx);
 
             result.put("success", success == 1);
             if (success == 0) {

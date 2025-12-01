@@ -1,10 +1,12 @@
 package com.project.messanger.service;
 
-import com.project.messanger.dto.GoalDto;
 import com.project.messanger.dto.NoticeDto;
 import com.project.messanger.mapper.NoticeMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class NoticeService {
@@ -12,6 +14,32 @@ public class NoticeService {
 
     public NoticeService(NoticeMapper noticeMapper) {
         this.noticeMapper = noticeMapper;
+    }
+
+    /*
+     * get notice list
+     * @param Map<String, Object>
+     * return List<NoticeDto>
+     */
+    @Transactional(readOnly = true)
+    public List<NoticeDto> getNoticeList(Map<String, Object> param) {
+        int page = param.get("page") != null ? (int)param.get("page") : 1;
+
+        param.putIfAbsent("limit", 10);
+        int limit = (int)param.get("limit");
+        param.put("offset", (page-1) * limit);
+
+        return noticeMapper.getNoticeList(param);
+    }
+
+    /*
+     * get notice by notice idx
+     * @param long
+     * return NoticeDto
+     */
+    @Transactional(readOnly = true)
+    public NoticeDto getNoticeDetail(Map<String, Object> param) {
+        return noticeMapper.getNoticeDetail(param);
     }
 
     /*

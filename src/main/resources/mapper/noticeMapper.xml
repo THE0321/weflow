@@ -16,6 +16,34 @@
         <result property="createdDate" column="created_date"/>
     </resultMap>
 
+    <select id="getNoticeList" parameterType="hashmap" resultMap="NoticeMap">
+        SELECT *
+        FROM notice
+        <where>
+            <if test="!is_admin">
+                AND (start_date IS NULL OR start_date &lt;= SYSDATE())
+                AND (end_date IS NULL OR end_date &gt;= SYSDATE())
+                AND is_active = 'Y'
+            </if>
+            <if test="title != null">
+                AND UPPER(title) LIKE CONCAT('%', UPPER(#{title}), '%')
+            </if>
+        </where>
+        ORDER BY start_date DESC
+        LIMIT ${limit} OFFSET ${offset}
+    </select>
+
+    <select id="getNoticeByIdx" parameterType="long" resultMap="NoticeMap">
+        SELECT *
+        FROM notice
+        WHERE notice_idx = #{noticeIdx}
+        <if test="!is_admin">
+            AND (start_date IS NULL OR start_date &lt;= SYSDATE())
+            AND (end_date IS NULL OR end_date &gt;= SYSDATE())
+            AND is_active = 'Y'
+        </if>
+    </select>
+
     <insert id="insertNotice" parameterType="com.project.messanger.dto.NoticeDto" useGeneratedKeys="true" keyProperty="noticeIdx" keyColumn="notice_idx">
         INSERT notice
         SET title = #{title},
