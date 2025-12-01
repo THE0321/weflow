@@ -171,7 +171,7 @@ public class ChecklistController {
             result.put("idx", checklistIdx);
         } catch (Exception e) {
             result.put("success", false);
-            result.put("error", e.getMessage());
+            result.put("error", "체크리스트를 등록할 권한이 없습니다.");
         }
 
         return result;
