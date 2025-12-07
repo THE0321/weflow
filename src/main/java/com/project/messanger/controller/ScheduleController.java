@@ -1,5 +1,6 @@
 package com.project.messanger.controller;
 
+import com.project.messanger.dto.ScheduleAttenderLinkDto;
 import com.project.messanger.dto.ScheduleDto;
 import com.project.messanger.dto.UserDto;
 import com.project.messanger.service.ScheduleService;
@@ -106,6 +107,7 @@ public class ScheduleController {
 
             result.put("success", true);
             result.put("detail", scheduleService.getScheduleByIdx(param));
+            result.put("attender_list", scheduleService.getScheduleAttenderLink(scheduleIdx));
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "일정 상세를 불러올 수 없습니다.");
@@ -217,7 +219,7 @@ public class ScheduleController {
 
             // 회의 참석자 삭제
             if (deleteIdxList != null) {
-                scheduleService.deleteScheduleAttenderLink(deleteIdxList);
+                scheduleService.deleteScheduleAttenderLink(scheduleIdx, deleteIdxList);
             }
 
             result.put("success", success == 1);
@@ -303,6 +305,36 @@ public class ScheduleController {
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "일정을 승인하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/attend")
+    public Map<String, Object> updateScheduleAttender(HttpServletRequest request,
+                                                      @RequestParam(value = "link_idx") long linkIdx,
+                                                      @RequestParam(value = "is_attend") String isAttend){
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        try {
+            // ScheduleAttenderLinkDto 객체 생성
+            ScheduleAttenderLinkDto scheduleAttenderLinkDto = ScheduleAttenderLinkDto.builder()
+                    .linkIdx(linkIdx)
+                    .userIdx(authUtil.getLoginInfo(session).getUserIdx())
+                    .isAttend(isAttend)
+                    .build();
+
+            // 일정 참석자 수정
+            int success = scheduleService.updateScheduleAttender(scheduleAttenderLinkDto);
+
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "일정 참석자를 수정하는데 실패했습니다.");
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "일정 참석자를 수정하는데 실패했습니다.");
         }
 
         return result;

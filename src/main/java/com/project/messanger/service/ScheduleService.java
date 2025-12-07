@@ -87,6 +87,16 @@ public class ScheduleService {
     }
 
     /*
+     * get schedule attender link
+     * @param Map<String, Object>
+     * return List<ScheduleDto>
+     */
+    @Transactional(readOnly = true)
+    public List<ScheduleAttenderLinkDto> getScheduleAttenderLink(long scheduleIdx) {
+        return scheduleMapper.getScheduleAttenderLink(scheduleIdx);
+    }
+
+    /*
      * insert schedule attender link
      * @param List<ScheduleAttenderLinkDto>
      * return int
@@ -125,12 +135,42 @@ public class ScheduleService {
     }
 
     /*
+     * update schedule attender
+     * @param List<Long>
+     * return int
+     */
+    @Transactional
+    public int updateScheduleAttender(ScheduleAttenderLinkDto scheduleAttenderLinkDto) {
+        return scheduleMapper.updateScheduleAttender(scheduleAttenderLinkDto);
+    }
+
+    /*
      * delete schedule attender link
      * @param List<Long>
      * return int
      */
     @Transactional
-    public int deleteScheduleAttenderLink(List<Long> deleteLinkIdxList) {
+    public int deleteScheduleAttenderLink(long scheduleIdx, List<Long> deleteLinkIdxList) {
+        List<ScheduleAttenderLinkDto> scheduleAttenderList = getScheduleAttenderLink(scheduleIdx);
+
+        // 이미 참석 확정한 목록 제거
+        List<Long> attenderIdxList = new ArrayList<>();
+        for (ScheduleAttenderLinkDto scheduleAttenderLinkDto : scheduleAttenderList) {
+            if (scheduleAttenderLinkDto.getIsAttend().equals("Y")) {
+                attenderIdxList.add(scheduleAttenderLinkDto.getUserIdx());
+            }
+        }
+
+        for (int i = 0; i < deleteLinkIdxList.size(); i++) {
+            if (attenderIdxList.contains(deleteLinkIdxList.get(i))) {
+                deleteLinkIdxList.remove(i);
+            }
+        }
+
+        if (deleteLinkIdxList.isEmpty()) {
+            return 0;
+        }
+
         return scheduleMapper.deleteScheduleAttenderLink(deleteLinkIdxList);
     }
 }

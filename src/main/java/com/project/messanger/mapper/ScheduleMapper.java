@@ -21,7 +21,11 @@ public interface ScheduleMapper {
 
     int deleteSchedule(long scheduleIdx);
 
+    List<ScheduleAttenderLinkDto> getScheduleAttenderLink(long scheduleIdx);
+
     int insertScheduleAttenderLink(List<ScheduleAttenderLinkDto> list);
 
     int deleteScheduleAttenderLink(List<Long> list);
+
+    int updateScheduleAttender(ScheduleAttenderLinkDto scheduleAttenderLinkDto);
 }
