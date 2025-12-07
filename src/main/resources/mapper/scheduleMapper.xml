@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.messanger.mapper.ScheduleMapper">
+
+    <resultMap id="ScheduleMap" type="com.project.messanger.dto.ScheduleDto">
+        <id property="scheduleIdx" column="schedule_idx"/>
+        <result property="title" column="title"/>
+        <result property="description" column="description"/>
+        <result property="location" column="location"/>
+        <result property="startDate" column="start_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="isAllday" column="is_allday"/>
+        <result property="approverIdx" column="approver_idx"/>
+        <result property="updatedDate" column="updated_date"/>
+    </resultMap>
+
+    <select id="getScheduleList" parameterType="hashmap" resultMap="ScheduleMap">
+        SELECT *
+        FROM schedule
+        <where>
+            <if test="title != null">
+                AND (UPPER(title) LIKE CONCAT('%', UPPER(#{title}), '%') OR UPPER(description) LIKE CONCAT('%', UPPER(#{title}), '%'))
+            </if>
+            <if test="schedule_date != null">
+                AND (start_date IS NULL OR DATE_FORMAT(start_date, '%Y-%m-%d') &lt;= #{schedule_date})
+                AND (end_date IS NULL OR DATE_FORMAT(end_date, '%Y-%m-%d') &gt;= #{schedule_date})
+            </if>
+            <if test="user_idx != null">
+                AND EXISTS (
+                    SELECT 1
+                    FROM schedule_attender_link
+                    WHERE schedule_idx = schedule_idx
+                      AND user_idx = #{user_idx}
+                )
+            </if>
+        </where>
+        ORDER BY start_date ASC, end_date ASC
+        LIMIT ${limit} OFFSET ${offset}
+    </select>
+
+    <select id="getDateList" parameterType="hashmap" resultMap="ScheduleMap">
+        SELECT DISTINCT start_date, end_date
+        FROM schedule
+        <where>
+            <if test="schedule_date != null">
+                AND (start_date IS NULL OR DATE_FORMAT(start_date, '%Y-%m') &lt;= #{schedule_date})
+                AND (end_date IS NULL OR DATE_FORMAT(end_date, '%Y-%m') &gt;= #{schedule_date})
+            </if>
+            <if test="user_idx != null">
+                AND EXISTS (
+                    SELECT 1
+                    FROM schedule_attender_link
+                    WHERE schedule_idx = schedule_idx
+                    AND user_idx = #{user_idx}
+                )
+            </if>
+        </where>
+        ORDER BY start_date ASC, end_date ASC
+    </select>
+
+    <select id="getScheduleByIdx" parameterType="hashmap" resultMap="ScheduleMap">
+        SELECT *
+        FROM schedule
+        WHERE schedule_idx = #{schedule_idx}
+        <if test="user_idx != null">
+            AND EXISTS (
+                SELECT 1
+                FROM schedule_attender_link
+                WHERE schedule_idx = schedule_idx
+                AND user_idx = #{user_idx}
+            )
+        </if>
+    </select>
+
+    <insert id="insertSchedule" parameterType="com.project.messanger.dto.ScheduleDto" useGeneratedKeys="true" keyProperty="scheduleIdx" keyColumn="schedule_idx">
+        INSERT schedule
+        SET title = #{title},
+            <if test="description != null"> description = #{description},</if>
+            <if test="location != null"> location = #{location},</if>
+            <if test="startDate != null"> start_date = #{startDate},</if>
+            <if test="endDate != null"> end_date = #{endDate},</if>
+            <if test="approverIdx != null"> approver_idx = #{approverIdx},</if>
+            <choose>
+                <when test="isAllday != null"> is_allday = #{isAllday},</when>
+                <otherwise> is_allday = 'N',</otherwise>
+            </choose>
+            creator_idx = #{creatorIdx},
+            created_date = NOW(),
+            updated_date = NOW()
+    </insert>
+
+    <insert id="insertScheduleAttender" parameterType="com.project.messanger.dto.ScheduleAttenderLinkDto" useGeneratedKeys="true" keyProperty="linkIdx" keyColumn="link_idx">
+        INSERT INTO schedule_attender_link
+        (
+            schedule_idx,
+            user_idx,
+            is_attend
+        )
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+        (
+            #{item.scheduleIdx},
+            #{item.userIdx},
+            #{item.isAttend}
+        )
+        </foreach>
+    </insert>
+
+    <update id="updateSchedule" parameterType="com.project.messanger.dto.ScheduleDto">
+        UPDATE schedule
+        SET <if test="title != null"> title = #{title},</if>
+            <if test="description != null"> description = #{description},</if>
+            <if test="location != null"> location = #{location},</if>
+            <if test="startDate != null"> start_date = #{startDate},</if>
+            <if test="endDate != null"> end_date = #{endDate},</if>
+            <if test="approverIdx != null"> approver_idx = #{approverIdx},</if>
+            <if test="creatorIdx != null"> creator_idx = #{creatorIdx},</if>
+            <if test="isAllday != null"> is_allday = #{isAllday},</if>
+            updated_date = NOW()
+        WHERE schedule_idx = #{scheduleIdx}
+    </update>
+
+    <delete id="deleteSchedule" parameterType="long">
+        DELETE FROM schedule
+        WHERE schedule_idx = #{scheduleIdx}
+    </delete>
+
+    <insert id="insertScheduleAttenderLink" parameterType="com.project.messanger.dto.ScheduleAttenderLinkDto" useGeneratedKeys="true" keyProperty="linkIdx" keyColumn="link_idx">
+        INSERT schedule_attender_link
+        SET schedule_idx = #{scheduleIdx},
+            user_idx = #{userIdx},
+            <choose>
+                <when test="isAttend != null"> is_attend = #{isAttend}</when>
+                <otherwise> is_attend = 'N'</otherwise>
+            </choose>
+    </insert>
+
+    <delete id="deleteScheduleAttenderLink" parameterType="long">
+        DELETE FROM schedule_attender_link
+        WHERE link_idx IN <foreach collection="list" item="value" open="(" close=")" separator=",">#{value}</foreach>
+    </delete>
+
+</mapper>

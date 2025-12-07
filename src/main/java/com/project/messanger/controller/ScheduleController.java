@@ -1,0 +1,310 @@
+package com.project.messanger.controller;
+
+import com.project.messanger.dto.ScheduleDto;
+import com.project.messanger.dto.UserDto;
+import com.project.messanger.service.ScheduleService;
+import com.project.messanger.util.AuthUtil;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/schedule")
+public class ScheduleController {
+    private final ScheduleService scheduleService;
+    private final AuthUtil authUtil;
+
+    public ScheduleController(ScheduleService scheduleService, AuthUtil authUtil) {
+        this.scheduleService = scheduleService;
+        this.authUtil = authUtil;
+    }
+
+    @PostMapping("/list")
+    public Map<String, Object> getScheduleList(HttpServletRequest request,
+                                               @RequestParam(value = "page", required = false) int page,
+                                               @RequestParam(value = "limit", required = false) int limit,
+                                               @RequestParam(value = "title", required = false) String title,
+                                               @RequestParam(value = "schedule_date", required = false) String scheduleDate,
+                                               @RequestParam(value = "my", required = false) boolean my) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        // 권한 체크
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo.getAdminYn().equals("N")) {
+            my = true;
+        }
+
+        try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("page", page);
+            param.put("limit", limit);
+            param.put("title", title);
+            param.put("schedule_date", scheduleDate);
+            if (my) {
+                param.put("user_idx", loginInfo.getUserIdx());
+            }
+
+            result.put("success", true);
+            result.put("list", scheduleService.getScheduleList(param));
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "일정을 불러올 수 없습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/date/list")
+    public Map<String, Object> getDateList(HttpServletRequest request,
+                                           @RequestParam(value = "schedule_date") String scheduleDate) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("schedule_date", scheduleDate);
+
+            // 권한 체크
+            UserDto loginInfo = authUtil.getLoginInfo(session);
+            if (loginInfo.getAdminYn().equals("N")) {
+                param.put("user_idx", loginInfo.getUserIdx());
+            }
+
+            result.put("success", true);
+            result.put("list", scheduleService.getDateList(param));
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "날짜 리스트를 불러올 수 없습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/detail")
+    public Map<String, Object> getScheduleByIdx(HttpServletRequest request,
+                                                @RequestParam("schedule_idx") long scheduleIdx) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("schedule_idx", scheduleIdx);
+
+            // 권한 체크
+            UserDto loginInfo = authUtil.getLoginInfo(session);
+            if (loginInfo.getAdminYn().equals("N")) {
+                param.put("user_idx", loginInfo.getUserIdx());
+            }
+
+            result.put("success", true);
+            result.put("detail", scheduleService.getScheduleByIdx(param));
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "일정 상세를 불러올 수 없습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/create")
+    public Map<String, Object> insertSchedule(HttpServletRequest request,
+                                              @RequestParam(value = "title", required = false) String title,
+                                              @RequestParam(value = "description", required = false) String description,
+                                              @RequestParam(value = "location", required = false) String location,
+                                              @RequestParam(value = "start_date", required = false) String startDate,
+                                              @RequestParam(value = "end_date", required = false) String endDate,
+                                              @RequestParam(value = "is_allday", required = false) String isAllday,
+                                              @RequestParam(value = "creator_idx", required = false) long creatorIdx,
+                                              @RequestParam(value = "user_idx", required = false) List<Long> userIdxList){
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+
+        try {
+            // ScheduleDto 객체 생성
+            ScheduleDto scheduleDto = ScheduleDto.builder()
+                    .title(title)
+                    .description(description)
+                    .location(location)
+                    .startDate(startDate)
+                    .endDate(endDate)
+                    .isAllday(isAllday)
+                    .creatorIdx(loginInfo.getUserIdx())
+                    .build();
+
+            if (loginInfo.getAdminYn().equals("Y") || loginInfo.getLeaderYn().equals("Y")) {
+                if (loginInfo.getAdminYn().equals("Y") && creatorIdx != 0) {
+                    scheduleDto.setCreatorIdx(creatorIdx);
+                }
+                scheduleDto.setApproverIdx(loginInfo.getUserIdx());
+            }
+
+            long scheduleIdx = scheduleService.insertSchedule(scheduleDto);
+
+            userIdxList.add(0, scheduleDto.getCreatorIdx());
+            scheduleService.insertScheduleAttenderLinkByUserIdx(scheduleIdx, userIdxList);
+
+            result.put("success", true);
+            result.put("idx", scheduleIdx);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "일정을 등록하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/modify")
+    public Map<String, Object> updateSchedule(HttpServletRequest request,
+                                              @RequestParam(value = "schedule_idx") long scheduleIdx,
+                                              @RequestParam(value = "title", required = false) String title,
+                                              @RequestParam(value = "description", required = false) String description,
+                                              @RequestParam(value = "location", required = false) String location,
+                                              @RequestParam(value = "start_date", required = false) String startDate,
+                                              @RequestParam(value = "end_date", required = false) String endDate,
+                                              @RequestParam(value = "is_allday", required = false) String isAllday,
+                                              @RequestParam(value = "user_idx", required = false) List<Long> userIdxList,
+                                              @RequestParam(value = "delete_idx", required = false) List<Long> deleteIdxList){
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("schedule_idx", scheduleIdx);
+
+            ScheduleDto scheduleInfo = scheduleService.getScheduleByIdx(param);
+
+            UserDto loginInfo = authUtil.getLoginInfo(session);
+
+            if (loginInfo.getAdminYn().equals("N") || loginInfo.getLeaderYn().equals("N")) {
+                // 관리자도 팀장도 아닌 경우 등록자인지 확인
+                if (scheduleInfo == null || scheduleInfo.getCreatorIdx() != loginInfo.getUserIdx()) {
+                    result.put("success", false);
+                    result.put("error", "일정을 수정하는데 실패했습니다.");
+
+                    return result;
+                }
+            }
+
+            // ScheduleDto 객체 생성
+            ScheduleDto scheduleDto = ScheduleDto.builder()
+                    .scheduleIdx(scheduleIdx)
+                    .title(title)
+                    .description(description)
+                    .location(location)
+                    .startDate(startDate)
+                    .endDate(endDate)
+                    .isAllday(isAllday)
+                    .build();
+
+            // 일정 수정
+            int success = scheduleService.updateSchedule(scheduleDto);
+
+            // 회의 참석자 추가
+            if (userIdxList != null) {
+                userIdxList.add(0, scheduleDto.getCreatorIdx());
+                scheduleService.insertScheduleAttenderLinkByUserIdx(scheduleIdx, userIdxList);
+            }
+
+            // 회의 참석자 삭제
+            if (deleteIdxList != null) {
+                scheduleService.deleteScheduleAttenderLink(deleteIdxList);
+            }
+
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "일정을 수정하는데 실패했습니다.");
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "일정을 수정하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/delete")
+    public Map<String, Object> deleteSchedule(HttpServletRequest request,
+                                              @RequestParam("schedule_idx") long scheduleIdx) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        try {
+            // 권한 체크
+            UserDto loginInfo = authUtil.getLoginInfo(session);
+
+            if (loginInfo.getAdminYn().equals("N") || loginInfo.getLeaderYn().equals("N")) {
+                // 관리자도 팀장도 아닌 경우 등록자인지 확인
+                Map<String, Object> param = new HashMap<>();
+                param.put("schedule_idx", scheduleIdx);
+
+                ScheduleDto scheduleDto = scheduleService.getScheduleByIdx(param);
+                if (scheduleDto == null || scheduleDto.getCreatorIdx() != loginInfo.getUserIdx()) {
+                    result.put("success", false);
+                    result.put("error", "일정을 삭제하는데 실패했습니다.");
+
+                    return result;
+                }
+            }
+
+            // 체크리스트 삭제
+            int success = scheduleService.deleteSchedule(scheduleIdx);
+
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "일정을 삭제하는데 실패했습니다.");
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "일정을 삭제하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/approver")
+    public Map<String, Object> approverSchedule(HttpServletRequest request,
+                                                @RequestParam(value = "schedule_idx") long scheduleIdx){
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        // 권한 체크
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo.getAdminYn().equals("N")) {
+            result.put("success", false);
+            result.put("error", "일정을 승인할 권한이 없습니다.");
+
+            return result;
+        }
+
+        try {
+            // ScheduleDto 객체 생성
+            ScheduleDto scheduleDto = ScheduleDto.builder()
+                    .scheduleIdx(scheduleIdx)
+                    .approverIdx(loginInfo.getUserIdx())
+                    .build();
+
+            // 일정 승인
+            int success = scheduleService.updateSchedule(scheduleDto);
+
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "일정을 승인하는데 실패했습니다.");
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "일정을 승인하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+}

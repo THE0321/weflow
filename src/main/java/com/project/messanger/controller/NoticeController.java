@@ -1,10 +1,7 @@
 package com.project.messanger.controller;
 
-import com.project.messanger.dto.ChecklistDto;
-import com.project.messanger.dto.GoalDto;
 import com.project.messanger.dto.NoticeDto;
 import com.project.messanger.dto.UserDto;
-import com.project.messanger.service.ChecklistService;
 import com.project.messanger.service.NoticeService;
 import com.project.messanger.util.AuthUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,9 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -113,7 +108,7 @@ public class NoticeController {
             result.put("idx", noticeIdx);
         } catch (Exception e) {
             result.put("success", false);
-            result.put("error", e.getMessage());
+            result.put("error", "공지사항을 등록하는데 실패했습니다.");
         }
 
         return result;
@@ -121,7 +116,7 @@ public class NoticeController {
 
     @PostMapping("/modify")
     public Map<String, Object> updateNotice(HttpServletRequest request,
-                                          @RequestParam(value = "notice_idx", required = false) Long noticeIdx,
+                                          @RequestParam(value = "notice_idx", required = false) long noticeIdx,
                                           @RequestParam(value = "title", required = false) String title,
                                           @RequestParam(value = "content", required = false) String content,
                                           @RequestParam(value = "link_url", required = false) String linkUrl,
