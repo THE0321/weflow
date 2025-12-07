@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.messanger.mapper.MeetingRoomMapper">
+
+    <resultMap id="MeetingRoomMap" type="com.project.messanger.dto.MeetingRoomDto">
+        <id property="roomIdx" column="room_idx"/>
+        <result property="name" column="name"/>
+        <result property="location" column="location"/>
+        <result property="capacity" column="capacity"/>
+    </resultMap>
+
+    <insert id="insertMeetingRoom" parameterType="com.project.messanger.dto.MeetingRoomDto" useGeneratedKeys="true" keyProperty="roomIdx" keyColumn="room_idx">
+        INSERT meeting_room
+        SET <if test="name != null"> name = #{name},</if>
+            <if test="location != null"> location = #{location},</if>
+            <choose>
+                <when test ="capacity != null"> capacity = #{capacity}</when>
+                <otherwise> capacity = 0</otherwise>
+            </choose>
+    </insert>
+
+    <update id="updateMeetingRoom" parameterType="com.project.messanger.dto.MeetingRoomDto">
+        UPDATE meeting_room
+        SET <if test="name != null"> name = #{name},</if>
+            <if test="location != null"> location = #{location},</if>
+            <choose>
+                <when test ="capacity != null"> capacity = #{capacity}</when>
+                <otherwise> capacity = 0</otherwise>
+            </choose>
+        WHERE room_idx = #{roomIdx}
+    </update>
+
+    <delete id="deleteMeetingRoom" parameterType="long">
+        DELETE FROM meeting_room
+        WHERE room_idx = #{roomIdx}
+    </delete>
+
+</mapper>
