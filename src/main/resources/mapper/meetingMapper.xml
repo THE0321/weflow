@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.messanger.mapper.MeetingRoomMapper">
+
+    <resultMap id="ReservationMap" type="com.project.messanger.dto.ReservationDto">
+        <id property="reservationIdx" column="reservation_idx"/>
+        <result property="roomIdx" column="room_idx"/>
+        <result property="description" column="description"/>
+        <result property="startDate" column="start_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="approverIdx" column="approver_idx"/>
+        <result property="creatorIdx" column="creator_idx"/>
+        <result property="createdDate" column="created_date"/>
+        <result property="updatedDate" column="updated_date"/>
+    </resultMap>
+
+    <resultMap id="MeetingAttenderLinkMap" type="com.project.messanger.dto.MeetingAttenderLinkDto">
+        <id property="linkIdx" column="link_idx"/>
+        <result property="reservationIdx" column="reservation_idx"/>
+        <result property="userIdx" column="user_idx"/>
+        <result property="isAttender" column="is_attend"/>
+    </resultMap>
+
+    <resultMap id="MeetingRoomMap" type="com.project.messanger.dto.MeetingRoomDto">
+        <id property="roomIdx" column="room_idx"/>
+        <result property="name" column="name"/>
+        <result property="location" column="location"/>
+        <result property="capacity" column="capacity"/>
+    </resultMap>
+
+    <select id="getReservationList" parameterType="hashmap" resultMap="ReservationMap">
+        SELECT *
+        FROM reservation
+        <where>
+            <if test="description">
+                AND (UPPER(description) LIKE CONCAT('%', UPPER(#{description}), '%')
+            </if>
+            <if test="reservation_date != null">
+                AND (start_date IS NULL OR DATE_FORMAT(start_date, '%Y-%m') &lt;= #{reservation_date})
+                AND (end_date IS NULL OR DATE_FORMAT(end_date, '%Y-%m') &gt;= #{reservation_date})
+            </if>
+            <if test="user_idx != null">
+                AND EXISTS (
+                    SELECT 1
+                    FROM meeting_attender_link
+                    WHERE reservation_idx = reservation_idx
+                    AND user_idx = #{user_idx}
+                )
+            </if>
+        </where>
+        ORDER BY start_date ASC, end_date ASC
+        LIMIT ${limit} OFFSET ${offset}
+    </select>
+
+    <select id="getDateList" parameterType="hashmap" resultMap="ScheduleMap">
+        SELECT DISTINCT start_date, end_date
+        FROM reservation
+        <where>
+            <if test="reservation_date != null">
+                AND (start_date IS NULL OR DATE_FORMAT(start_date, '%Y-%m') &lt;= #{reservation_date})
+                AND (end_date IS NULL OR DATE_FORMAT(end_date, '%Y-%m') &gt;= #{reservation_date})
+            </if>
+            <if test="user_idx != null">
+                AND EXISTS (
+                    SELECT 1
+                    FROM meeting_attender_link
+                    WHERE reservation_idx = reservation_idx
+                    AND user_idx = #{user_idx}
+                )
+            </if>
+        </where>
+        ORDER BY start_date ASC, end_date ASC
+    </select>
+
+    <select id="getReservationByIdx" parameterType="hashmap" resultMap="ReservationMap">
+        SELECT *
+        FROM reservation
+        WHERE reservation_idx = #{reservation_idx}
+        <if test="user_idx != null">
+        AND EXISTS (
+            SELECT 1
+            FROM meeting_attender_link
+            WHERE reservation_idx = reservation_idx
+            AND user_idx = #{user_idx}
+        )
+        </if>
+    </select>
+
+    <insert id="insertReservation" parameterType="com.project.messanger.dto.ReservationDto" useGeneratedKeys="true" keyProperty="reservationIdx" keyColumn="reservation_idx">
+        INSERT reservation
+        SET room_idx = #{roomIdx},
+            <if test="description != null"> description = #{description},</if>
+            start_date = #{startDate},
+            end_date = #{endDate},
+            <if test="approverIdx != null"> approver_idx = #{approverIdx},</if>
+            creator_idx = #{creatorIdx},
+            created_date = NOW(),
+            updated_date = NOW()
+    </insert>
+
+    <update id="updateReservation" parameterType="com.project.messanger.dto.ReservationDto">
+        UPDATE reservation
+        SET <if test="roomIdx != null"> room_idx = #{roomIdx},</if>
+            <if test="description != null"> description = #{description},</if>
+            <if test="startDate != null"> start_date = #{startDate},</if>
+            <if test="endDate != null"> end_date = #{endDate},</if>
+            <if test="approverIdx != null"> approver_idx = #{approverIdx},</if>
+            <if test="creatorIdx != null"> creator_idx = #{creatorIdx},</if>
+            updated_date = NOW()
+        WHERE reservation_idx = #{reservationIdx}
+    </update>
+
+    <delete id="deleteReservation" parameterType="long">
+        DELETE FROM reservation
+        WHERE reservation_idx = #{reservationIdx}
+    </delete>
+
+    <select id="getMeetingAttenderLink" parameterType="long" resultMap="MeetingAttenderLinkMap">
+        SELECT *
+        FROM meeting_attender_link
+        WHERE reservation_idx = #{reservationIdx}
+    </select>
+
+    <insert id="insertMeetingAttenderLink" parameterType="com.project.messanger.dto.MeetingAttenderLinkDto" useGeneratedKeys="true" keyProperty="linkIdx" keyColumn="link_idx">
+        INSERT INTO meeting_attender_link
+        (
+            reservation_idx,
+            user_idx,
+            is_attender
+        )
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+        (
+            #{item.reservationIdx},
+            #{item.userIdx},
+            #{item.isAttender}
+        )
+        </foreach>
+    </insert>
+
+    <delete id="deleteMeetingAttenderLink" parameterType="long">
+        DELETE FROM meeting_attender_link
+        WHERE link_idx IN <foreach collection="list" item="value" open="(" close=")" separator=",">#{value}</foreach>
+    </delete>
+
+    <insert id="insertMeetingRoom" parameterType="com.project.messanger.dto.MeetingRoomDto" useGeneratedKeys="true" keyProperty="roomIdx" keyColumn="room_idx">
+        INSERT meeting_room
+        SET <if test="name != null"> name = #{name},</if>
+            <if test="location != null"> location = #{location},</if>
+            <choose>
+                <when test ="capacity != null"> capacity = #{capacity}</when>
+                <otherwise> capacity = 0</otherwise>
+            </choose>
+    </insert>
+
+    <update id="updateMeetingRoom" parameterType="com.project.messanger.dto.MeetingRoomDto">
+        UPDATE meeting_room
+        SET <if test="name != null"> name = #{name},</if>
+            <if test="location != null"> location = #{location},</if>
+            <choose>
+                <when test ="capacity != null"> capacity = #{capacity}</when>
+                <otherwise> capacity = 0</otherwise>
+            </choose>
+        WHERE room_idx = #{roomIdx}
+    </update>
+
+    <delete id="deleteMeetingRoom" parameterType="long">
+        DELETE FROM meeting_room
+        WHERE room_idx = #{roomIdx}
+    </delete>
+
+</mapper>

@@ -14,7 +14,7 @@ import java.util.Map;
 
 @Service
 public class ScheduleService {
-    private ScheduleMapper scheduleMapper;
+    private final ScheduleMapper scheduleMapper;
 
     public ScheduleService(ScheduleMapper scheduleMapper) {
         this.scheduleMapper = scheduleMapper;

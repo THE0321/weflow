@@ -98,23 +98,6 @@
             updated_date = NOW()
     </insert>
 
-    <insert id="insertScheduleAttender" parameterType="com.project.messanger.dto.ScheduleAttenderLinkDto" useGeneratedKeys="true" keyProperty="linkIdx" keyColumn="link_idx">
-        INSERT INTO schedule_attender_link
-        (
-            schedule_idx,
-            user_idx,
-            is_attend
-        )
-        VALUES
-        <foreach collection="list" item="item" separator=",">
-        (
-            #{item.scheduleIdx},
-            #{item.userIdx},
-            #{item.isAttend}
-        )
-        </foreach>
-    </insert>
-
     <update id="updateSchedule" parameterType="com.project.messanger.dto.ScheduleDto">
         UPDATE schedule
         SET <if test="title != null"> title = #{title},</if>
@@ -141,13 +124,20 @@
     </select>
 
     <insert id="insertScheduleAttenderLink" parameterType="com.project.messanger.dto.ScheduleAttenderLinkDto" useGeneratedKeys="true" keyProperty="linkIdx" keyColumn="link_idx">
-        INSERT schedule_attender_link
-        SET schedule_idx = #{scheduleIdx},
-            user_idx = #{userIdx},
-            <choose>
-                <when test="isAttend != null"> is_attend = #{isAttend}</when>
-                <otherwise> is_attend = 'N'</otherwise>
-            </choose>
+        INSERT INTO schedule_attender_link
+        (
+            schedule_idx,
+            user_idx,
+            is_attend
+        )
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+        (
+            #{item.scheduleIdx},
+            #{item.userIdx},
+            #{item.isAttend}
+        )
+        </foreach>
     </insert>
 
     <update id="updateScheduleAttender" parameterType="com.project.messanger.dto.ScheduleAttenderLinkDto">

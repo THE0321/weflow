@@ -1,0 +1,373 @@
+package com.project.messanger.controller;
+
+import com.project.messanger.dto.MeetingRoomDto;
+import com.project.messanger.dto.ReservationDto;
+import com.project.messanger.dto.UserDto;
+import com.project.messanger.service.MeetingService;
+import com.project.messanger.util.AuthUtil;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/meeting")
+public class MeetingController {
+    private final MeetingService meetingService;
+    private final AuthUtil authUtil;
+
+    public MeetingController(MeetingService meetingService, AuthUtil authUtil) {
+        this.meetingService = meetingService;
+        this.authUtil = authUtil;
+    }
+
+    @PostMapping("/list")
+    public Map<String, Object> getReservationList(HttpServletRequest request,
+                                                  @RequestParam(value = "page", required = false) int page,
+                                                  @RequestParam(value = "limit", required = false) int limit,
+                                                  @RequestParam(value = "description", required = false) String description,
+                                                  @RequestParam(value = "reservation_date", required = false) String reservationDate,
+                                                  @RequestParam(value = "my", required = false) boolean my) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        // 권한 체크
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo.getAdminYn().equals("N")) {
+            my = true;
+        }
+
+        try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("page", page);
+            param.put("limit", limit);
+            param.put("description", description);
+            param.put("reservation_date", reservationDate);
+            if (my) {
+                param.put("user_idx", loginInfo.getUserIdx());
+            }
+
+            result.put("success", true);
+            result.put("list", meetingService.getReservationList(param));
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "회의실을 불러올 수 없습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/date/list")
+    public Map<String, Object> getDateList(HttpServletRequest request,
+                                           @RequestParam(value = "reservation_date", required = false) String reservationDate) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("reservation_date", reservationDate);
+
+            // 권한 체크
+            UserDto loginInfo = authUtil.getLoginInfo(session);
+            if (loginInfo.getAdminYn().equals("N")) {
+                param.put("user_idx", loginInfo.getUserIdx());
+            }
+
+            result.put("success", true);
+            result.put("list", meetingService.getDateList(param));
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "날짜 리스트를 불러올 수 없습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/detail")
+    public Map<String, Object> getReservationByIdx(HttpServletRequest request,
+                                                   @RequestParam("reservation_idx") long reservationIdx) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("reservation_idx", reservationIdx);
+
+            // 권한 체크
+            UserDto loginInfo = authUtil.getLoginInfo(session);
+            if (loginInfo.getAdminYn().equals("N")) {
+                param.put("user_idx", loginInfo.getUserIdx());
+            }
+
+            result.put("success", true);
+            result.put("detail", meetingService.getReservationByIdx(param));
+            result.put("attender_list", meetingService.getMeetingAttenderLink(reservationIdx));
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "회의실 상세를 불러올 수 없습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/create")
+    public Map<String, Object> insertReservation(HttpServletRequest request,
+                                                 @RequestParam(value = "room_idx") long roomIdx,
+                                                 @RequestParam(value = "description", required = false) String description,
+                                                 @RequestParam(value = "start_date") String startDate,
+                                                 @RequestParam(value = "end_date") String endDate,
+                                                 @RequestParam(value = "creator_idx", required = false) long creatorIdx,
+                                                 @RequestParam(value = "approver_idx", required = false) long approverIdx){
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        try {
+            UserDto loginInfo = authUtil.getLoginInfo(session);
+
+            // Dto 객체 생성
+            ReservationDto reservationDto = ReservationDto.builder()
+                    .roomIdx(roomIdx)
+                    .description(description)
+                    .startDate(startDate)
+                    .endDate(endDate)
+                    .approverIdx(approverIdx)
+                    .creatorIdx(loginInfo.getUserIdx())
+                    .build();
+
+            if (loginInfo.getAdminYn().equals("Y")) {
+                if (creatorIdx != 0) {
+                    reservationDto.setCreatorIdx(creatorIdx);
+                }
+                reservationDto.setApproverIdx(loginInfo.getUserIdx());
+            }
+
+            long reservationIdx = meetingService.insertReservation(reservationDto);
+
+            result.put("success", true);
+            result.put("idx", reservationIdx);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "회의실을 등록하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/modify")
+    public Map<String, Object> updateReservation(HttpServletRequest request,
+                                                 @RequestParam(value = "reservation_idx", required = false) long reservationIdx,
+                                                 @RequestParam(value = "room_idx", required = false) long roomIdx,
+                                                 @RequestParam(value = "description", required = false) String description,
+                                                 @RequestParam(value = "start_date") String startDate,
+                                                 @RequestParam(value = "end_date") String endDate,
+                                                 @RequestParam(value = "creator_idx", required = false) long creatorIdx,
+                                                 @RequestParam(value = "approver_idx", required = false) long approverIdx,
+                                                 @RequestParam(value = "user_idx", required = false) List<Long> userIdxList,
+                                                 @RequestParam(value = "delete_idx", required = false) List<Long> deleteIdxList){
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("reservation_idx", reservationIdx);
+
+            ReservationDto reservationInfo = meetingService.getReservationByIdx(param);
+
+            UserDto loginInfo = authUtil.getLoginInfo(session);
+            if (loginInfo.getAdminYn().equals("N")) {
+                // 관리자도 팀장도 아닌 경우 등록자인지 확인
+                if (reservationInfo == null || reservationInfo.getCreatorIdx() != loginInfo.getUserIdx()) {
+                    result.put("success", false);
+                    result.put("error", "회의실 예약을 수정하는데 실패했습니다.");
+
+                    return result;
+                }
+            }
+
+            // ReservationDto 객체 생성
+            ReservationDto reservationDto = ReservationDto.builder()
+                    .roomIdx(roomIdx)
+                    .description(description)
+                    .startDate(startDate)
+                    .endDate(endDate)
+                    .approverIdx(approverIdx)
+                    .creatorIdx(loginInfo.getUserIdx())
+                    .build();
+
+            // 회의실 예약 수정
+            int success = meetingService.updateReservation(reservationDto);
+
+            // 회의 참석자 추가
+            if (userIdxList != null) {
+                userIdxList.add(0, reservationDto.getCreatorIdx());
+                meetingService.insertMeetingAttenderLinkByUserIdx(reservationIdx, userIdxList);
+            }
+
+            // 회의 참석자 삭제
+            if (deleteIdxList != null) {
+                meetingService.deleteMeetingAttenderLink(reservationIdx, deleteIdxList);
+            }
+
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "회의실 예약을 수정하는데 실패했습니다.");
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "회의실 예약을 수정하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/delete")
+    public Map<String, Object> deleteReservation(HttpServletRequest request,
+                                                 @RequestParam("reservation_idx") long reservationIdx) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        try {
+            // 권한 체크
+            Map<String, Object> param = new HashMap<>();
+            param.put("reservation_idx", reservationIdx);
+
+            ReservationDto reservationInfo = meetingService.getReservationByIdx(param);
+
+            UserDto loginInfo = authUtil.getLoginInfo(session);
+            if (loginInfo.getAdminYn().equals("N")) {
+                // 관리자도 팀장도 아닌 경우 등록자인지 확인
+                if (reservationInfo == null || reservationInfo.getCreatorIdx() != loginInfo.getUserIdx()) {
+                    result.put("success", false);
+                    result.put("error", "회의실 예약을 삭제하는데 실패했습니다.");
+
+                    return result;
+                }
+            }
+
+            // 체크리스트 삭제
+            int success = meetingService.deleteReservation(reservationIdx);
+
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "회의실 예약을 삭제하는데 실패했습니다.");
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "회의실 예약을 삭제하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/room/create")
+    public Map<String, Object> insertMeetingRoom(HttpServletRequest request,
+                                                 @RequestParam(value = "name", required = false) String name,
+                                                 @RequestParam(value = "location", required = false) String location,
+                                                 @RequestParam(value = "capacity", required = false) int capacity){
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        if (!authUtil.authCheck(session, true)) {
+            result.put("success", false);
+            result.put("error", "관리자만 등록 가능합니다.");
+
+            return result;
+        }
+
+        try {
+            // MeetingRoomDto 객체 생성
+            MeetingRoomDto meetingRoomDto = MeetingRoomDto.builder()
+                    .name(name)
+                    .location(location)
+                    .capacity(capacity)
+                    .build();
+
+            long roomIdx = meetingService.insertMeetingRoom(meetingRoomDto);
+
+            result.put("success", true);
+            result.put("idx", roomIdx);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "회의실을 등록하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/room/modify")
+    public Map<String, Object> updateMeetingRoom(HttpServletRequest request,
+                                                 @RequestParam(value = "room_idx") long roomIdx,
+                                                 @RequestParam(value = "name", required = false) String name,
+                                                 @RequestParam(value = "location", required = false) String location,
+                                                 @RequestParam(value = "capacity", required = false) int capacity){
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        // 권한 체크
+        if (!authUtil.authCheck(session, true)) {
+            result.put("success", false);
+            result.put("error", "회의실을 수정할 권한이 없습니다.");
+
+            return result;
+        }
+
+        try {
+            // MeetingRoomDto 객체 생성
+            MeetingRoomDto meetingRoomDto = MeetingRoomDto.builder()
+                    .roomIdx(roomIdx)
+                    .name(name)
+                    .location(location)
+                    .capacity(capacity)
+                    .build();
+
+            // 회의실 수정
+            int success = meetingService.updateMeetingRoom(meetingRoomDto);
+
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "회의실을 수정하는데 실패했습니다.");
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "회의실을 수정하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/room/delete")
+    public Map<String, Object> deleteNotice(HttpServletRequest request,
+                                            @RequestParam("room_idx") long roomIdx) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        // 권한 체크
+        if (!authUtil.authCheck(session, true)) {
+            result.put("success", false);
+            result.put("error", "회의실을 삭제할 권한이 없습니다.");
+
+            return result;
+        }
+
+        try {
+            // 회의실 삭제
+            int success = meetingService.deleteMeetingRoom(roomIdx);
+
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "회의실을 삭제하는데 실패했습니다.");
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "회의실을 삭제하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+}

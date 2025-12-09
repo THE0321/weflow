@@ -143,8 +143,8 @@ public class ScheduleController {
                     .creatorIdx(loginInfo.getUserIdx())
                     .build();
 
-            if (loginInfo.getAdminYn().equals("Y") || loginInfo.getLeaderYn().equals("Y")) {
-                if (loginInfo.getAdminYn().equals("Y") && creatorIdx != 0) {
+            if (loginInfo.getAdminYn().equals("Y")) {
+                if (creatorIdx != 0) {
                     scheduleDto.setCreatorIdx(creatorIdx);
                 }
                 scheduleDto.setApproverIdx(loginInfo.getUserIdx());
@@ -187,7 +187,7 @@ public class ScheduleController {
 
             UserDto loginInfo = authUtil.getLoginInfo(session);
 
-            if (loginInfo.getAdminYn().equals("N") || loginInfo.getLeaderYn().equals("N")) {
+            if (loginInfo.getAdminYn().equals("N")) {
                 // 관리자도 팀장도 아닌 경우 등록자인지 확인
                 if (scheduleInfo == null || scheduleInfo.getCreatorIdx() != loginInfo.getUserIdx()) {
                     result.put("success", false);
@@ -244,7 +244,7 @@ public class ScheduleController {
             // 권한 체크
             UserDto loginInfo = authUtil.getLoginInfo(session);
 
-            if (loginInfo.getAdminYn().equals("N") || loginInfo.getLeaderYn().equals("N")) {
+            if (loginInfo.getAdminYn().equals("N")) {
                 // 관리자도 팀장도 아닌 경우 등록자인지 확인
                 Map<String, Object> param = new HashMap<>();
                 param.put("schedule_idx", scheduleIdx);

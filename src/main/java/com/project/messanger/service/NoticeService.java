@@ -10,7 +10,7 @@ import java.util.Map;
 
 @Service
 public class NoticeService {
-    private NoticeMapper noticeMapper;
+    private final NoticeMapper noticeMapper;
 
     public NoticeService(NoticeMapper noticeMapper) {
         this.noticeMapper = noticeMapper;
