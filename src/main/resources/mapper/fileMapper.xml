@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.messanger.mapper.FileMapper">
+
+    <resultMap id="FileMap" type="com.project.messanger.dto.FileDto">
+        <id property="fileIdx" column="file_idx"/>
+        <result property="name" column="name"/>
+        <result property="filePath" column="file_path"/>
+        <result property="size" column="size"/>
+        <result property="isDrive" column="is_drive"/>
+        <result property="userIdx" column="user_idx"/>
+        <result property="createdDate" column="created_date"/>
+    </resultMap>
+
+    <select id="getFileByIdx" parameterType="long" resultMap="FileMap">
+        SELECT *
+        FROM file
+        WHERE file_idx = #{fileIdx}
+    </select>
+
+    <insert id="insertFile" parameterType="com.project.messanger.dto.FileDto" useGeneratedKeys="true" keyProperty="fileIdx" keyColumn="file_idx">
+        INSERT file
+        SET name = #{name},
+            file_path = #{filePath},
+            size = #{size},
+            <choose>
+                <when test="isDrive != null"> is_drive = #{isDrive},</when>
+                <otherwise> is_drive = 'N',</otherwise>
+            </choose>
+            user_idx = #{userIdx},
+            created_date = NOW()
+    </insert>
+
+    <delete id="deleteFile" parameterType="long">
+        DELETE FROM file
+        WHERE file_idx = #{fileIdx}
+    </delete>
+
+</mapper>

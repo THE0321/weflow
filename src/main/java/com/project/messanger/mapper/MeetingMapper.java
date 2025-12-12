@@ -24,6 +24,8 @@ public interface MeetingMapper {
 
     List<MeetingAttenderLinkDto> getMeetingAttenderLink(long reservationIdx);
 
+    int updateMeetingAttenderLink(MeetingAttenderLinkDto meetingAttenderLinkDto);
+
     int insertMeetingAttenderLink(List<MeetingAttenderLinkDto> list);
 
     int deleteMeetingAttenderLink(List<Long> list);

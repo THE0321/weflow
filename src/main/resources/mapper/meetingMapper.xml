@@ -20,7 +20,7 @@
         <id property="linkIdx" column="link_idx"/>
         <result property="reservationIdx" column="reservation_idx"/>
         <result property="userIdx" column="user_idx"/>
-        <result property="isAttender" column="is_attend"/>
+        <result property="isAttender" column="is_attender"/>
     </resultMap>
 
     <resultMap id="MeetingRoomMap" type="com.project.messanger.dto.MeetingRoomDto">
@@ -139,6 +139,13 @@
         )
         </foreach>
     </insert>
+
+    <update id="updateMeetingAttenderLink" parameterType="com.project.messanger.dto.MeetingAttenderLinkDto">
+        UPDATE meeting_attender_link
+        SET is_attender = #{isAttender}
+        WHERE link_idx = #{linkIdx}
+          AND user_idx = #{userIdx}
+    </update>
 
     <delete id="deleteMeetingAttenderLink" parameterType="long">
         DELETE FROM meeting_attender_link

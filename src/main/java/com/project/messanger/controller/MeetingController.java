@@ -1,8 +1,6 @@
 package com.project.messanger.controller;
 
-import com.project.messanger.dto.MeetingRoomDto;
-import com.project.messanger.dto.ReservationDto;
-import com.project.messanger.dto.UserDto;
+import com.project.messanger.dto.*;
 import com.project.messanger.service.MeetingService;
 import com.project.messanger.util.AuthUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -366,6 +364,37 @@ public class MeetingController {
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "회의실을 삭제하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/attend")
+    public Map<String, Object> updateMeetingAttender(HttpServletRequest request,
+                                                     @RequestParam(value = "link_idx") long linkIdx,
+                                                     @RequestParam(value = "is_attender") String isAttender){
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        try {
+            // MeetingAttenderLinkDto 객체 생성
+            MeetingAttenderLinkDto meetingAttenderLinkDto = MeetingAttenderLinkDto.builder()
+                    .linkIdx(linkIdx)
+                    .userIdx(authUtil.getLoginInfo(session).getUserIdx())
+                    .isAttender(isAttender)
+                    .build();
+
+
+            // 회의 참석여부 수정
+            int success = meetingService.updateMeetingAttenderLink(meetingAttenderLinkDto);
+
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "회의 참석여부를 수정하는데 실패했습니다.");
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "회의 참석여부를 수정하는데 실패했습니다.");
         }
 
         return result;

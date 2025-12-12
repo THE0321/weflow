@@ -105,6 +105,16 @@ public class MeetingService {
     }
 
     /*
+     * update meeting attender link
+     * @param MeetingAttenderLinkDto
+     * return int
+     */
+    @Transactional
+    public int updateMeetingAttenderLink(MeetingAttenderLinkDto meetingAttenderLinkDto) {
+        return meetingMapper.updateMeetingAttenderLink(meetingAttenderLinkDto);
+    }
+
+    /*
      * insert meeting attender link by user idx
      * @param long, List<Long>
      * return int
