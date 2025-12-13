@@ -116,13 +116,13 @@ public class NoticeController {
 
     @PostMapping("/modify")
     public Map<String, Object> updateNotice(HttpServletRequest request,
-                                          @RequestParam(value = "notice_idx", required = false) long noticeIdx,
-                                          @RequestParam(value = "title", required = false) String title,
-                                          @RequestParam(value = "content", required = false) String content,
-                                          @RequestParam(value = "link_url", required = false) String linkUrl,
-                                          @RequestParam(value = "start_date", required = false) String startDate,
-                                          @RequestParam(value = "end_date", required = false) String endDate,
-                                          @RequestParam(value = "is_active", required = false) String isActive){
+                                            @RequestParam(value = "notice_idx", required = false) long noticeIdx,
+                                            @RequestParam(value = "title", required = false) String title,
+                                            @RequestParam(value = "content", required = false) String content,
+                                            @RequestParam(value = "link_url", required = false) String linkUrl,
+                                            @RequestParam(value = "start_date", required = false) String startDate,
+                                            @RequestParam(value = "end_date", required = false) String endDate,
+                                            @RequestParam(value = "is_active", required = false) String isActive){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 

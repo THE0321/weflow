@@ -34,7 +34,7 @@
         SELECT *
         FROM reservation
         <where>
-            <if test="description">
+            <if test="description != null">
                 AND (UPPER(description) LIKE CONCAT('%', UPPER(#{description}), '%')
             </if>
             <if test="reservation_date != null">
