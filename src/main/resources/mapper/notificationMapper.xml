@@ -24,13 +24,10 @@
         LIMIT ${limit} OFFSET ${offset}
     </select>
 
-    <select id="getNotificationByIdx" parameterType="hashmap" resultMap="NotificationMap">
+    <select id="getNotificationByIdx" parameterType="long" resultMap="NotificationMap">
         SELECT *
         FROM notification
         WHERE notification_idx = #{notification_idx}
-        <if test="user_idx != null">
-            AND creator_idx = #{user_idx}
-        </if>
     </select>
 
     <insert id="insertNotification" parameterType="com.project.messanger.dto.NotificationDto">

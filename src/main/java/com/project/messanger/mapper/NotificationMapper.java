@@ -10,7 +10,7 @@ import java.util.Map;
 public interface NotificationMapper {
     List<NotificationDto> getNotificationList(Map<String, Object> param);
 
-    NotificationDto getNotificationByIdx(Map<String, Object> param);
+    NotificationDto getNotificationByIdx(long notificationIdx);
 
     int insertNotification(List<NotificationDto> list);
 

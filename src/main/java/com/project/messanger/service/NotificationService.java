@@ -38,12 +38,12 @@ public class NotificationService {
 
     /*
      * get notification by idx
-     * @param Map<String, Object>
+     * @param long
      * return NotificationDto
      */
     @Transactional(readOnly = true)
-    public NotificationDto getNotificationByIdx(Map<String, Object> param) {
-        return notificationMapper.getNotificationByIdx(param);
+    public NotificationDto getNotificationByIdx(long notificationIdx) {
+        return notificationMapper.getNotificationByIdx(notificationIdx);
     }
 
     /*

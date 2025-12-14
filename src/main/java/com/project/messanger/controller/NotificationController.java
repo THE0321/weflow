@@ -67,13 +67,9 @@ public class NotificationController {
         }
 
         try {
-            Map<String, Object> param = new HashMap<>();
-            param.put("notification_idx", notificationIdx);
-            param.put("user_idx", loginInfo.getUserIdx());
-
             // 알림 조회
-            NotificationDto notificationDto = notificationService.getNotificationByIdx(param);
-            if (notificationDto == null)
+            NotificationDto notificationDto = notificationService.getNotificationByIdx(notificationIdx);
+            if (notificationDto == null || notificationDto.getCreatorIdx() != loginInfo.getUserIdx())
             {
                 result.put("success", false);
                 result.put("error", "알림을 불러올 수 없습니다.");

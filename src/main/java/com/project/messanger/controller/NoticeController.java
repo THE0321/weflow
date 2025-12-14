@@ -15,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/check")
+@RequestMapping("/notice")
 public class NoticeController {
     private final NoticeService noticeService;
     private final AuthUtil authUtil;
