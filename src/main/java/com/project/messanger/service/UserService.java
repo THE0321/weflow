@@ -23,6 +23,11 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Transactional(readOnly = true)
+    public List<Long> getUserListByTeamIdx(long teamIdx) {
+        return userMapper.getUserListByTeamIdx(teamIdx);
+    }
+
     /*
      * get user by user idx
      * @param long
@@ -41,16 +46,6 @@ public class UserService {
     @Transactional(readOnly = true)
     public UserDto getUserByEmail(String email) {
         return userMapper.getUserByEmail(email);
-    }
-
-    /*
-     * get team list by user idx
-     * @param long
-     * return long
-     */
-    @Transactional(readOnly = true)
-    public List<Long> getTeamListByUserIdx(long userIdx) {
-        return userMapper.getTeamListByUserIdx(userIdx);
     }
 
     /*
@@ -91,6 +86,26 @@ public class UserService {
     @Transactional
     public int deleteUser(long userIdx) {
         return userMapper.deleteUser(userIdx);
+    }
+
+    /*
+     * get team list by user idx
+     * @param long
+     * return List<Long>
+     */
+    @Transactional(readOnly = true)
+    public List<Long> getTeamListByUserIdx(long userIdx) {
+        return userMapper.getTeamListByUserIdx(userIdx);
+    }
+
+    /*
+     * get team list by team idx
+     * @param List<Long>
+     * return List<TeamDto>
+     */
+    @Transactional(readOnly = true)
+    public List<TeamDto> getTeamListByTeamIdx(List<Long> teamIdxList) {
+        return userMapper.getTeamListByTeamIdx(teamIdxList);
     }
 
     /*
@@ -141,6 +156,7 @@ public class UserService {
      * @param Map<String, Object>
      * return List<UserDto>
      */
+    @Transactional(readOnly = true)
     public List<UserDto> getUserList(Map<String, Object> param) {
         int page = param.get("page") != null ? (int)param.get("page") : 1;
 

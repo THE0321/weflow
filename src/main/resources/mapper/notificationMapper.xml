@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.project.messanger.mapper.NotificationMapper">
+
+    <resultMap id="NotificationMap" type="com.project.messanger.dto.NotificationDto">
+        <id property="notificationIdx" column="notification_idx"/>
+        <result property="type" column="type"/>
+        <result property="content" column="content"/>
+        <result property="isRead" column="is_read"/>
+        <result property="linkUrl" column="link_url"/>
+        <result property="creatorIdx" column="creator_idx"/>
+    </resultMap>
+
+    <select id="getNotificationList" parameterType="hashmap" resultMap="NotificationMap">
+        SELECT *
+        FROM notification
+        WHERE creator_idx = #{creator_idx}
+        <if test="type != null">
+            AND type = #{type}
+        </if>
+        ORDER BY created_date DESC
+        LIMIT ${limit} OFFSET ${offset}
+    </select>
+
+    <select id="getNotificationByIdx" parameterType="hashmap" resultMap="NotificationMap">
+        SELECT *
+        FROM notification
+        WHERE notification_idx = #{notification_idx}
+        <if test="user_idx != null">
+            AND creator_idx = #{user_idx}
+        </if>
+    </select>
+
+    <insert id="insertNotification" parameterType="com.project.messanger.dto.NotificationDto">
+        INSERT INTO notification
+        (
+            type,
+            content,
+            is_read,
+            link_url,
+            creator_idx,
+            created_date
+        )
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+        (
+            #{item.type},
+            #{item.content},
+            'N',
+            #{item.linkUrl},
+            #{item.creatorIdx},
+            NOW()
+        )
+        </foreach>
+    </insert>
+
+    <update id="updateNotification" parameterType="long">
+        UPDATE notification
+        SET is_read = 'Y'
+        WHERE notification_idx = #{notificationIdx}
+    </update>
+
+</mapper>

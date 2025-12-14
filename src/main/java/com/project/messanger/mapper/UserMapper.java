@@ -12,17 +12,21 @@ import java.util.Map;
 public interface UserMapper {
     List<UserDto> getUserList(Map<String, Object> param);
 
+    List<Long> getUserListByTeamIdx(long teamIdx);
+
     UserDto getUserByIdx(long userIdx);
 
     UserDto getUserByEmail(String email);
-
-    List<Long> getTeamListByUserIdx(long userIdx);
 
     long insertUser(UserDto userDto);
 
     int updateUser(UserDto userDto);
 
     int deleteUser(long userIdx);
+
+    List<Long> getTeamListByUserIdx(long userIdx);
+
+    List<TeamDto> getTeamListByTeamIdx(List<Long> list);
 
     long insertTeam(String teamName);
 

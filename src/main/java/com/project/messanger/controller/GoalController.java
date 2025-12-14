@@ -2,6 +2,7 @@ package com.project.messanger.controller;
 
 import com.project.messanger.dto.*;
 import com.project.messanger.service.GoalService;
+import com.project.messanger.service.NotificationService;
 import com.project.messanger.util.AuthUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -15,10 +16,12 @@ import java.util.Map;
 @RequestMapping("/goal")
 public class GoalController {
     private final GoalService goalService;
+    private final NotificationService notificationService;
     private final AuthUtil authUtil;
 
-    public GoalController(GoalService goalService, AuthUtil authUtil) {
+    public GoalController(GoalService goalService, NotificationService notificationService, AuthUtil authUtil) {
         this.goalService = goalService;
+        this.notificationService = notificationService;
         this.authUtil = authUtil;
     }
 
@@ -202,14 +205,26 @@ public class GoalController {
 
             long goalIdx = goalService.insertGoal(goalDto);
 
+            NotificationDto notificationDto = NotificationDto.builder()
+                    .type("GOAL")
+                    .content("목표가 등록되었습니다.")
+                    .linkUrl("/goal/" + goalIdx)
+                    .build();
+
             // 담당자 팀 추가
             if (teamIdxList != null) {
                 goalService.insertGoalUserLinkByTeamIdx(goalIdx, teamIdxList);
+
+                // 알림 등록
+                notificationService.insertNotificationByTeamIdx(notificationDto, teamIdxList);
             }
 
             // 담당자 유저 추가
             if (userIdxList != null) {
                 goalService.insertGoalUserLinkByUserIdx(goalIdx, userIdxList);
+
+                // 알림 등록
+                notificationService.insertNotificationByUserIdx(notificationDto, userIdxList);
             }
 
             result.put("success", true);

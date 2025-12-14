@@ -133,6 +133,36 @@ public class GoalService {
     }
 
     /*
+     * insert goal log
+     * @param GoalLogDto
+     * return long
+     */
+    @Transactional
+    public long insertGoalLog(GoalLogDto goalLogDto) {
+        return goalMapper.insertGoalLog(goalLogDto);
+    }
+
+    /*
+     * update goal log
+     * @param GoalLogDto
+     * return int
+     */
+    @Transactional
+    public int updateGoalLog(GoalLogDto goalLogDto) {
+        return goalMapper.updateGoalLog(goalLogDto);
+    }
+
+    /*
+     * delete goal log
+     * @param long
+     * return int
+     */
+    @Transactional
+    public int deleteGoalLog(long logIdx) {
+        return goalMapper.deleteGoalLog(logIdx);
+    }
+
+    /*
      * insert goal user link by team idx
      * @param long, List<Long>
      * return int
@@ -172,35 +202,5 @@ public class GoalService {
         }
 
         return insertGoalUserLink(insertList);
-    }
-
-    /*
-     * insert goal log
-     * @param GoalLogDto
-     * return long
-     */
-    @Transactional
-    public long insertGoalLog(GoalLogDto goalLogDto) {
-        return goalMapper.insertGoalLog(goalLogDto);
-    }
-
-    /*
-     * update goal log
-     * @param GoalLogDto
-     * return int
-     */
-    @Transactional
-    public int updateGoalLog(GoalLogDto goalLogDto) {
-        return goalMapper.updateGoalLog(goalLogDto);
-    }
-
-    /*
-     * delete goal log
-     * @param long
-     * return int
-     */
-    @Transactional
-    public int deleteGoalLog(long logIdx) {
-        return goalMapper.deleteGoalLog(logIdx);
     }
 }

@@ -62,16 +62,6 @@ public class ChecklistService {
     }
 
     /*
-     * get checklist user link
-     * @param long
-     * return List<ChecklistUserLinkDto>
-     */
-    @Transactional(readOnly = true)
-    public List<ChecklistUserLinkDto> getChecklistUserLink(long checklistIdx) {
-        return checklistMapper.getChecklistUserLink(checklistIdx);
-    }
-
-    /*
      * insert checklist
      * @param ChecklistDto
      * return long
@@ -134,6 +124,36 @@ public class ChecklistService {
     }
 
     /*
+     * get checklist user link
+     * @param long
+     * return List<ChecklistUserLinkDto>
+     */
+    @Transactional(readOnly = true)
+    public List<ChecklistUserLinkDto> getChecklistUserLink(long checklistIdx) {
+        return checklistMapper.getChecklistUserLink(checklistIdx);
+    }
+
+    /*
+     * insert checklist user link
+     * @param List<ChecklistUserLinkDto>
+     * return int
+     */
+    @Transactional
+    public int insertChecklistUserLink(List<ChecklistUserLinkDto> checklistUserLinkDtoList) {
+        return checklistMapper.insertChecklistUserLink(checklistUserLinkDtoList);
+    }
+
+    /*
+     * delete checklist user link
+     * @param List<Long>
+     * return int
+     */
+    @Transactional
+    public int deleteChecklistUserLink(List<Long> deleteLinkIdxList) {
+        return checklistMapper.deleteChecklistUserLink(deleteLinkIdxList);
+    }
+
+    /*
      * insert checklist log
      * @param ChecklistLogDto
      * return int
@@ -161,5 +181,47 @@ public class ChecklistService {
     @Transactional
     public int deleteChecklistLog(long logIdx) {
         return checklistMapper.deleteChecklistLog(logIdx);
+    }
+
+    /*
+     * insert checklist user link by team idx
+     * @param long, List<Long>
+     * return int
+     */
+    @Transactional
+    public int insertChecklistUserLinkByTeamIdx(long checklistIdx, List<Long> teamIdxList) {
+        List<ChecklistUserLinkDto> insertList = new ArrayList<>();
+
+        // 값 리스트
+        for (long teamIdx : teamIdxList) {
+            ChecklistUserLinkDto checklistUserLinkDto = ChecklistUserLinkDto.builder()
+                    .checklistIdx(checklistIdx)
+                    .teamIdx(teamIdx)
+                    .build();
+            insertList.add(checklistUserLinkDto);
+        }
+
+        return insertChecklistUserLink(insertList);
+    }
+
+    /*
+     * insert checklist user link by user idx
+     * @param long, List<Long>
+     * return int
+     */
+    @Transactional
+    public int insertChecklistUserLinkByUserIdx(long checklistIdx, List<Long> userIdxList) {
+        List<ChecklistUserLinkDto> insertList = new ArrayList<>();
+
+        // 값 리스트
+        for (long userIdx : userIdxList) {
+            ChecklistUserLinkDto checklistUserLinkDto = ChecklistUserLinkDto.builder()
+                    .checklistIdx(checklistIdx)
+                    .userIdx(userIdx)
+                    .build();
+            insertList.add(checklistUserLinkDto);
+        }
+
+        return insertChecklistUserLink(insertList);
     }
 }

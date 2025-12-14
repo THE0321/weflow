@@ -2,6 +2,7 @@ package com.project.messanger.controller;
 
 import com.project.messanger.dto.*;
 import com.project.messanger.service.ChecklistService;
+import com.project.messanger.service.NotificationService;
 import com.project.messanger.util.AuthUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,10 +20,12 @@ import java.util.Map;
 @RequestMapping("/check")
 public class ChecklistController {
     private final ChecklistService checklistService;
+    private final NotificationService notificationService;
     private final AuthUtil authUtil;
 
-    public ChecklistController(ChecklistService checklistService, AuthUtil authUtil) {
+    public ChecklistController(ChecklistService checklistService, NotificationService notificationService, AuthUtil authUtil) {
         this.checklistService = checklistService;
+        this.notificationService = notificationService;
         this.authUtil = authUtil;
     }
 
@@ -140,7 +144,9 @@ public class ChecklistController {
                                                @RequestParam(value = "description", required = false) String description,
                                                @RequestParam(value = "status", required = false) String status,
                                                @RequestParam(value = "item_title", required = false) List<String> itemTitleList,
-                                               @RequestParam(value = "item_description", required = false) List<String> itemDescriptionList){
+                                               @RequestParam(value = "item_description", required = false) List<String> itemDescriptionList,
+                                               @RequestParam(value = "user_idx", required = false) List<Long> userIdxList,
+                                               @RequestParam(value = "team_idx", required = false) List<Long> teamIdxList){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -165,6 +171,28 @@ public class ChecklistController {
 
             long checklistIdx = checklistService.insertChecklist(checklistDto);
 
+            NotificationDto notificationDto = NotificationDto.builder()
+                    .type("CHECKLIST")
+                    .content("체크리스트가 등록되었습니다.")
+                    .linkUrl("/check/" + checklistIdx)
+                    .build();
+
+            // 담당자 팀 추가
+            if (teamIdxList != null) {
+                checklistService.insertChecklistUserLinkByTeamIdx(checklistIdx, teamIdxList);
+
+                // 알림 등록
+                notificationService.insertNotificationByTeamIdx(notificationDto, teamIdxList);
+            }
+
+            // 담당자 유저 추가
+            if (userIdxList != null) {
+                checklistService.insertChecklistUserLinkByUserIdx(checklistIdx, userIdxList);
+
+                // 알림 등록
+                notificationService.insertNotificationByUserIdx(notificationDto, userIdxList);
+            }
+
             checklistService.insertChecklistItem(checklistIdx, itemTitleList, itemDescriptionList);
 
             result.put("success", true);
@@ -184,7 +212,10 @@ public class ChecklistController {
                                                @RequestParam(value = "description", required = false) String description,
                                                @RequestParam(value = "status", required = false) String status,
                                                @RequestParam(value = "item_title", required = false) List<String> itemTitleList,
-                                               @RequestParam(value = "item_description", required = false) List<String> itemDescriptionList){
+                                               @RequestParam(value = "item_description", required = false) List<String> itemDescriptionList,
+                                               @RequestParam(value = "user_idx", required = false) List<Long> userIdxList,
+                                               @RequestParam(value = "team_idx", required = false) List<Long> teamIdxList,
+                                               @RequestParam(value = "delete_link_idx", required = false) List<Long> deleteLinkIdxList){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -215,6 +246,21 @@ public class ChecklistController {
                         .build();
 
                 checklistService.updateChecklistItem(checklistItemDto);
+            }
+
+            // 담당자 팀 추가
+            if (teamIdxList != null) {
+                checklistService.insertChecklistUserLinkByTeamIdx(checklistIdx, teamIdxList);
+            }
+
+            // 담당자 유저 추가
+            if (userIdxList != null) {
+                checklistService.insertChecklistUserLinkByUserIdx(checklistIdx, userIdxList);
+            }
+
+            // 담당자 삭제
+            if (deleteLinkIdxList != null) {
+                checklistService.deleteChecklistUserLink(deleteLinkIdxList);
             }
 
             result.put("success", success == 1);

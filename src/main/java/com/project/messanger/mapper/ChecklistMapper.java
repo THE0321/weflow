@@ -14,8 +14,6 @@ public interface ChecklistMapper {
 
     ChecklistDto getChecklistByIdx(long checklistIdx);
 
-    List<ChecklistUserLinkDto> getChecklistUserLink(long checklistIdx);
-
     List<ChecklistLogDto> getChecklistLog(long checklistIdx);
 
     long insertChecklist(ChecklistDto checklistDto);
@@ -27,6 +25,12 @@ public interface ChecklistMapper {
     int insertChecklistItem(List<ChecklistItemDto> list);
 
     int updateChecklistItem(ChecklistItemDto checklistItemDto);
+
+    List<ChecklistUserLinkDto> getChecklistUserLink(long checklistIdx);
+    
+    int insertChecklistUserLink(List<ChecklistUserLinkDto> list);
+
+    int deleteChecklistUserLink(List<Long> linkIdx);
 
     int insertChecklistLog(ChecklistLogDto checklistLogDto);
 

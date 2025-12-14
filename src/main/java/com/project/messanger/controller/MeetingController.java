@@ -2,6 +2,7 @@ package com.project.messanger.controller;
 
 import com.project.messanger.dto.*;
 import com.project.messanger.service.MeetingService;
+import com.project.messanger.service.NotificationService;
 import com.project.messanger.util.AuthUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -18,10 +19,12 @@ import java.util.Map;
 @RequestMapping("/meeting")
 public class MeetingController {
     private final MeetingService meetingService;
+    private final NotificationService notificationService;
     private final AuthUtil authUtil;
 
-    public MeetingController(MeetingService meetingService, AuthUtil authUtil) {
+    public MeetingController(MeetingService meetingService, NotificationService notificationService, AuthUtil authUtil) {
         this.meetingService = meetingService;
+        this.notificationService = notificationService;
         this.authUtil = authUtil;
     }
 
@@ -121,7 +124,8 @@ public class MeetingController {
                                                  @RequestParam(value = "start_date") String startDate,
                                                  @RequestParam(value = "end_date") String endDate,
                                                  @RequestParam(value = "creator_idx", required = false) long creatorIdx,
-                                                 @RequestParam(value = "approver_idx", required = false) long approverIdx){
+                                                 @RequestParam(value = "approver_idx", required = false) long approverIdx,
+                                                 @RequestParam(value = "user_idx", required = false) List<Long> userIdxList){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -146,6 +150,18 @@ public class MeetingController {
             }
 
             long reservationIdx = meetingService.insertReservation(reservationDto);
+
+            userIdxList.add(0, reservationDto.getCreatorIdx());
+            meetingService.insertMeetingAttenderLinkByUserIdx(reservationIdx, userIdxList);
+
+            // 알림 등록
+            NotificationDto notificationDto = NotificationDto.builder()
+                    .type("RESERVATION")
+                    .content("일정이 등록되었습니다.")
+                    .linkUrl("/meeting/" + reservationIdx)
+                    .build();
+
+            notificationService.insertNotificationByUserIdx(notificationDto, userIdxList);
 
             result.put("success", true);
             result.put("idx", reservationIdx);

@@ -67,10 +67,10 @@
     <insert id="insertChattingMessage" parameterType="com.project.messanger.dto.ChattingMessageDto" useGeneratedKeys="true" keyProperty="messageIdx" keyColumn="message_idx">
         INSERT chatting_message
         SET chatting_idx = #{chattingIdx},
-        <if test="fileIdx != null"> file_idx = #{fileIdx},</if>
-        content = #{content},
-        creator_idx = #{creatorIdx},
-        created_date = NOW()
+            <if test="fileIdx != null"> file_idx = #{fileIdx},</if>
+            content = #{content},
+            creator_idx = #{creatorIdx},
+            created_date = NOW()
     </insert>
 
     <select id="getChattingByIdx" parameterType="hashmap" resultMap="ChattingUserLinkMap">

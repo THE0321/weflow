@@ -1,8 +1,10 @@
 package com.project.messanger.controller;
 
+import com.project.messanger.dto.NotificationDto;
 import com.project.messanger.dto.ScheduleAttenderLinkDto;
 import com.project.messanger.dto.ScheduleDto;
 import com.project.messanger.dto.UserDto;
+import com.project.messanger.service.NotificationService;
 import com.project.messanger.service.ScheduleService;
 import com.project.messanger.util.AuthUtil;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,10 +22,12 @@ import java.util.Map;
 @RequestMapping("/schedule")
 public class ScheduleController {
     private final ScheduleService scheduleService;
+    private final NotificationService notificationService;
     private final AuthUtil authUtil;
 
-    public ScheduleController(ScheduleService scheduleService, AuthUtil authUtil) {
+    public ScheduleController(ScheduleService scheduleService, NotificationService notificationService, AuthUtil authUtil) {
         this.scheduleService = scheduleService;
+        this.notificationService = notificationService;
         this.authUtil = authUtil;
     }
 
@@ -154,6 +158,15 @@ public class ScheduleController {
 
             userIdxList.add(0, scheduleDto.getCreatorIdx());
             scheduleService.insertScheduleAttenderLinkByUserIdx(scheduleIdx, userIdxList);
+
+            // 알림 등록
+            NotificationDto notificationDto = NotificationDto.builder()
+                    .type("SCHEDULE")
+                    .content("일정이 등록되었습니다.")
+                    .linkUrl("/schedule/" + scheduleIdx)
+                    .build();
+
+            notificationService.insertNotificationByUserIdx(notificationDto, userIdxList);
 
             result.put("success", true);
             result.put("idx", scheduleIdx);
