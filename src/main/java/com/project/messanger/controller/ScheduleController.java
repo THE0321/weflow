@@ -43,7 +43,12 @@ public class ScheduleController {
 
         // 권한 체크
         UserDto loginInfo = authUtil.getLoginInfo(session);
-        if (loginInfo.getAdminYn().equals("N")) {
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        } else if (loginInfo.getAdminYn().equals("N")) {
             my = true;
         }
 
@@ -73,12 +78,19 @@ public class ScheduleController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         try {
             Map<String, Object> param = new HashMap<>();
             param.put("schedule_date", scheduleDate);
 
             // 권한 체크
-            UserDto loginInfo = authUtil.getLoginInfo(session);
             if (loginInfo.getAdminYn().equals("N")) {
                 param.put("user_idx", loginInfo.getUserIdx());
             }
@@ -99,12 +111,19 @@ public class ScheduleController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         try {
             Map<String, Object> param = new HashMap<>();
             param.put("schedule_idx", scheduleIdx);
 
             // 권한 체크
-            UserDto loginInfo = authUtil.getLoginInfo(session);
             if (loginInfo.getAdminYn().equals("N")) {
                 param.put("user_idx", loginInfo.getUserIdx());
             }
@@ -134,6 +153,12 @@ public class ScheduleController {
         HttpSession session = request.getSession();
 
         UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
 
         try {
             // ScheduleDto 객체 생성
@@ -192,13 +217,19 @@ public class ScheduleController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         try {
             Map<String, Object> param = new HashMap<>();
             param.put("schedule_idx", scheduleIdx);
 
             ScheduleDto scheduleInfo = scheduleService.getScheduleByIdx(param);
-
-            UserDto loginInfo = authUtil.getLoginInfo(session);
 
             if (loginInfo.getAdminYn().equals("N")) {
                 // 관리자도 팀장도 아닌 경우 등록자인지 확인
@@ -253,10 +284,16 @@ public class ScheduleController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         try {
             // 권한 체크
-            UserDto loginInfo = authUtil.getLoginInfo(session);
-
             if (loginInfo.getAdminYn().equals("N")) {
                 // 관리자도 팀장도 아닌 경우 등록자인지 확인
                 Map<String, Object> param = new HashMap<>();
@@ -292,9 +329,14 @@ public class ScheduleController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
-        // 권한 체크
         UserDto loginInfo = authUtil.getLoginInfo(session);
-        if (loginInfo.getAdminYn().equals("N")) {
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        } else if (loginInfo.getAdminYn().equals("N")) {
+            // 권한 체크
             result.put("success", false);
             result.put("error", "일정을 승인할 권한이 없습니다.");
 
@@ -329,6 +371,14 @@ public class ScheduleController {
                                                       @RequestParam(value = "is_attend") String isAttend){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
+
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
 
         try {
             // ScheduleAttenderLinkDto 객체 생성

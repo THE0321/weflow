@@ -40,7 +40,12 @@ public class MeetingController {
 
         // 권한 체크
         UserDto loginInfo = authUtil.getLoginInfo(session);
-        if (loginInfo.getAdminYn().equals("N")) {
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        } else if (loginInfo.getAdminYn().equals("N")) {
             my = true;
         }
 
@@ -70,12 +75,19 @@ public class MeetingController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         try {
             Map<String, Object> param = new HashMap<>();
             param.put("reservation_date", reservationDate);
 
             // 권한 체크
-            UserDto loginInfo = authUtil.getLoginInfo(session);
             if (loginInfo.getAdminYn().equals("N")) {
                 param.put("user_idx", loginInfo.getUserIdx());
             }
@@ -96,12 +108,19 @@ public class MeetingController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         try {
             Map<String, Object> param = new HashMap<>();
             param.put("reservation_idx", reservationIdx);
 
             // 권한 체크
-            UserDto loginInfo = authUtil.getLoginInfo(session);
             if (loginInfo.getAdminYn().equals("N")) {
                 param.put("user_idx", loginInfo.getUserIdx());
             }
@@ -129,9 +148,15 @@ public class MeetingController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
-        try {
-            UserDto loginInfo = authUtil.getLoginInfo(session);
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
 
+            return result;
+        }
+
+        try {
             // Dto 객체 생성
             ReservationDto reservationDto = ReservationDto.builder()
                     .roomIdx(roomIdx)
@@ -187,13 +212,20 @@ public class MeetingController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         try {
             Map<String, Object> param = new HashMap<>();
             param.put("reservation_idx", reservationIdx);
 
             ReservationDto reservationInfo = meetingService.getReservationByIdx(param);
 
-            UserDto loginInfo = authUtil.getLoginInfo(session);
             if (loginInfo.getAdminYn().equals("N")) {
                 // 관리자도 팀장도 아닌 경우 등록자인지 확인
                 if (reservationInfo == null || reservationInfo.getCreatorIdx() != loginInfo.getUserIdx()) {
@@ -246,6 +278,14 @@ public class MeetingController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         try {
             // 권한 체크
             Map<String, Object> param = new HashMap<>();
@@ -253,7 +293,6 @@ public class MeetingController {
 
             ReservationDto reservationInfo = meetingService.getReservationByIdx(param);
 
-            UserDto loginInfo = authUtil.getLoginInfo(session);
             if (loginInfo.getAdminYn().equals("N")) {
                 // 관리자도 팀장도 아닌 경우 등록자인지 확인
                 if (reservationInfo == null || reservationInfo.getCreatorIdx() != loginInfo.getUserIdx()) {
@@ -286,6 +325,14 @@ public class MeetingController {
                                                  @RequestParam(value = "capacity", required = false) int capacity){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
+
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
 
         if (!authUtil.authCheck(session, true)) {
             result.put("success", false);
@@ -322,6 +369,14 @@ public class MeetingController {
                                                  @RequestParam(value = "capacity", required = false) int capacity){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
+
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
 
         // 권한 체크
         if (!authUtil.authCheck(session, true)) {
@@ -361,6 +416,14 @@ public class MeetingController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         // 권한 체크
         if (!authUtil.authCheck(session, true)) {
             result.put("success", false);
@@ -391,6 +454,14 @@ public class MeetingController {
                                                      @RequestParam(value = "is_attender") String isAttender){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
+
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
 
         try {
             // MeetingAttenderLinkDto 객체 생성

@@ -35,6 +35,14 @@ public class GoalController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         // 권한 체크
         if (!authUtil.authCheck(session)) {
             my = true;
@@ -67,6 +75,14 @@ public class GoalController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         if (!authUtil.loginCheck(session)) {
             result.put("success", false);
             result.put("error", "목표를 불러올 수 없습니다.");
@@ -95,6 +111,14 @@ public class GoalController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         try {
             GoalAndLogDto goalAndLogDto = goalService.getGoalByIdx(goalIdx);
             if(goalAndLogDto == null) {
@@ -111,7 +135,6 @@ public class GoalController {
 
                 return result;
             } else {
-                UserDto loginInfo = authUtil.getLoginInfo(session);
                 List<Long> teamIdxList = authUtil.getTeamList(session);
                 boolean isMyGoal = false;
                 for (GoalUserLinkDto goalUserLinkDto : goalUserLinkList) {
@@ -145,6 +168,14 @@ public class GoalController {
     public Map<String, Object> getGoalGraph(HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
+
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
 
         if (!authUtil.loginCheck(session)) {
             result.put("success", false);
@@ -181,6 +212,14 @@ public class GoalController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         // 권한 체크
         if (!authUtil.authCheck(session)) {
             result.put("success", false);
@@ -190,8 +229,6 @@ public class GoalController {
         }
 
         try {
-            UserDto loginInfo = authUtil.getLoginInfo(session);
-
             // GoalDto 객체 생성
             GoalDto goalDto = GoalDto.builder()
                     .title(title)
@@ -252,6 +289,14 @@ public class GoalController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         // 권한 체크
         if (!authUtil.authCheck(session)) {
             result.put("success", false);
@@ -307,6 +352,14 @@ public class GoalController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         // 권한 체크
         if (!authUtil.authCheck(session)) {
             result.put("success", false);
@@ -337,9 +390,15 @@ public class GoalController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
-        try {
-            UserDto loginInfo = authUtil.getLoginInfo(session);
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
 
+            return result;
+        }
+
+        try {
             List<GoalUserLinkDto> goalUserLinkList = goalService.getGoalUserLink(goalIdx);
             if (goalUserLinkList == null) {
                 result.put("success", false);
@@ -384,9 +443,15 @@ public class GoalController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
-        try {
-            UserDto loginInfo = authUtil.getLoginInfo(session);
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
 
+            return result;
+        }
+
+        try {
             List<GoalUserLinkDto> goalUserLinkList = goalService.getGoalUserLink(goalIdx);
             if (goalUserLinkList == null) {
                 result.put("success", false);
@@ -447,9 +512,15 @@ public class GoalController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
-        try {
-            UserDto loginInfo = authUtil.getLoginInfo(session);
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
 
+            return result;
+        }
+
+        try {
             List<GoalUserLinkDto> goalUserLinkList = goalService.getGoalUserLink(goalIdx);
             if (goalUserLinkList == null) {
                 result.put("success", false);
@@ -512,9 +583,15 @@ public class GoalController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
-        try {
-            UserDto loginInfo = authUtil.getLoginInfo(session);
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
 
+            return result;
+        }
+
+        try {
             List<GoalUserLinkDto> goalUserLinkList = goalService.getGoalUserLink(goalIdx);
             if (goalUserLinkList == null) {
                 result.put("success", false);

@@ -39,7 +39,12 @@ public class FileController {
         HttpSession session = request.getSession();
 
         UserDto loginInfo = authUtil.getLoginInfo(session);
-        if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N")) {
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        } else if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N")) {
             result.put("success", false);
             result.put("error", "파일을 등록할 권한이 없습니다.");
 
@@ -76,7 +81,12 @@ public class FileController {
         HttpSession session = request.getSession();
 
         UserDto loginInfo = authUtil.getLoginInfo(session);
-        if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N")) {
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        } else if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N")) {
             result.put("success", false);
             result.put("error", "파일을 삭제할 권한이 없습니다.");
 

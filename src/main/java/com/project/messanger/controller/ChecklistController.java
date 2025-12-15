@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +37,14 @@ public class ChecklistController {
                                                 @RequestParam(value = "my", required = false) boolean my) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
+
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
 
         // 권한 체크
         if (!authUtil.authCheck(session)) {
@@ -71,6 +78,14 @@ public class ChecklistController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         try {
             Map<String, Object> param = new HashMap<>();
             param.put("user_idx", authUtil.getLoginInfo(session).getUserIdx());
@@ -92,6 +107,14 @@ public class ChecklistController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         try {
             ChecklistDto checklistDto = checklistService.getChecklistByIdx(checklistIdx);
             if(checklistDto == null) {
@@ -108,7 +131,6 @@ public class ChecklistController {
 
                 return result;
             } else {
-                UserDto loginInfo = authUtil.getLoginInfo(session);
                 List<Long> teamIdxList = authUtil.getTeamList(session);
                 boolean isMyGoal = false;
                 for (ChecklistUserLinkDto checklistUserLinkDto : goalUserLinkList) {
@@ -150,6 +172,14 @@ public class ChecklistController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         // 권한 체크
         if (!authUtil.authCheck(session)) {
             result.put("success", false);
@@ -159,8 +189,6 @@ public class ChecklistController {
         }
 
         try {
-            UserDto loginInfo = authUtil.getLoginInfo(session);
-
             // ChecklistDto 객체 생성
             ChecklistDto checklistDto = ChecklistDto.builder()
                         .title(title)
@@ -218,6 +246,14 @@ public class ChecklistController {
                                                @RequestParam(value = "delete_link_idx", required = false) List<Long> deleteLinkIdxList){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
+
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
 
         // 권한 체크
         if (!authUtil.authCheck(session)) {
@@ -281,6 +317,14 @@ public class ChecklistController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         // 권한 체크
         if (!authUtil.authCheck(session)) {
             result.put("success", false);
@@ -310,14 +354,19 @@ public class ChecklistController {
                                                   @RequestParam(value = "checklist_idx", required = false) long checklistIdx,
                                                   @RequestParam(value = "item_idx", required = false) long itemIdx,
                                                   @RequestParam(value = "is_checked", required = false) char isChecked,
-                                                  @RequestParam(value = "content", required = false) String content
-    ){
+                                                  @RequestParam(value = "content", required = false) String content){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
-        try {
-            UserDto loginInfo = authUtil.getLoginInfo(session);
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
 
+            return result;
+        }
+
+        try {
             List<ChecklistUserLinkDto> checklistUserLinkList = checklistService.getChecklistUserLink(checklistIdx);
             if (checklistUserLinkList == null) {
                 result.put("success", false);
@@ -378,9 +427,15 @@ public class ChecklistController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
-        try {
-            UserDto loginInfo = authUtil.getLoginInfo(session);
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
 
+            return result;
+        }
+
+        try {
             List<ChecklistUserLinkDto> checklistUserLinkList = checklistService.getChecklistUserLink(checklistIdx);
             if (checklistUserLinkList == null) {
                 result.put("success", false);
@@ -444,9 +499,15 @@ public class ChecklistController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
-        try {
-            UserDto loginInfo = authUtil.getLoginInfo(session);
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
 
+            return result;
+        }
+
+        try {
             List<ChecklistUserLinkDto> checklistUserLinkList = checklistService.getChecklistUserLink(checklistIdx);
             if (checklistUserLinkList == null) {
                 result.put("success", false);

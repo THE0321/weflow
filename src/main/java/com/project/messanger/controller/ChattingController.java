@@ -36,6 +36,14 @@ public class ChattingController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         try {
             Map<String, Object> param = new HashMap<>();
             param.put("page", page);
@@ -57,6 +65,14 @@ public class ChattingController {
                                                @RequestParam(value = "name", required = false) String name) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
+
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
 
         try {
             Map<String, Object> param = new HashMap<>();
@@ -83,6 +99,12 @@ public class ChattingController {
         HttpSession session = request.getSession();
 
         UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
 
         try {
             // ChattingDto 객체 생성
@@ -102,7 +124,7 @@ public class ChattingController {
             long chattingMessageIdx = chattingService.insertChattingMessage(chattingMessageDto);
 
             result.put("success", true);
-            result.put("idx", chattingIdx);
+            result.put("idx", chattingMessageIdx);
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "채팅방을 등록하는데 실패했습니다.");
@@ -119,6 +141,12 @@ public class ChattingController {
         HttpSession session = request.getSession();
 
         UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
 
         try {
             // ChattingDto 객체 생성
@@ -152,6 +180,14 @@ public class ChattingController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         try {
             // ChattingDto 객체 생성
             ChattingDto chattingDto = ChattingDto.builder()
@@ -180,6 +216,14 @@ public class ChattingController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         try {
             // 채팅방 삭제
             int success = chattingService.deleteChatting(chattingIdx);
@@ -202,6 +246,14 @@ public class ChattingController {
                                                                @RequestParam(value = "user_idx") long userIdx){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
+
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
 
         try {
             Map<String, Object> param = new HashMap<>();
@@ -233,6 +285,14 @@ public class ChattingController {
                                                       @RequestParam(value = "link_idx") long linkIdx) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
+
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
 
         try {
             Map<String, Object> param = new HashMap<>();

@@ -33,13 +33,20 @@ public class ReportController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         try {
             Map<String, Object> param = new HashMap<>();
             param.put("page", page);
             param.put("limit", limit);
             param.put("title", title);
 
-            UserDto loginInfo = authUtil.getLoginInfo(session);
             if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N")) {
                 param.put("user_idx", loginInfo.getUserIdx());
             }
@@ -60,10 +67,17 @@ public class ReportController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         try {
             ReportDto reportDto = reportService.getReportByIdx(reportIdx);
 
-            UserDto loginInfo = authUtil.getLoginInfo(session);
             if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N") && reportDto.getCreatorIdx() != loginInfo.getUserIdx()) {
                 result.put("success", true);
                 result.put("detail", reportDto);
@@ -88,9 +102,15 @@ public class ReportController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
-        try {
-            UserDto loginInfo = authUtil.getLoginInfo(session);
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
 
+            return result;
+        }
+
+        try {
             // ReportDto 객체 생성
             ReportDto reportDto = ReportDto.builder()
                     .title(title)
@@ -123,9 +143,16 @@ public class ReportController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         try {
             // 관리자 또는 팀장이 확인하지 않은 보고서만 수정 가능
-            UserDto loginInfo = authUtil.getLoginInfo(session);
             if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N")) {
                 ReportDto reportDto = reportService.getReportByIdx(reportIdx);
                 if (reportDto.getApproverIdx() != 0 || reportDto.getCreatorIdx() != loginInfo.getUserIdx()) {
@@ -164,9 +191,16 @@ public class ReportController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         try {
             // 관리자 또는 팀장이 확인하지 않은 보고서만 삭제 가능
-            UserDto loginInfo = authUtil.getLoginInfo(session);
             if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N")) {
                 ReportDto reportDto = reportService.getReportByIdx(reportIdx);
                 if (reportDto.getApproverIdx() != 0 || reportDto.getCreatorIdx() != loginInfo.getUserIdx()) {
@@ -199,7 +233,12 @@ public class ReportController {
         HttpSession session = request.getSession();
 
         UserDto loginInfo = authUtil.getLoginInfo(session);
-        if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N")) {
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        } else if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N")) {
             result.put("success", false);
             result.put("error", "보고서를 수정하는데 실패했습니다.");
 

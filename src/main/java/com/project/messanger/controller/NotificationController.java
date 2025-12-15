@@ -33,6 +33,14 @@ public class NotificationController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
         try {
             Map<String, Object> param = new HashMap<>();
             param.put("page", page);
@@ -58,8 +66,7 @@ public class NotificationController {
 
         // 로그인 체크
         UserDto loginInfo = authUtil.getLoginInfo(session);
-        if (loginInfo == null)
-        {
+        if (loginInfo == null) {
             result.put("success", false);
             result.put("error", "알림을 불러올 수 없습니다.");
 
