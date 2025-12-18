@@ -62,6 +62,7 @@ public class FileController {
             }
             fileDto.setUserIdx(loginInfo.getUserIdx());
 
+            // 파일 등록
             long fileIdx = fileService.insertFile(fileDto);
 
             result.put("success", true);
@@ -115,16 +116,20 @@ public class FileController {
                              @RequestParam("file_idx") long fileIdx) throws ServletException, IOException {
         HttpSession session = request.getSession();
 
+        // 파일 조회
         FileDto fileDto = fileService.getFileByIdx(fileIdx);
         String fileName = new String(fileDto.getName().getBytes("UTF-8"), "8859_1");
 
+        // 파일 로드
         File file = new File(fileDto.getFilePath());
         FileInputStream in = new FileInputStream(fileDto.getFilePath());
 
+        // 헤더 세팅
         response.setContentType("application/octet-stream");
         response.setHeader("Content-Disposition", "attachment; filename=" + fileName);
         OutputStream os = response.getOutputStream();
 
+        // 바이트 변환
         int length;
         byte[] buffer = new byte[(int)file.length()];
         while ((length = in.read(buffer)) > 0) {

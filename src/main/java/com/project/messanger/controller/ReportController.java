@@ -1,6 +1,7 @@
 package com.project.messanger.controller;
 
 import com.project.messanger.dto.ReportDto;
+import com.project.messanger.dto.ScheduleDto;
 import com.project.messanger.dto.UserDto;
 import com.project.messanger.service.ReportService;
 import com.project.messanger.util.AuthUtil;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -51,8 +53,16 @@ public class ReportController {
                 param.put("user_idx", loginInfo.getUserIdx());
             }
 
-            result.put("success", true);
-            result.put("list", reportService.getReportList(param));
+            // 보고서 목록 조회
+            List<ReportDto> reportList = reportService.getReportList(param);
+            boolean isEmpty = reportList.isEmpty();
+
+            result.put("success", !isEmpty);
+            if (isEmpty) {
+                result.put("error", "조회할 데이터가 없습니다.");
+            } else {
+                result.put("list", reportList);
+            }
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "보고서 불러올 수 없습니다.");
@@ -76,8 +86,8 @@ public class ReportController {
         }
 
         try {
+            // 보고서 조회
             ReportDto reportDto = reportService.getReportByIdx(reportIdx);
-
             if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N") && reportDto.getCreatorIdx() != loginInfo.getUserIdx()) {
                 result.put("success", true);
                 result.put("detail", reportDto);
@@ -85,7 +95,6 @@ public class ReportController {
                 result.put("success", false);
                 result.put("error", "보고서 상세를 불러올 수 없습니다.");
             }
-
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "보고서 상세를 불러올 수 없습니다.");
@@ -173,7 +182,7 @@ public class ReportController {
             // 보고서 수정
             int success = reportService.updateReport(reportDto);
 
-            result.put("success", success == 1);
+            result.put("success", success != 0);
             if (success == 0) {
                 result.put("error", "보고서를 수정하는데 실패했습니다.");
             }
@@ -214,7 +223,7 @@ public class ReportController {
             // 보고서 삭제
             int success = reportService.deleteReport(reportIdx);
 
-            result.put("success", success == 1);
+            result.put("success", success != 0);
             if (success == 0) {
                 result.put("error", "보고서를 삭제하는데 실패했습니다.");
             }
@@ -246,6 +255,15 @@ public class ReportController {
         }
 
         try {
+            // 승인할 데이터 확인
+            ReportDto beforeData = reportService.getReportByIdx(reportIdx);
+            if(beforeData == null) {
+                result.put("success", false);
+                result.put("error", "승인할 데이터가 없습니다.");
+
+                return result;
+            }
+
             // ReportDto 객체 생성
             ReportDto reportDto = ReportDto.builder()
                     .reportIdx(reportIdx)
@@ -255,7 +273,7 @@ public class ReportController {
             // 보고서 승인
             int success = reportService.updateReport(reportDto);
 
-            result.put("success", success == 1);
+            result.put("success", success != 0);
             if (success == 0) {
                 result.put("error", "보고서를 수정하는데 실패했습니다.");
             }

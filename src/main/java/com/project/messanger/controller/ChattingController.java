@@ -48,7 +48,7 @@ public class ChattingController {
             Map<String, Object> param = new HashMap<>();
             param.put("page", page);
             param.put("limit", limit);
-            param.put("user_idx", authUtil.getLoginInfo(session).getUserIdx());
+            param.put("user_idx", loginInfo.getUserIdx());
 
             result.put("success", true);
             result.put("list", chattingService.getChattingMessageList(param));
@@ -77,7 +77,7 @@ public class ChattingController {
         try {
             Map<String, Object> param = new HashMap<>();
             param.put("name", name);
-            param.put("user_idx", authUtil.getLoginInfo(session).getUserIdx());
+            param.put("user_idx", loginInfo.getUserIdx());
 
             result.put("success", true);
             result.put("list", chattingService.getChattingList(param));
@@ -257,7 +257,7 @@ public class ChattingController {
 
         try {
             Map<String, Object> param = new HashMap<>();
-            param.put("user_idx", authUtil.getLoginInfo(session).getUserIdx());
+            param.put("user_idx", loginInfo.getUserIdx());
             ChattingDto chattingDto = chattingService.getChattingByIdx(param);
             if (chattingDto == null) {
                 result.put("error", "멤버를 추가하는데 실패했습니다.");
@@ -296,7 +296,7 @@ public class ChattingController {
 
         try {
             Map<String, Object> param = new HashMap<>();
-            param.put("user_idx", authUtil.getLoginInfo(session).getUserIdx());
+            param.put("user_idx", loginInfo.getUserIdx());
             ChattingDto chattingDto = chattingService.getChattingByIdx(param);
             if (chattingDto == null) {
                 result.put("error", "멤버를 삭제하는데 실패했습니다.");

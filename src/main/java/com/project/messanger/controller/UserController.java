@@ -42,6 +42,7 @@ public class UserController {
         }
 
         try {
+            // 파라미터 세팅
             Map<String, Object> param = new HashMap<>();
             param.put("page", page);
             param.put("limit", limit);
@@ -49,8 +50,16 @@ public class UserController {
             param.put("user_name", userName);
             param.put("phone_number", phoneNumber);
 
-            result.put("success", true);
-            result.put("list", userService.getUserList(param));
+            // 회원 목록 조회
+            List<UserDto> userList = userService.getUserList(param);
+            boolean isEmpty = userList.isEmpty();
+
+            result.put("success", !isEmpty);
+            if (isEmpty) {
+                result.put("error", "조회할 데이터가 없습니다.");
+            } else {
+                result.put("list", userList);
+            }
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "회원 정보를 불러올 수 없습니다.");
@@ -74,8 +83,14 @@ public class UserController {
         }
 
         try {
-            result.put("success", true);
-            result.put("detail", userService.getUserByIdx(userIdx));
+            UserDto userDto = userService.getUserByIdx(userIdx);
+
+            result.put("success", userDto != null);
+            if (userDto == null) {
+                result.put("error", "조회할 데이터가 없습니다.");
+            } else {
+                result.put("detail", userDto);
+            }
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "회원 상세를 불러올 수 없습니다.");
@@ -127,7 +142,7 @@ public class UserController {
                 userDto.setLeaderYn(leaderYn);
                 userDto.setAdminYn(adminYn);
             }
-            
+
             // 회원등록
             long userIdx = userService.insertUser(userDto);
 
@@ -168,6 +183,15 @@ public class UserController {
         }
 
         try {
+            // 수정할 데이터 확인
+            UserDto beforeData = userService.getUserByIdx(userIdx);
+            if (beforeData == null) {
+                result.put("success", false);
+                result.put("error", "수정할 데이터가 없습니다.");
+
+                return result;
+            }
+
             // UserDto 객체 생성
             UserDto userDto = UserDto.builder()
                     .userIdx(userIdx)
@@ -196,7 +220,7 @@ public class UserController {
                 userService.deleteTeamUserLink(deleteLinkIdxList);
             }
 
-            result.put("success", success == 1);
+            result.put("success", success != 0);
             if (success == 0) {
                 result.put("error", "회원을 수정하는데 실패했습니다.");
             }
@@ -223,6 +247,15 @@ public class UserController {
         }
 
         try {
+            // 삭제할 데이터 확인
+            UserDto beforeData = userService.getUserByIdx(userIdx);
+            if (beforeData == null) {
+                result.put("success", false);
+                result.put("error", "삭제할 데이터가 없습니다.");
+
+                return result;
+            }
+
             // 회원 삭제
             int success = userService.deleteUser(userIdx);
 
@@ -233,6 +266,81 @@ public class UserController {
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "회원을 삭제하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/team/list")
+    public Map<String, Object> getTeamList(HttpServletRequest request,
+                                           @RequestParam(value = "page", required = false) int page,
+                                           @RequestParam(value = "limit", required = false) int limit,
+                                           @RequestParam(value = "team_name", required = false) String teamName) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        if (!authUtil.authCheck(session)) {
+            result.put("success", false);
+            result.put("error", "팀을 조회할 권한이 없습니다.");
+
+            return result;
+        }
+
+        try {
+            // 파라미터 세팅
+            Map<String, Object> param = new HashMap<>();
+            param.put("page", page);
+            param.put("limit", limit);
+            param.put("team_name", teamName);
+
+            // 팀 목록 조회
+            List<TeamDto> teamList = userService.getTeamList(param);
+            boolean isEmpty = teamList.isEmpty();
+
+            result.put("success", !isEmpty);
+            if (isEmpty) {
+                result.put("error", "조회할 데이터가 없습니다.");
+            } else {
+                result.put("list", teamList);
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "팀 목록을 조회하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/team/detail")
+    public Map<String, Object> getTeamDetail(HttpServletRequest request,
+                                             @RequestParam("team_idx") long teamIdx) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        if (!authUtil.authCheck(session)) {
+            result.put("success", false);
+            result.put("error", "팀을 조회할 권한이 없습니다.");
+
+            return result;
+        }
+
+        try {
+            // 팀 조회
+            TeamDto teamDto = userService.getTeamByIdx(teamIdx);
+
+            result.put("success", teamDto != null);
+            if (teamDto == null) {
+                result.put("error", "조회할 데이터가 없습니다.");
+            } else {
+                // 팀에 소속된 유저 목록 조회
+                List<Long> userList = userService.getUserListByTeamIdx(teamIdx);
+
+                result.put("detail", teamDto);
+                result.put("user_list", userList);
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "팀 목록을 조회하는데 실패했습니다.");
         }
 
         return result;
@@ -282,6 +390,15 @@ public class UserController {
         }
 
         try {
+            // 수정할 데이터 확인
+            TeamDto beforeData = userService.getTeamByIdx(teamIdx);
+            if (beforeData == null) {
+                result.put("success", false);
+                result.put("error", "수정할 데이터가 없습니다.");
+
+                return result;
+            }
+
             // TeamDto 객체 생성
             TeamDto teamDto = TeamDto.builder()
                     .teamIdx(teamIdx)
@@ -318,6 +435,15 @@ public class UserController {
         }
 
         try {
+            // 삭제할 데이터 확인
+            TeamDto beforeData = userService.getTeamByIdx(teamIdx);
+            if (beforeData == null) {
+                result.put("success", false);
+                result.put("error", "삭제할 데이터가 없습니다.");
+
+                return result;
+            }
+
             // 팀 삭제
             int success = userService.deleteTeam(teamIdx);
 
@@ -433,7 +559,7 @@ public class UserController {
 
             return result;
         }
-        
+
         try {
             // UserDto 객체 생성
             UserDto userDto = UserDto.builder()

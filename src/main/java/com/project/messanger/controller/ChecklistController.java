@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,20 +39,14 @@ public class ChecklistController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
-        UserDto loginInfo = authUtil.getLoginInfo(session);
-        if (loginInfo == null) {
-            result.put("success", false);
-            result.put("error", "로그인 해주세요.");
-
-            return result;
-        }
-
         // 권한 체크
-        if (!authUtil.authCheck(session)) {
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N")) {
             my = true;
         }
 
         try {
+            // 파라미터 세팅
             Map<String, Object> param = new HashMap<>();
             param.put("page", page);
             param.put("limit", limit);
@@ -59,12 +54,20 @@ public class ChecklistController {
             param.put("status", status);
 
             if (my) {
-                param.put("user_idx", authUtil.getLoginInfo(session).getUserIdx());
+                param.put("user_idx", loginInfo.getUserIdx());
                 param.put("team_idx_list", authUtil.getTeamList(session));
             }
 
-            result.put("success", true);
-            result.put("list", checklistService.getChecklistList(param));
+            // 체크리스트 목록 조회
+            List<ChecklistDto> checklistList = checklistService.getChecklistList(param);
+            boolean isEmpty = checklistList.isEmpty();
+
+            result.put("success", !isEmpty);
+            if (isEmpty) {
+                result.put("error", "조회할 데이터가 없습니다.");
+            } else {
+                result.put("list", checklistList);
+            }
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "체크리스트를 불러올 수 없습니다.");
@@ -88,11 +91,19 @@ public class ChecklistController {
 
         try {
             Map<String, Object> param = new HashMap<>();
-            param.put("user_idx", authUtil.getLoginInfo(session).getUserIdx());
+            param.put("user_idx", loginInfo.getUserIdx());
             param.put("team_idx_list", authUtil.getTeamList(session));
 
-            result.put("success", true);
-            result.put("list", checklistService.getChecklistMainList(param));
+            // 체크리스트 메인 목록 조회
+            List<ChecklistDto> checklistList = checklistService.getChecklistMainList(param);
+            boolean isEmpty = checklistList.isEmpty();
+
+            result.put("success", !isEmpty);
+            if (isEmpty) {
+                result.put("error", "조회할 데이터가 없습니다.");
+            } else {
+                result.put("list", checklistList);
+            }
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "체크리스트를 불러올 수 없습니다.");
@@ -116,6 +127,7 @@ public class ChecklistController {
         }
 
         try {
+            // 체크리스트 조회
             ChecklistDto checklistDto = checklistService.getChecklistByIdx(checklistIdx);
             if(checklistDto == null) {
                 result.put("success", false);
@@ -124,6 +136,7 @@ public class ChecklistController {
                 return result;
             }
 
+            // 체크리스트 상세 조회
             List<ChecklistUserLinkDto> goalUserLinkList = checklistService.getChecklistUserLink(checklistIdx);
             if (goalUserLinkList == null) {
                 result.put("success", false);
@@ -172,16 +185,9 @@ public class ChecklistController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
-        UserDto loginInfo = authUtil.getLoginInfo(session);
-        if (loginInfo == null) {
-            result.put("success", false);
-            result.put("error", "로그인 해주세요.");
-
-            return result;
-        }
-
         // 권한 체크
-        if (!authUtil.authCheck(session)) {
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (!loginInfo.getAdminYn().equals("N") && !loginInfo.getLeaderYn().equals("N")) {
             result.put("success", false);
             result.put("error", "체크리스트를 등록할 권한이 없습니다.");
 
@@ -197,7 +203,11 @@ public class ChecklistController {
                         .creatorIdx(loginInfo.getUserIdx())
                         .build();
 
+            // 체크리스트 등록
             long checklistIdx = checklistService.insertChecklist(checklistDto);
+
+            // 체크리스트 항목 등록
+            checklistService.insertChecklistItem(checklistIdx, itemTitleList, itemDescriptionList);
 
             NotificationDto notificationDto = NotificationDto.builder()
                     .type("CHECKLIST")
@@ -221,8 +231,6 @@ public class ChecklistController {
                 notificationService.insertNotificationByUserIdx(notificationDto, userIdxList);
             }
 
-            checklistService.insertChecklistItem(checklistIdx, itemTitleList, itemDescriptionList);
-
             result.put("success", true);
             result.put("idx", checklistIdx);
         } catch (Exception e) {
@@ -239,8 +247,10 @@ public class ChecklistController {
                                                @RequestParam(value = "title", required = false) String title,
                                                @RequestParam(value = "description", required = false) String description,
                                                @RequestParam(value = "status", required = false) String status,
+                                               @RequestParam(value = "item_idx", required = false) List<Long> itemIdxList,
                                                @RequestParam(value = "item_title", required = false) List<String> itemTitleList,
                                                @RequestParam(value = "item_description", required = false) List<String> itemDescriptionList,
+                                               @RequestParam(value = "delete_item_idx", required = false) List<Long> deleteItemIdxList,
                                                @RequestParam(value = "user_idx", required = false) List<Long> userIdxList,
                                                @RequestParam(value = "team_idx", required = false) List<Long> teamIdxList,
                                                @RequestParam(value = "delete_link_idx", required = false) List<Long> deleteLinkIdxList){
@@ -264,6 +274,15 @@ public class ChecklistController {
         }
 
         try {
+            // 수정할 데이터 확인
+            ChecklistDto beforeData = checklistService.getChecklistByIdx(checklistIdx);
+            if (beforeData == null) {
+                result.put("success", false);
+                result.put("error", "수정할 데이터가 없습니다.");
+
+                return result;
+            }
+
             // ChecklistDto 객체 생성
             ChecklistDto checklistDto = ChecklistDto.builder()
                     .checklistIdx(checklistIdx)
@@ -275,13 +294,39 @@ public class ChecklistController {
             // 체크리스트 수정
             int success = checklistService.updateChecklist(checklistDto);
 
+            // 체크리스트 항목 수정
+            List<Integer> updateIdxList = new ArrayList<>();
             for (int i = 0; i < itemTitleList.size(); i++) {
+                if (itemIdxList.get(i) == 0) {
+                    continue;
+                }
+
+                // ChecklistItemDto 세팅
                 ChecklistItemDto checklistItemDto = ChecklistItemDto.builder()
+                        .itemIdx(itemIdxList.get(i))
                         .title(itemTitleList.get(i))
                         .description(itemDescriptionList.get(i))
                         .build();
 
                 checklistService.updateChecklistItem(checklistItemDto);
+                updateIdxList.add(i);
+            }
+
+            // 수정한 항목 목록 제거
+            for (int idx : updateIdxList) {
+                itemTitleList.remove(idx);
+                itemDescriptionList.remove(idx);
+                itemIdxList.remove(idx);
+            }
+
+            // 체크리스트 항목 등록
+            if (itemTitleList != null) {
+                checklistService.insertChecklistItem(checklistIdx, itemTitleList, itemDescriptionList);
+            }
+
+            // 체크리스트 항목 삭제
+            if (deleteItemIdxList != null) {
+                checklistService.deleteChecklistItem(deleteItemIdxList);
             }
 
             // 담당자 팀 추가
@@ -299,7 +344,7 @@ public class ChecklistController {
                 checklistService.deleteChecklistUserLink(deleteLinkIdxList);
             }
 
-            result.put("success", success == 1);
+            result.put("success", success != 0);
             if (success == 0) {
                 result.put("error", "체크리스트를 수정하는데 실패했습니다.");
             }
@@ -334,6 +379,15 @@ public class ChecklistController {
         }
 
         try {
+            // 삭제할 데이터 확인
+            ChecklistDto beforeData = checklistService.getChecklistByIdx(checklistIdx);
+            if (beforeData == null) {
+                result.put("success", false);
+                result.put("error", "삭제할 데이터가 없습니다.");
+
+                return result;
+            }
+
             // 체크리스트 삭제
             int success = checklistService.deleteChecklist(checklistIdx);
 
@@ -367,6 +421,7 @@ public class ChecklistController {
         }
 
         try {
+            // 체크리스트 담당자 확인
             List<ChecklistUserLinkDto> checklistUserLinkList = checklistService.getChecklistUserLink(checklistIdx);
             if (checklistUserLinkList == null) {
                 result.put("success", false);
@@ -399,6 +454,7 @@ public class ChecklistController {
                     .content(content)
                     .build();
 
+            // 체크리스트 등록
             long logIdx = checklistService.insertChecklistLog(checklistLogDto);
             if(logIdx == 0) {
                 result.put("success", false);
@@ -436,6 +492,7 @@ public class ChecklistController {
         }
 
         try {
+            // 체크리스트 담당자 확인
             List<ChecklistUserLinkDto> checklistUserLinkList = checklistService.getChecklistUserLink(checklistIdx);
             if (checklistUserLinkList == null) {
                 result.put("success", false);
@@ -461,6 +518,7 @@ public class ChecklistController {
                 }
             }
 
+            // 수정할 데이터 확인
             List<ChecklistLogDto> checklistLogList = checklistService.getChecklistLog(itemIdx);
             if (checklistLogList.getFirst().getLogIdx() == logIdx) {
                 result.put("success", false);
@@ -479,7 +537,7 @@ public class ChecklistController {
             // 체크리스트 결과 수정
             int success = checklistService.updateChecklistLog(checklistLogDto);
 
-            result.put("success", success == 1);
+            result.put("success", success != 0);
             if (success == 0) {
                 result.put("error", "체크리스트 결과를 수정하는데 실패했습니다.");
             }
@@ -508,6 +566,7 @@ public class ChecklistController {
         }
 
         try {
+            // 체크리스트 담당자 확인
             List<ChecklistUserLinkDto> checklistUserLinkList = checklistService.getChecklistUserLink(checklistIdx);
             if (checklistUserLinkList == null) {
                 result.put("success", false);
@@ -533,6 +592,7 @@ public class ChecklistController {
                 }
             }
 
+            // 삭제할 데이터 확인
             List<ChecklistLogDto> goalLogList = checklistService.getChecklistLog(itemIdx);
             if (goalLogList.getFirst().getLogIdx() == logIdx) {
                 result.put("success", false);
@@ -544,7 +604,7 @@ public class ChecklistController {
             // 체크리스트 결과 삭제
             int success = checklistService.deleteChecklistLog(logIdx);
 
-            result.put("success", success == 1);
+            result.put("success", success != 0);
             if (success == 0) {
                 result.put("error", "체크리스트 결과를 삭제하는데 실패했습니다.");
             }

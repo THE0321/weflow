@@ -22,9 +22,13 @@ public interface ChecklistMapper {
 
     int deleteChecklist(long checklistIdx);
 
+    ChecklistItemDto getChecklistItemByIdx(long itemIdx);
+
     int insertChecklistItem(List<ChecklistItemDto> list);
 
     int updateChecklistItem(ChecklistItemDto checklistItemDto);
+
+    int deleteChecklistItem(List<Long> itemIdx);
 
     List<ChecklistUserLinkDto> getChecklistUserLink(long checklistIdx);
     

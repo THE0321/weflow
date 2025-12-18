@@ -93,6 +93,7 @@
                 )
             </if>
         </where>
+        ORDER BY goal.goal_idx DESC
         LIMIT ${limit} OFFSET ${offset}
     </select>
 

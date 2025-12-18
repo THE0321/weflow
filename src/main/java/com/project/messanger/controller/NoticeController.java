@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -40,8 +41,16 @@ public class NoticeController {
             param.put("title", title);
             param.put("is_admin", authUtil.authCheck(session, true));
 
-            result.put("success", true);
-            result.put("list", noticeService.getNoticeList(param));
+            // 공지사항 조회
+            List<NoticeDto> noticeList = noticeService.getNoticeList(param);
+            boolean isEmpty = noticeList.isEmpty();
+
+            result.put("success", !isEmpty);
+            if (isEmpty) {
+                result.put("error", "조회할 데이터가 없습니다.");
+            } else {
+                result.put("list", noticeList);
+            }
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "공지사항을 불러올 수 없습니다.");
@@ -57,12 +66,20 @@ public class NoticeController {
         HttpSession session = request.getSession();
 
         try {
+            // 파라미터 세팅
             Map<String, Object> param = new HashMap<>();
             param.put("notice_idx", noticeIdx);
             param.put("is_admin", authUtil.authCheck(session, true));
 
-            result.put("success", true);
-            result.put("detail", noticeService.getNoticeDetail(param));
+            // 공지사항 조회
+            NoticeDto noticeDto = noticeService.getNoticeDetail(param);
+
+            result.put("success", noticeDto != null);
+            if (noticeDto == null) {
+                result.put("error", "조회할 데이터가 없습니다.");
+            } else {
+                result.put("detail", noticeDto);
+            }
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "공지사항 상세를 불러올 수 없습니다.");
@@ -116,7 +133,7 @@ public class NoticeController {
 
     @PostMapping("/modify")
     public Map<String, Object> updateNotice(HttpServletRequest request,
-                                            @RequestParam(value = "notice_idx", required = false) long noticeIdx,
+                                            @RequestParam(value = "notice_idx") long noticeIdx,
                                             @RequestParam(value = "title", required = false) String title,
                                             @RequestParam(value = "content", required = false) String content,
                                             @RequestParam(value = "link_url", required = false) String linkUrl,
@@ -135,6 +152,20 @@ public class NoticeController {
         }
 
         try {
+            // 파라미터 세팅
+            Map<String, Object> param = new HashMap<>();
+            param.put("notice_idx", noticeIdx);
+            param.put("is_admin", authUtil.authCheck(session, true));
+
+            // 수정할 데이터 확인
+            NoticeDto beforeData = noticeService.getNoticeDetail(param);
+            if (beforeData == null) {
+                result.put("success", false);
+                result.put("error", "수정할 데이터가 없습니다.");
+
+                return result;
+            }
+
             // NoticeDto 객체 생성
             NoticeDto noticeDto = NoticeDto.builder()
                     .noticeIdx(noticeIdx)
@@ -171,6 +202,20 @@ public class NoticeController {
         if (!authUtil.authCheck(session, true)) {
             result.put("success", false);
             result.put("error", "공지사항을 삭제할 권한이 없습니다.");
+
+            return result;
+        }
+
+        // 파라미터 세팅
+        Map<String, Object> param = new HashMap<>();
+        param.put("notice_idx", noticeIdx);
+        param.put("is_admin", authUtil.authCheck(session, true));
+
+        // 삭제할 데이터 확인
+        NoticeDto beforeData = noticeService.getNoticeDetail(param);
+        if (beforeData == null) {
+            result.put("success", false);
+            result.put("error", "수정할 데이터가 없습니다.");
 
             return result;
         }

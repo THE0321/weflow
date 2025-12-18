@@ -24,9 +24,11 @@ public interface UserMapper {
 
     int deleteUser(long userIdx);
 
+    List<TeamDto> getTeamList(Map<String, Object> param);
+
     List<Long> getTeamListByUserIdx(long userIdx);
 
-    List<TeamDto> getTeamListByTeamIdx(List<Long> list);
+    TeamDto getTeamByIdx(long teamIdx);
 
     long insertTeam(String teamName);
 

@@ -97,6 +97,16 @@ public class ScheduleService {
     }
 
     /*
+     * get schedule by idx
+     * @param long
+     * return ScheduleDto
+     */
+    @Transactional(readOnly = true)
+    public ScheduleAttenderLinkDto getScheduleAttenderLinkByIdx(long linkIdx) {
+        return scheduleMapper.getScheduleAttenderLinkByIdx(linkIdx);
+    }
+
+    /*
      * insert schedule attender link
      * @param List<ScheduleAttenderLinkDto>
      * return int

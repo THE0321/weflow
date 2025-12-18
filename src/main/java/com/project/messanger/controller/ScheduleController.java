@@ -53,6 +53,7 @@ public class ScheduleController {
         }
 
         try {
+            // 파라미터 세팅
             Map<String, Object> param = new HashMap<>();
             param.put("page", page);
             param.put("limit", limit);
@@ -62,8 +63,16 @@ public class ScheduleController {
                 param.put("user_idx", loginInfo.getUserIdx());
             }
 
-            result.put("success", true);
-            result.put("list", scheduleService.getScheduleList(param));
+            // 일정 목록 조회
+            List<ScheduleDto> scheduleList = scheduleService.getScheduleList(param);
+            boolean isEmpty = scheduleList.isEmpty();
+
+            result.put("success", !isEmpty);
+            if (isEmpty) {
+                result.put("error", "조회할 데이터가 없습니다.");
+            } else {
+                result.put("list", scheduleList);
+            }
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "일정을 불러올 수 없습니다.");
@@ -87,6 +96,7 @@ public class ScheduleController {
         }
 
         try {
+            // 파라미터 세팅
             Map<String, Object> param = new HashMap<>();
             param.put("schedule_date", scheduleDate);
 
@@ -95,8 +105,16 @@ public class ScheduleController {
                 param.put("user_idx", loginInfo.getUserIdx());
             }
 
-            result.put("success", true);
-            result.put("list", scheduleService.getDateList(param));
+            // 회원 목록 조회
+            List<ScheduleDto> dateList = scheduleService.getDateList(param);
+            boolean isEmpty = dateList.isEmpty();
+
+            result.put("success", !isEmpty);
+            if (isEmpty) {
+                result.put("error", "조회할 데이터가 없습니다.");
+            } else {
+                result.put("list", dateList);
+            }
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "날짜 리스트를 불러올 수 없습니다.");
@@ -120,6 +138,7 @@ public class ScheduleController {
         }
 
         try {
+            // 파라미터 세팅
             Map<String, Object> param = new HashMap<>();
             param.put("schedule_idx", scheduleIdx);
 
@@ -128,9 +147,19 @@ public class ScheduleController {
                 param.put("user_idx", loginInfo.getUserIdx());
             }
 
-            result.put("success", true);
-            result.put("detail", scheduleService.getScheduleByIdx(param));
-            result.put("attender_list", scheduleService.getScheduleAttenderLink(scheduleIdx));
+            // 일정 조회
+            ScheduleDto scheduleDto = scheduleService.getScheduleByIdx(param);
+
+            result.put("success", scheduleDto != null);
+            if (scheduleDto == null) {
+                result.put("error", "조회할 데이터가 없습니다.");
+            } else {
+                // 일정 참석자 조회
+                List<ScheduleAttenderLinkDto> scheduleAttenderList = scheduleService.getScheduleAttenderLink(scheduleIdx);
+
+                result.put("detail", scheduleDto);
+                result.put("attender_list", scheduleAttenderList);
+            }
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "일정 상세를 불러올 수 없습니다.");
@@ -229,11 +258,18 @@ public class ScheduleController {
             Map<String, Object> param = new HashMap<>();
             param.put("schedule_idx", scheduleIdx);
 
+            // 수정할 데이터 확인
             ScheduleDto scheduleInfo = scheduleService.getScheduleByIdx(param);
+            if (scheduleInfo == null) {
+                result.put("success", false);
+                result.put("error", "수정할 데이터가 없습니다.");
 
+                return result;
+            }
+
+            // 관리자가 아닌 경우 등록자인지 확인
             if (loginInfo.getAdminYn().equals("N")) {
-                // 관리자도 팀장도 아닌 경우 등록자인지 확인
-                if (scheduleInfo == null || scheduleInfo.getCreatorIdx() != loginInfo.getUserIdx()) {
+                if (scheduleInfo.getCreatorIdx() != loginInfo.getUserIdx()) {
                     result.put("success", false);
                     result.put("error", "일정을 수정하는데 실패했습니다.");
 
@@ -266,7 +302,7 @@ public class ScheduleController {
                 scheduleService.deleteScheduleAttenderLink(scheduleIdx, deleteIdxList);
             }
 
-            result.put("success", success == 1);
+            result.put("success", success != 0);
             if (success == 0) {
                 result.put("error", "일정을 수정하는데 실패했습니다.");
             }
@@ -293,14 +329,21 @@ public class ScheduleController {
         }
 
         try {
-            // 권한 체크
-            if (loginInfo.getAdminYn().equals("N")) {
-                // 관리자도 팀장도 아닌 경우 등록자인지 확인
-                Map<String, Object> param = new HashMap<>();
-                param.put("schedule_idx", scheduleIdx);
+            Map<String, Object> param = new HashMap<>();
+            param.put("schedule_idx", scheduleIdx);
 
-                ScheduleDto scheduleDto = scheduleService.getScheduleByIdx(param);
-                if (scheduleDto == null || scheduleDto.getCreatorIdx() != loginInfo.getUserIdx()) {
+            // 삭제할 데이터 확인
+            ScheduleDto beforeData = scheduleService.getScheduleByIdx(param);
+            if (beforeData == null) {
+                result.put("success", false);
+                result.put("error", "삭제할 데이터가 없습니다.");
+
+                return result;
+            }
+
+            // 관리자가 아닌 경우 등록자인지 확인
+            if (loginInfo.getAdminYn().equals("N")) {
+                if (beforeData.getCreatorIdx() != loginInfo.getUserIdx()) {
                     result.put("success", false);
                     result.put("error", "일정을 삭제하는데 실패했습니다.");
 
@@ -344,6 +387,18 @@ public class ScheduleController {
         }
 
         try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("schedule_idx", scheduleIdx);
+
+            // 승인할 데이터 확인
+            ScheduleDto beforeData = scheduleService.getScheduleByIdx(param);
+            if(beforeData == null) {
+                result.put("success", false);
+                result.put("error", "승인할 데이터가 없습니다.");
+
+                return result;
+            }
+
             // ScheduleDto 객체 생성
             ScheduleDto scheduleDto = ScheduleDto.builder()
                     .scheduleIdx(scheduleIdx)
@@ -381,10 +436,19 @@ public class ScheduleController {
         }
 
         try {
+            // 승인할 데이터 확인
+            ScheduleAttenderLinkDto beforeData = scheduleService.getScheduleAttenderLinkByIdx(linkIdx);
+            if (beforeData == null || beforeData.getUserIdx() != loginInfo.getUserIdx()) {
+                result.put("success", false);
+                result.put("error", "승인할 데이터가 없습니다.");
+
+                return result;
+            }
+
             // ScheduleAttenderLinkDto 객체 생성
             ScheduleAttenderLinkDto scheduleAttenderLinkDto = ScheduleAttenderLinkDto.builder()
                     .linkIdx(linkIdx)
-                    .userIdx(authUtil.getLoginInfo(session).getUserIdx())
+                    .userIdx(loginInfo.getUserIdx())
                     .isAttend(isAttend)
                     .build();
 

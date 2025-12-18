@@ -132,6 +132,12 @@
         WHERE checklist_idx = #{checklistIdx}
     </delete>
 
+    <select id="getChecklistItemByIdx" parameterType="long" resultMap="ChecklistMap">
+        SELECT *
+        FROM checklist_item
+        WHERE item_idx = #{itemIdx}
+    </select>
+
     <insert id="insertChecklistItem" parameterType="com.project.messanger.dto.ChecklistItemDto">
         INSERT INTO checklist_item
         (
@@ -158,6 +164,11 @@
             updated_date = NOW()
         WHERE item_idx = #{itemIdx}
     </update>
+
+    <delete id="deleteChecklistItem" parameterType="long">
+        DELETE FROM checklist_item
+        WHERE item_idx IN <foreach collection="list" item="value" open="(" close=")" separator=",">#{value}</foreach>
+    </delete>
 
     <select id="getChecklistUserLink" parameterType="long" resultMap="ChecklistUserLinkMap">
         SELECT *

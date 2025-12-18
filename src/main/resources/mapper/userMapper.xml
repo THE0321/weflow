@@ -89,16 +89,28 @@
         WHERE user_idx = #{userIdx}
     </update>
 
+    <select id="getTeamList" parameterType="hashmap" resultMap="TeamMap">
+        SELECT *
+        FROM team
+        <where>
+            <if test="team_name != null">
+                AND UPPER(team_name) LIKE CONCAT('%', UPPER(#{team_name}), '%')
+            </if>
+        </where>
+        ORDER BY team_idx DESC
+        LIMIT ${limit} OFFSET ${offset}
+    </select>
+
     <select id="getTeamListByUserIdx" parameterType="long" resultType="long">
         SELECT team_idx
         FROM team_user_link
         WHERE user_idx = #{userIdx}
     </select>
 
-    <select id="getTeamListByTeamIdx" parameterType="long" resultMap="TeamMap">
+    <select id="getTeamByIdx" parameterType="long" resultMap="TeamMap">
         SELECT *
         FROM team
-        WHERE team_idx IN <foreach collection="list" item="value" open="(" close=")" separator=",">#{value}</foreach>
+        WHERE team_idx = #{teamIdx}
     </select>
 
     <insert id="insertTeam" parameterType="string" useGeneratedKeys="true" keyProperty="teamIdx" keyColumn="team_idx">

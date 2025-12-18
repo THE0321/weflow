@@ -123,6 +123,12 @@
         WHERE reservation_idx = #{reservationIdx}
     </select>
 
+    <select id="getMeetingAttenderLinkByIdx" parameterType="long" resultMap="MeetingAttenderLinkMap">
+        SELECT *
+        FROM meeting_attender_link
+        WHERE link_idx = #{linkIdx}
+    </select>
+
     <insert id="insertMeetingAttenderLink" parameterType="com.project.messanger.dto.MeetingAttenderLinkDto" useGeneratedKeys="true" keyProperty="linkIdx" keyColumn="link_idx">
         INSERT INTO meeting_attender_link
         (
@@ -151,6 +157,12 @@
         DELETE FROM meeting_attender_link
         WHERE link_idx IN <foreach collection="list" item="value" open="(" close=")" separator=",">#{value}</foreach>
     </delete>
+
+    <select id="getMeetingRoomByIdx" parameterType="long" resultMap="MeetingRoomMap">
+        SELECT *
+        FROM meeting_room
+        WHERE room_idx = #{roomIdx}
+    </select>
 
     <insert id="insertMeetingRoom" parameterType="com.project.messanger.dto.MeetingRoomDto" useGeneratedKeys="true" keyProperty="roomIdx" keyColumn="room_idx">
         INSERT meeting_room

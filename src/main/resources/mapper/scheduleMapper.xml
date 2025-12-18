@@ -123,6 +123,12 @@
         WHERE schedule_idx = #{scheduleIdx}
     </select>
 
+    <select id="getScheduleAttenderLinkByIdx" parameterType="long" resultMap="ScheduleAttenderLinkMap">
+        SELECT *
+        FROM schedule_attender_link
+        WHERE link_idx = #{linkIdx}
+    </select>
+
     <insert id="insertScheduleAttenderLink" parameterType="com.project.messanger.dto.ScheduleAttenderLinkDto" useGeneratedKeys="true" keyProperty="linkIdx" keyColumn="link_idx">
         INSERT INTO schedule_attender_link
         (

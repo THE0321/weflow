@@ -95,6 +95,16 @@ public class MeetingService {
     }
 
     /*
+     * get meeting attender link by idx
+     * @param long
+     * return MeetingAttenderLinkDto
+     */
+    @Transactional
+    public MeetingAttenderLinkDto getMeetingAttenderLinkByIdx(long linkIdx) {
+        return meetingMapper.getMeetingAttenderLinkByIdx(linkIdx);
+    }
+
+    /*
      * insert meeting attender link
      * @param List<MeetingAttenderLinkDto>
      * return int
@@ -170,6 +180,16 @@ public class MeetingService {
         }
 
         return meetingMapper.deleteMeetingAttenderLink(deleteLinkIdxList);
+    }
+
+    /*
+     * get meeting room by idx
+     * @param long
+     * return MeetingRoomDto
+     */
+    @Transactional
+    public MeetingRoomDto getMeetingRoomByIdx(long roomIdx) {
+        return meetingMapper.getMeetingRoomByIdx(roomIdx);
     }
 
     /*

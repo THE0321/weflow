@@ -89,6 +89,22 @@ public class UserService {
     }
 
     /*
+     * get team list
+     * @param Map<String, Object>
+     * return List<TeamDto>
+     */
+    @Transactional(readOnly = true)
+    public List<TeamDto> getTeamList(Map<String, Object> param) {
+        int page = param.get("page") != null ? (int)param.get("page") : 1;
+
+        param.putIfAbsent("limit", 10);
+        int limit = (int)param.get("limit");
+        param.put("offset", (page-1) * limit);
+
+        return userMapper.getTeamList(param);
+    }
+
+    /*
      * get team list by user idx
      * @param long
      * return List<Long>
@@ -99,13 +115,13 @@ public class UserService {
     }
 
     /*
-     * get team list by team idx
-     * @param List<Long>
-     * return List<TeamDto>
+     * get team by idx
+     * @param long
+     * return List<Long>
      */
     @Transactional(readOnly = true)
-    public List<TeamDto> getTeamListByTeamIdx(List<Long> teamIdxList) {
-        return userMapper.getTeamListByTeamIdx(teamIdxList);
+    public TeamDto getTeamByIdx(long teamIdx) {
+        return userMapper.getTeamByIdx(teamIdx);
     }
 
     /*

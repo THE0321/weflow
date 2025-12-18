@@ -92,6 +92,16 @@ public class ChecklistService {
     }
 
     /*
+     * get checklist item by idx
+     * @param long
+     * return goalDto
+     */
+    @Transactional(readOnly = true)
+    public ChecklistItemDto getChecklistItemByIdx(long itemIdx) {
+        return checklistMapper.getChecklistItemByIdx(itemIdx);
+    }
+
+    /*
      * insert checklist item
      * @param List<String>
      * return int
@@ -121,6 +131,16 @@ public class ChecklistService {
     @Transactional
     public int updateChecklistItem(ChecklistItemDto checklistItemDto) {
         return checklistMapper.updateChecklistItem(checklistItemDto);
+    }
+
+    /*
+     * delete checklist item
+     * @param List<Long>
+     * return int
+     */
+    @Transactional
+    public int deleteChecklistItem(List<Long> deleteChecklistItemIdxList) {
+        return checklistMapper.deleteChecklistItem(deleteChecklistItemIdxList);
     }
 
     /*

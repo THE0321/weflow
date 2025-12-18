@@ -24,11 +24,15 @@ public interface MeetingMapper {
 
     List<MeetingAttenderLinkDto> getMeetingAttenderLink(long reservationIdx);
 
+    MeetingAttenderLinkDto getMeetingAttenderLinkByIdx(long linkIdx);
+
     int updateMeetingAttenderLink(MeetingAttenderLinkDto meetingAttenderLinkDto);
 
     int insertMeetingAttenderLink(List<MeetingAttenderLinkDto> list);
 
     int deleteMeetingAttenderLink(List<Long> list);
+
+    MeetingRoomDto getMeetingRoomByIdx(long roomIdx);
 
     long insertMeetingRoom(MeetingRoomDto meetingRoomDto);
 

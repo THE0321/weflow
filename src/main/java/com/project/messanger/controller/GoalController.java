@@ -35,20 +35,19 @@ public class GoalController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
+        // 권한 체크
         UserDto loginInfo = authUtil.getLoginInfo(session);
         if (loginInfo == null) {
             result.put("success", false);
             result.put("error", "로그인 해주세요.");
 
             return result;
-        }
-
-        // 권한 체크
-        if (!authUtil.authCheck(session)) {
+        } else if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N")) {
             my = true;
         }
 
         try {
+            // 파라미터 세팅
             Map<String, Object> param = new HashMap<>();
             param.put("page", page);
             param.put("limit", limit);
@@ -56,12 +55,20 @@ public class GoalController {
             param.put("status", status);
 
             if (my) {
-                param.put("user_idx", authUtil.getLoginInfo(session).getUserIdx());
+                param.put("user_idx", loginInfo.getUserIdx());
                 param.put("team_idx_list", authUtil.getTeamList(session));
             }
 
-            result.put("success", true);
-            result.put("list", goalService.getGoalList(param));
+            // 목표 목록 조회
+            List<GoalAndLogDto> goalList = goalService.getGoalList(param);
+            boolean isEmpty = goalList.isEmpty();
+
+            result.put("success", !isEmpty);
+            if (isEmpty) {
+                result.put("error", "조회할 데이터가 없습니다.");
+            } else {
+                result.put("list", goalList);
+            }
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "목표를 불러올 수 없습니다.");
@@ -76,14 +83,7 @@ public class GoalController {
         HttpSession session = request.getSession();
 
         UserDto loginInfo = authUtil.getLoginInfo(session);
-        if (loginInfo == null) {
-            result.put("success", false);
-            result.put("error", "로그인 해주세요.");
-
-            return result;
-        }
-
-        if (!authUtil.loginCheck(session)) {
+        if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N")) {
             result.put("success", false);
             result.put("error", "목표를 불러올 수 없습니다.");
 
@@ -91,12 +91,21 @@ public class GoalController {
         }
 
         try {
+            // 파라미터 세팅
             Map<String, Object> param = new HashMap<>();
-            param.put("user_idx", authUtil.getLoginInfo(session).getUserIdx());
+            param.put("user_idx", loginInfo.getUserIdx());
             param.put("team_idx_list", authUtil.getTeamList(session));
 
-            result.put("success", true);
-            result.put("list", goalService.getGoalMainList(param));
+            // 목표 조회
+            List<GoalAndLogDto> goalList = goalService.getGoalMainList(param);
+            boolean isEmpty = goalList.isEmpty();
+
+            result.put("success", !isEmpty);
+            if (isEmpty) {
+                result.put("error", "조회할 데이터가 없습니다.");
+            } else {
+                result.put("list", goalList);
+            }
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "목표를 불러올 수 없습니다.");
@@ -120,6 +129,7 @@ public class GoalController {
         }
 
         try {
+            // 목표 상세 조회
             GoalAndLogDto goalAndLogDto = goalService.getGoalByIdx(goalIdx);
             if(goalAndLogDto == null) {
                 result.put("success", false);
@@ -128,6 +138,7 @@ public class GoalController {
                 return result;
             }
 
+            // 목표 담당자 확인
             List<GoalUserLinkDto> goalUserLinkList = goalService.getGoalUserLink(goalIdx);
             if (goalUserLinkList == null) {
                 result.put("success", false);
@@ -172,25 +183,27 @@ public class GoalController {
         UserDto loginInfo = authUtil.getLoginInfo(session);
         if (loginInfo == null) {
             result.put("success", false);
-            result.put("error", "로그인 해주세요.");
-
-            return result;
-        }
-
-        if (!authUtil.loginCheck(session)) {
-            result.put("success", false);
             result.put("error", "목표 그래프를 불러올 수 없습니다.");
 
             return result;
         }
 
         try {
+            // 파라미터 세팅
             Map<String, Object> param = new HashMap<>();
-            param.put("user_idx", authUtil.getLoginInfo(session).getUserIdx());
+            param.put("user_idx", loginInfo.getUserIdx());
             param.put("team_idx_list", authUtil.getTeamList(session));
 
-            result.put("success", true);
-            result.put("list", goalService.getGoalGraph(param));
+            // 그래프 조회
+            HashMap<String, Object> graphList = goalService.getGoalGraph(param);
+            boolean isEmpty = graphList.isEmpty();
+
+            result.put("success", !isEmpty);
+            if (isEmpty) {
+                result.put("error", "조회할 데이터가 없습니다.");
+            } else {
+                result.put("list", graphList);
+            }
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "목표 그래프를 불러올 수 없습니다.");
@@ -212,16 +225,9 @@ public class GoalController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
-        UserDto loginInfo = authUtil.getLoginInfo(session);
-        if (loginInfo == null) {
-            result.put("success", false);
-            result.put("error", "로그인 해주세요.");
-
-            return result;
-        }
-
         // 권한 체크
-        if (!authUtil.authCheck(session)) {
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N")) {
             result.put("success", false);
             result.put("error", "목표를 등록할 권한이 없습니다.");
 
@@ -289,14 +295,6 @@ public class GoalController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
-        UserDto loginInfo = authUtil.getLoginInfo(session);
-        if (loginInfo == null) {
-            result.put("success", false);
-            result.put("error", "로그인 해주세요.");
-
-            return result;
-        }
-
         // 권한 체크
         if (!authUtil.authCheck(session)) {
             result.put("success", false);
@@ -306,6 +304,15 @@ public class GoalController {
         }
 
         try {
+            // 수정할 데이터 확인
+            GoalAndLogDto beforeData = goalService.getGoalByIdx(goalIdx);
+            if (beforeData == null) {
+                result.put("success", false);
+                result.put("error", "수정할 데이터가 없습니다.");
+
+                return result;
+            }
+
             // GoalDto 객체 생성
             GoalDto goalDto = GoalDto.builder()
                     .title(title)
@@ -334,7 +341,7 @@ public class GoalController {
                 goalService.deleteGoalUserLink(deleteLinkIdxList);
             }
 
-            result.put("success", success == 1);
+            result.put("success", success != 0);
             if (success == 0) {
                 result.put("error", "목표를 수정하는데 실패했습니다.");
             }
@@ -352,14 +359,6 @@ public class GoalController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
-        UserDto loginInfo = authUtil.getLoginInfo(session);
-        if (loginInfo == null) {
-            result.put("success", false);
-            result.put("error", "로그인 해주세요.");
-
-            return result;
-        }
-
         // 권한 체크
         if (!authUtil.authCheck(session)) {
             result.put("success", false);
@@ -369,10 +368,19 @@ public class GoalController {
         }
 
         try {
+            // 삭제할 데이터 확인
+            GoalAndLogDto beforeData = goalService.getGoalByIdx(goalIdx);
+            if (beforeData == null) {
+                result.put("success", false);
+                result.put("error", "삭제할 데이터가 없습니다.");
+
+                return result;
+            }
+
             // 회원 삭제
             int success = goalService.deleteGoal(goalIdx);
 
-            result.put("success", success == 1);
+            result.put("success", success != 0);
             if (success == 0) {
                 result.put("error", "목표를 삭제하는데 실패했습니다.");
             }
@@ -399,6 +407,7 @@ public class GoalController {
         }
 
         try {
+            // 목표 담당자 확인
             List<GoalUserLinkDto> goalUserLinkList = goalService.getGoalUserLink(goalIdx);
             if (goalUserLinkList == null) {
                 result.put("success", false);
@@ -424,8 +433,15 @@ public class GoalController {
                 }
             }
 
-            result.put("success", true);
-            result.put("list", goalService.getGoalLog(goalIdx));
+            // 목표 로그 조회
+            List<GoalLogDto> goalLogList = goalService.getGoalLog(goalIdx);
+
+            result.put("success", goalLogList != null);
+            if (goalLogList == null) {
+                result.put("error", "조회할 데이터가 없습니다.");
+            } else {
+                result.put("list", goalLogList);
+            }
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "실적을 조회할 수 없습니다.");
@@ -452,6 +468,7 @@ public class GoalController {
         }
 
         try {
+            // 목표 담당자 확인
             List<GoalUserLinkDto> goalUserLinkList = goalService.getGoalUserLink(goalIdx);
             if (goalUserLinkList == null) {
                 result.put("success", false);
@@ -485,6 +502,7 @@ public class GoalController {
                     .creatorIdx(loginInfo.getUserIdx())
                     .build();
 
+            // 실적 등록
             long logIdx = goalService.insertGoalLog(goalLogDto);
             if(logIdx == 0) {
                 result.put("success", false);
@@ -521,6 +539,7 @@ public class GoalController {
         }
 
         try {
+            // 목표 담당자 확인
             List<GoalUserLinkDto> goalUserLinkList = goalService.getGoalUserLink(goalIdx);
             if (goalUserLinkList == null) {
                 result.put("success", false);
@@ -546,6 +565,7 @@ public class GoalController {
                 }
             }
 
+            // 수정할 데이터 확인
             List<GoalLogDto> goalLogList = goalService.getGoalLog(goalIdx);
             if (goalLogList.getFirst().getLogIdx() == logIdx) {
                 result.put("success", false);
@@ -564,7 +584,7 @@ public class GoalController {
             // 실적 수정
             int success = goalService.updateGoalLog(goalLogDto);
 
-            result.put("success", success == 1);
+            result.put("success", success != 0);
             if (success == 0) {
                 result.put("error", "실적을 수정하는데 실패했습니다.");
             }
@@ -592,6 +612,7 @@ public class GoalController {
         }
 
         try {
+            // 목표 담당자 확인
             List<GoalUserLinkDto> goalUserLinkList = goalService.getGoalUserLink(goalIdx);
             if (goalUserLinkList == null) {
                 result.put("success", false);
@@ -617,6 +638,7 @@ public class GoalController {
                 }
             }
 
+            // 삭제할 데이터 확인
             List<GoalLogDto> goalLogList = goalService.getGoalLog(goalIdx);
             if (goalLogList.getFirst().getLogIdx() == logIdx) {
                 result.put("success", false);
@@ -628,13 +650,10 @@ public class GoalController {
             // 실적 삭제
             int success = goalService.deleteGoalLog(logIdx);
 
-            result.put("success", success == 1);
+            result.put("success", success != 0);
             if (success == 0) {
                 result.put("error", "실적을 삭제하는데 실패했습니다.");
             }
-
-            result.put("success", true);
-            result.put("idx", success);
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "실적을 삭제하는데 실패했습니다.");

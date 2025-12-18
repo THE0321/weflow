@@ -50,6 +50,7 @@ public class MeetingController {
         }
 
         try {
+            // 파라미터 세팅
             Map<String, Object> param = new HashMap<>();
             param.put("page", page);
             param.put("limit", limit);
@@ -59,8 +60,16 @@ public class MeetingController {
                 param.put("user_idx", loginInfo.getUserIdx());
             }
 
-            result.put("success", true);
-            result.put("list", meetingService.getReservationList(param));
+            // 회의실 조회
+            List<ReservationDto> reservationList = meetingService.getReservationList(param);
+            boolean isEmpty = reservationList.isEmpty();
+
+            result.put("success", !isEmpty);
+            if (isEmpty) {
+                result.put("error", "조회할 데이터가 없습니다.");
+            } else {
+                result.put("list", reservationList);
+            }
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "회의실을 불러올 수 없습니다.");
@@ -84,6 +93,7 @@ public class MeetingController {
         }
 
         try {
+            // 파라미터 세팅
             Map<String, Object> param = new HashMap<>();
             param.put("reservation_date", reservationDate);
 
@@ -92,8 +102,16 @@ public class MeetingController {
                 param.put("user_idx", loginInfo.getUserIdx());
             }
 
-            result.put("success", true);
-            result.put("list", meetingService.getDateList(param));
+            // 회원 목록 조회
+            List<ReservationDto> dateList = meetingService.getDateList(param);
+            boolean isEmpty = dateList.isEmpty();
+
+            result.put("success", !isEmpty);
+            if (isEmpty) {
+                result.put("error", "조회할 데이터가 없습니다.");
+            } else {
+                result.put("list", dateList);
+            }
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "날짜 리스트를 불러올 수 없습니다.");
@@ -117,6 +135,7 @@ public class MeetingController {
         }
 
         try {
+            // 파라미터 세팅
             Map<String, Object> param = new HashMap<>();
             param.put("reservation_idx", reservationIdx);
 
@@ -125,9 +144,19 @@ public class MeetingController {
                 param.put("user_idx", loginInfo.getUserIdx());
             }
 
-            result.put("success", true);
-            result.put("detail", meetingService.getReservationByIdx(param));
-            result.put("attender_list", meetingService.getMeetingAttenderLink(reservationIdx));
+            // 회의실 조회
+            ReservationDto reservationDto = meetingService.getReservationByIdx(param);
+
+            result.put("success", reservationDto != null);
+            if (reservationDto == null) {
+                result.put("error", "조회할 데이터가 없습니다.");
+            } else {
+                // 회의 참석자 조회
+                List<MeetingAttenderLinkDto> scheduleAttenderList = meetingService.getMeetingAttenderLink(reservationIdx);
+
+                result.put("detail", reservationDto);
+                result.put("attender_list", scheduleAttenderList);
+            }
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "회의실 상세를 불러올 수 없습니다.");
@@ -174,8 +203,10 @@ public class MeetingController {
                 reservationDto.setApproverIdx(loginInfo.getUserIdx());
             }
 
+            // 회의 등록
             long reservationIdx = meetingService.insertReservation(reservationDto);
 
+            // 회의 참석자 등록
             userIdxList.add(0, reservationDto.getCreatorIdx());
             meetingService.insertMeetingAttenderLinkByUserIdx(reservationIdx, userIdxList);
 
@@ -221,14 +252,22 @@ public class MeetingController {
         }
 
         try {
+            // 파라미터 세팅
             Map<String, Object> param = new HashMap<>();
             param.put("reservation_idx", reservationIdx);
 
+            // 수정할 데이터 확인
             ReservationDto reservationInfo = meetingService.getReservationByIdx(param);
+            if (reservationInfo == null) {
+                result.put("success", false);
+                result.put("error", "수정할 데이터가 없습니다.");
 
+                return result;
+            }
+
+            // 관리자가 아닌 경우 등록자인지 확인
             if (loginInfo.getAdminYn().equals("N")) {
-                // 관리자도 팀장도 아닌 경우 등록자인지 확인
-                if (reservationInfo == null || reservationInfo.getCreatorIdx() != loginInfo.getUserIdx()) {
+                if (reservationInfo.getCreatorIdx() != loginInfo.getUserIdx()) {
                     result.put("success", false);
                     result.put("error", "회의실 예약을 수정하는데 실패했습니다.");
 
@@ -260,7 +299,7 @@ public class MeetingController {
                 meetingService.deleteMeetingAttenderLink(reservationIdx, deleteIdxList);
             }
 
-            result.put("success", success == 1);
+            result.put("success", success != 0);
             if (success == 0) {
                 result.put("error", "회의실 예약을 수정하는데 실패했습니다.");
             }
@@ -287,15 +326,22 @@ public class MeetingController {
         }
 
         try {
-            // 권한 체크
+            // 파라미터 세팅
             Map<String, Object> param = new HashMap<>();
             param.put("reservation_idx", reservationIdx);
 
+            // 삭제할 데이터 확인
             ReservationDto reservationInfo = meetingService.getReservationByIdx(param);
+            if (reservationInfo == null) {
+                result.put("success", false);
+                result.put("error", "삭제할 데이터가 없습니다.");
 
+                return result;
+            }
+
+            // 관리자가 아닌 경우 등록자인지 확인
             if (loginInfo.getAdminYn().equals("N")) {
-                // 관리자도 팀장도 아닌 경우 등록자인지 확인
-                if (reservationInfo == null || reservationInfo.getCreatorIdx() != loginInfo.getUserIdx()) {
+                if (reservationInfo.getCreatorIdx() != loginInfo.getUserIdx()) {
                     result.put("success", false);
                     result.put("error", "회의실 예약을 삭제하는데 실패했습니다.");
 
@@ -303,7 +349,7 @@ public class MeetingController {
                 }
             }
 
-            // 체크리스트 삭제
+            // 회의 삭제
             int success = meetingService.deleteReservation(reservationIdx);
 
             result.put("success", success == 1);
@@ -318,11 +364,10 @@ public class MeetingController {
         return result;
     }
 
-    @PostMapping("/room/create")
-    public Map<String, Object> insertMeetingRoom(HttpServletRequest request,
-                                                 @RequestParam(value = "name", required = false) String name,
-                                                 @RequestParam(value = "location", required = false) String location,
-                                                 @RequestParam(value = "capacity", required = false) int capacity){
+    @PostMapping("/attend")
+    public Map<String, Object> updateMeetingAttender(HttpServletRequest request,
+                                                     @RequestParam(value = "link_idx") long linkIdx,
+                                                     @RequestParam(value = "is_attender") String isAttender){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -333,6 +378,46 @@ public class MeetingController {
 
             return result;
         }
+
+        try {
+            // 승인할 데이터 확인
+            MeetingAttenderLinkDto beforeData = meetingService.getMeetingAttenderLinkByIdx(linkIdx);
+            if (beforeData == null) {
+                result.put("success", false);
+                result.put("error", "승인할 데이터가 없습니다.");
+
+                return result;
+            }
+
+            // MeetingAttenderLinkDto 객체 생성
+            MeetingAttenderLinkDto meetingAttenderLinkDto = MeetingAttenderLinkDto.builder()
+                    .linkIdx(linkIdx)
+                    .userIdx(loginInfo.getUserIdx())
+                    .isAttender(isAttender)
+                    .build();
+
+            // 회의 참석여부 수정
+            int success = meetingService.updateMeetingAttenderLink(meetingAttenderLinkDto);
+
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "회의 참석여부를 수정하는데 실패했습니다.");
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "회의 참석여부를 수정하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/room/create")
+    public Map<String, Object> insertMeetingRoom(HttpServletRequest request,
+                                                 @RequestParam(value = "name", required = false) String name,
+                                                 @RequestParam(value = "location", required = false) String location,
+                                                 @RequestParam(value = "capacity", required = false) int capacity){
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
 
         if (!authUtil.authCheck(session, true)) {
             result.put("success", false);
@@ -370,14 +455,6 @@ public class MeetingController {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
-        UserDto loginInfo = authUtil.getLoginInfo(session);
-        if (loginInfo == null) {
-            result.put("success", false);
-            result.put("error", "로그인 해주세요.");
-
-            return result;
-        }
-
         // 권한 체크
         if (!authUtil.authCheck(session, true)) {
             result.put("success", false);
@@ -387,6 +464,15 @@ public class MeetingController {
         }
 
         try {
+            // 수정할 데이터 확인
+            MeetingRoomDto beforeData = meetingService.getMeetingRoomByIdx(roomIdx);
+            if (beforeData == null) {
+                result.put("success", false);
+                result.put("error", "수정할 데이터가 없습니다.");
+
+                return result;
+            }
+
             // MeetingRoomDto 객체 생성
             MeetingRoomDto meetingRoomDto = MeetingRoomDto.builder()
                     .roomIdx(roomIdx)
@@ -398,7 +484,7 @@ public class MeetingController {
             // 회의실 수정
             int success = meetingService.updateMeetingRoom(meetingRoomDto);
 
-            result.put("success", success == 1);
+            result.put("success", success != 0);
             if (success == 0) {
                 result.put("error", "회의실을 수정하는데 실패했습니다.");
             }
@@ -411,18 +497,10 @@ public class MeetingController {
     }
 
     @PostMapping("/room/delete")
-    public Map<String, Object> deleteNotice(HttpServletRequest request,
+    public Map<String, Object> deleteMeetingRoom(HttpServletRequest request,
                                             @RequestParam("room_idx") long roomIdx) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
-
-        UserDto loginInfo = authUtil.getLoginInfo(session);
-        if (loginInfo == null) {
-            result.put("success", false);
-            result.put("error", "로그인 해주세요.");
-
-            return result;
-        }
 
         // 권한 체크
         if (!authUtil.authCheck(session, true)) {
@@ -433,55 +511,25 @@ public class MeetingController {
         }
 
         try {
+            // 삭제할 데이터 확인
+            MeetingRoomDto beforeData = meetingService.getMeetingRoomByIdx(roomIdx);
+            if (beforeData == null) {
+                result.put("success", false);
+                result.put("error", "삭제할 데이터가 없습니다.");
+
+                return result;
+            }
+
             // 회의실 삭제
             int success = meetingService.deleteMeetingRoom(roomIdx);
 
-            result.put("success", success == 1);
+            result.put("success", success != 0);
             if (success == 0) {
                 result.put("error", "회의실을 삭제하는데 실패했습니다.");
             }
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "회의실을 삭제하는데 실패했습니다.");
-        }
-
-        return result;
-    }
-
-    @PostMapping("/attend")
-    public Map<String, Object> updateMeetingAttender(HttpServletRequest request,
-                                                     @RequestParam(value = "link_idx") long linkIdx,
-                                                     @RequestParam(value = "is_attender") String isAttender){
-        Map<String, Object> result = new HashMap<>();
-        HttpSession session = request.getSession();
-
-        UserDto loginInfo = authUtil.getLoginInfo(session);
-        if (loginInfo == null) {
-            result.put("success", false);
-            result.put("error", "로그인 해주세요.");
-
-            return result;
-        }
-
-        try {
-            // MeetingAttenderLinkDto 객체 생성
-            MeetingAttenderLinkDto meetingAttenderLinkDto = MeetingAttenderLinkDto.builder()
-                    .linkIdx(linkIdx)
-                    .userIdx(authUtil.getLoginInfo(session).getUserIdx())
-                    .isAttender(isAttender)
-                    .build();
-
-
-            // 회의 참석여부 수정
-            int success = meetingService.updateMeetingAttenderLink(meetingAttenderLinkDto);
-
-            result.put("success", success == 1);
-            if (success == 0) {
-                result.put("error", "회의 참석여부를 수정하는데 실패했습니다.");
-            }
-        } catch (Exception e) {
-            result.put("success", false);
-            result.put("error", "회의 참석여부를 수정하는데 실패했습니다.");
         }
 
         return result;

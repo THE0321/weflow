@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -46,10 +47,18 @@ public class NotificationController {
             param.put("page", page);
             param.put("limit", limit);
             param.put("type", type);
-            param.put("user_idx", authUtil.getLoginInfo(session).getUserIdx());
+            param.put("user_idx", loginInfo.getUserIdx());
 
-            result.put("success", true);
-            result.put("list", notificationService.getNotificationList(param));
+            // 알림 목록 조회
+            List<NotificationDto> notificationList = notificationService.getNotificationList(param);
+            boolean isEmpty = notificationList.isEmpty();
+
+            result.put("success", !isEmpty);
+            if (isEmpty) {
+                result.put("error", "조회할 데이터가 없습니다.");
+            } else {
+                result.put("list", notificationList);
+            }
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "알림을 불러올 수 없습니다.");
@@ -74,10 +83,17 @@ public class NotificationController {
         }
 
         try {
-            // 알림 조회
+            // 수정할 데이터 확인
             NotificationDto notificationDto = notificationService.getNotificationByIdx(notificationIdx);
-            if (notificationDto == null || notificationDto.getCreatorIdx() != loginInfo.getUserIdx())
-            {
+            if (notificationDto == null) {
+                result.put("success", false);
+                result.put("error", "수정할 데이터가 없습니다.");
+
+                return result;
+            }
+
+            // 등록자인지 확인
+            if (notificationDto.getCreatorIdx() != loginInfo.getUserIdx()) {
                 result.put("success", false);
                 result.put("error", "알림을 불러올 수 없습니다.");
 
@@ -86,7 +102,7 @@ public class NotificationController {
 
             // 알림 읽음 여부 수정
             int success = notificationService.updateNotification(notificationIdx);
-            result.put("success", success == 1);
+            result.put("success", success != 0);
             if (success == 0) {
                 result.put("error", "알림을 불러올 수 없습니다.");
             }
