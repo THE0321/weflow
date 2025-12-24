@@ -31,8 +31,8 @@ public class ChecklistController {
 
     @PostMapping("/list")
     public Map<String, Object> getChecklistList(HttpServletRequest request,
-                                                @RequestParam(value = "page", required = false) int page,
-                                                @RequestParam(value = "limit", required = false) int limit,
+                                                @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+                                                @RequestParam(value = "limit", required = false, defaultValue = "10") int limit,
                                                 @RequestParam(value = "title", required = false) String title,
                                                 @RequestParam(value = "status", required = false) String status,
                                                 @RequestParam(value = "my", required = false) boolean my) {
@@ -92,7 +92,11 @@ public class ChecklistController {
         try {
             Map<String, Object> param = new HashMap<>();
             param.put("user_idx", loginInfo.getUserIdx());
-            param.put("team_idx_list", authUtil.getTeamList(session));
+
+            List<Long> teamIdxList = authUtil.getTeamList(session);
+            if (!teamIdxList.isEmpty()) {
+                param.put("team_idx_list", teamIdxList);
+            }
 
             // 체크리스트 메인 목록 조회
             List<ChecklistDto> checklistList = checklistService.getChecklistMainList(param);
@@ -175,7 +179,7 @@ public class ChecklistController {
 
     @PostMapping("/create")
     public Map<String, Object> insertChecklist(HttpServletRequest request,
-                                               @RequestParam(value = "title", required = false) String title,
+                                               @RequestParam(value = "title") String title,
                                                @RequestParam(value = "description", required = false) String description,
                                                @RequestParam(value = "status", required = false) String status,
                                                @RequestParam(value = "item_title", required = false) List<String> itemTitleList,
@@ -187,7 +191,7 @@ public class ChecklistController {
 
         // 권한 체크
         UserDto loginInfo = authUtil.getLoginInfo(session);
-        if (!loginInfo.getAdminYn().equals("N") && !loginInfo.getLeaderYn().equals("N")) {
+        if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N")) {
             result.put("success", false);
             result.put("error", "체크리스트를 등록할 권한이 없습니다.");
 
@@ -405,9 +409,9 @@ public class ChecklistController {
 
     @PostMapping("/log/create")
     public Map<String, Object> insertChecklistLog(HttpServletRequest request,
-                                                  @RequestParam(value = "checklist_idx", required = false) long checklistIdx,
-                                                  @RequestParam(value = "item_idx", required = false) long itemIdx,
-                                                  @RequestParam(value = "is_checked", required = false) char isChecked,
+                                                  @RequestParam(value = "checklist_idx") long checklistIdx,
+                                                  @RequestParam(value = "item_idx") long itemIdx,
+                                                  @RequestParam(value = "is_checked", required = false) String isChecked,
                                                   @RequestParam(value = "content", required = false) String content){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
@@ -478,7 +482,7 @@ public class ChecklistController {
                                                   @RequestParam(value = "checklist_idx") long checklistIdx,
                                                   @RequestParam(value = "item_idx") long itemIdx,
                                                   @RequestParam(value = "log_idx") long logIdx,
-                                                  @RequestParam(value = "is_checked", required = false) char isChecked,
+                                                  @RequestParam(value = "is_checked", required = false) String isChecked,
                                                   @RequestParam(value = "content", required = false) String content){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
@@ -521,6 +525,7 @@ public class ChecklistController {
             // 수정할 데이터 확인
             List<ChecklistLogDto> checklistLogList = checklistService.getChecklistLog(itemIdx);
             if (checklistLogList.getFirst().getLogIdx() == logIdx) {
+                System.out.println("3");
                 result.put("success", false);
                 result.put("error", "체크리스트 결과를 수정할 수 없습니다.");
 
@@ -553,7 +558,7 @@ public class ChecklistController {
     public Map<String, Object> deleteChecklistLog(HttpServletRequest request,
                                                   @RequestParam(value = "checklist_idx") long checklistIdx,
                                                   @RequestParam(value = "item_idx") long itemIdx,
-                                                  @RequestParam("log_idx") long logIdx) {
+                                                  @RequestParam(value = "log_idx") long logIdx) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 

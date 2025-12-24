@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.project.messanger.mapper.NoticeMapper">
+<mapper namespace="com.project.messanger.mapper.ReportMapper">
 
     <resultMap id="ReportMap" type="com.project.messanger.dto.ReportDto">
         <id property="reportIdx" column="report_idx"/>
@@ -33,20 +33,20 @@
         WHERE report_idx = #{reportIdx}
     </select>
 
-    <insert id="insertReport" parameterType="com.project.messanger.dto.ReportDto">
+    <insert id="insertReport" parameterType="com.project.messanger.dto.ReportDto" useGeneratedKeys="true" keyProperty="reportIdx" keyColumn="report_idx">
         INSERT report
         SET title = #{title},
             <if test="description != null"> description = #{description},</if>
-            type = #{type}
+            type = #{type},
             <if test="approverIdx"> approver_idx = #{approverIdx},</if>
-            user_idx = #{userIdx}
+            creator_idx = #{creatorIdx},
             created_date = NOW(),
             updated_date = NOW()
     </insert>
 
     <update id="updateReport" parameterType="com.project.messanger.dto.ReportDto">
         UPDATE report
-        SET title = #{title},
+        SET <if test="title != null"> title = #{title},</if>
             <if test="description != null"> description = #{description},</if>
             <if test="approverIdx != null"> approver_idx = #{approverIdx},</if>
             updated_date = NOW()

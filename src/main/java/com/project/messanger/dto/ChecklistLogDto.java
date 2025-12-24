@@ -10,7 +10,7 @@ import lombok.*;
 public class ChecklistLogDto {
     private long logIdx;
     private long itemIdx;
-    private char isChecked;
+    private String isChecked;
     private String content;
     private long creatorIdx;
     private String createdDate;

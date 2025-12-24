@@ -116,6 +116,10 @@ public class NotificationService {
             }
         }
 
+        if (insertList.isEmpty()) {
+            return 0;
+        }
+
         return insertNotification(insertList);
     }
 }

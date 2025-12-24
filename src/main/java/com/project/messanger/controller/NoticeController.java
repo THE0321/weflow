@@ -28,8 +28,8 @@ public class NoticeController {
 
     @PostMapping("/list")
     public Map<String, Object> getNoticeList(HttpServletRequest request,
-                                             @RequestParam(value = "page", required = false) int page,
-                                             @RequestParam(value = "limit", required = false) int limit,
+                                             @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+                                             @RequestParam(value = "limit", required = false, defaultValue = "10") int limit,
                                              @RequestParam(value = "title", required = false) String title) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
@@ -72,7 +72,7 @@ public class NoticeController {
             param.put("is_admin", authUtil.authCheck(session, true));
 
             // 공지사항 조회
-            NoticeDto noticeDto = noticeService.getNoticeDetail(param);
+            NoticeDto noticeDto = noticeService.getNoticeByIdx(param);
 
             result.put("success", noticeDto != null);
             if (noticeDto == null) {
@@ -158,7 +158,7 @@ public class NoticeController {
             param.put("is_admin", authUtil.authCheck(session, true));
 
             // 수정할 데이터 확인
-            NoticeDto beforeData = noticeService.getNoticeDetail(param);
+            NoticeDto beforeData = noticeService.getNoticeByIdx(param);
             if (beforeData == null) {
                 result.put("success", false);
                 result.put("error", "수정할 데이터가 없습니다.");
@@ -212,7 +212,7 @@ public class NoticeController {
         param.put("is_admin", authUtil.authCheck(session, true));
 
         // 삭제할 데이터 확인
-        NoticeDto beforeData = noticeService.getNoticeDetail(param);
+        NoticeDto beforeData = noticeService.getNoticeByIdx(param);
         if (beforeData == null) {
             result.put("success", false);
             result.put("error", "수정할 데이터가 없습니다.");

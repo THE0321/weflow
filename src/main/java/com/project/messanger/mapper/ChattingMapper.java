@@ -16,13 +16,17 @@ public interface ChattingMapper {
 
     List<ChattingDto> getChattingList(Map<String, Object> param);
 
-    ChattingDto getChattingByIdx(Map<String, Object> param);
+    ChattingDto getChattingByIdx(long chattingIdx);
 
     long insertChatting(ChattingDto chattingDto);
 
     int updateChatting(ChattingDto chattingDto);
 
     int deleteChatting(long chattingIdx);
+
+    List<ChattingUserLinkDto> getChattingUserLink(long chattingIdx);
+
+    ChattingUserLinkDto getChattingUserLinkByIdx(long linkIdx);
 
     int insertChattingUserLink(List<ChattingUserLinkDto> list);
 

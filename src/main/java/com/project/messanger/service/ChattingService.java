@@ -24,6 +24,12 @@ public class ChattingService {
      */
     @Transactional(readOnly = true)
     public List<ChattingMessageDto> getChattingMessageList(Map<String, Object> param) {
+        int page = param.get("page") != null ? (int)param.get("page") : 1;
+
+        param.putIfAbsent("limit", 10);
+        int limit = (int)param.get("limit");
+        param.put("offset", (page-1) * limit);
+
         return chattingMapper.getChattingMessageList(param);
     }
 
@@ -39,12 +45,12 @@ public class ChattingService {
 
     /*
      * get chatting list
-     * @param Map<String, Object>
-     * return List<ChattingDto>
+     * @param long
+     * return ChattingDto
      */
     @Transactional(readOnly = true)
-    public ChattingDto getChattingByIdx(Map<String, Object> param) {
-        return chattingMapper.getChattingByIdx(param);
+    public ChattingDto getChattingByIdx(long chattingIdx) {
+        return chattingMapper.getChattingByIdx(chattingIdx);
     }
 
     /*
@@ -88,6 +94,28 @@ public class ChattingService {
     }
 
     /*
+     * get chatting user link
+     * @param long
+     * return List<ChattingUserLinkDto>
+     */
+    @Transactional
+    public List<ChattingUserLinkDto> getChattingUserLink(long chattingIdx)
+    {
+        return chattingMapper.getChattingUserLink(chattingIdx);
+    }
+
+    /*
+     * get chatting user link by idx
+     * @param long
+     * return ChattingUserLinkDto
+     */
+    @Transactional
+    public ChattingUserLinkDto getChattingUserLinkByIdx(long linkIdx)
+    {
+        return chattingMapper.getChattingUserLinkByIdx(linkIdx);
+    }
+
+    /*
      * insert chatting user link
      * @param List<ChattingUserLinkDto>
      * return int
@@ -104,19 +132,31 @@ public class ChattingService {
      */
     @Transactional
     public int insertChattingUserLinkByUserIdx(long chattingIdx, List<Long> userIdxList) {
-        List<ChattingUserLinkDto> insertList = new ArrayList<>();
+        List<ChattingUserLinkDto> valueList = new ArrayList<>();
+        List<Long> chattingUserList = new ArrayList<>(getChattingUserLink(chattingIdx).stream()
+                .map(ChattingUserLinkDto::getUserIdx)
+                .toList());
 
         // 값 리스트
-        for (int i = 0; i < userIdxList.size(); i++) {
+        for (long userIdx : userIdxList) {
+            if (chattingUserList.contains(userIdx)) {
+                continue;
+            }
+
             ChattingUserLinkDto chattingUserLinkDto = ChattingUserLinkDto.builder()
                     .chattingIdx(chattingIdx)
-                    .userIdx(userIdxList.get(i))
+                    .userIdx(userIdx)
                     .build();
 
-            insertList.add(chattingUserLinkDto);
+            valueList.add(chattingUserLinkDto);
+            chattingUserList.add(userIdx);
         }
 
-        return insertChattingUserLink(insertList);
+        if (valueList.isEmpty()) {
+            return 0;
+        }
+
+        return insertChattingUserLink(valueList);
     }
 
     /*
@@ -127,6 +167,13 @@ public class ChattingService {
     @Transactional
     public int insertChattingUserLinkByUserIdx(long chattingIdx, long userIdx) {
         List<ChattingUserLinkDto> insertList = new ArrayList<>();
+        List<Long> chattingUserList = getChattingUserLink(chattingIdx).stream()
+                .map(ChattingUserLinkDto::getUserIdx)
+                .toList();
+
+        if (chattingUserList.contains(userIdx)) {
+            return 0;
+        }
 
         ChattingUserLinkDto chattingUserLinkDto = ChattingUserLinkDto.builder()
                 .chattingIdx(chattingIdx)

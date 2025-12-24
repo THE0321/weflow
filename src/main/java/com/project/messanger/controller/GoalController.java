@@ -27,8 +27,8 @@ public class GoalController {
 
     @PostMapping("/list")
     public Map<String, Object> getGoalList(HttpServletRequest request,
-                                           @RequestParam(value = "page", required = false) int page,
-                                           @RequestParam(value = "limit", required = false) int limit,
+                                           @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+                                           @RequestParam(value = "limit", required = false, defaultValue = "10") int limit,
                                            @RequestParam(value = "title", required = false) String title,
                                            @RequestParam(value = "status", required = false) String status,
                                            @RequestParam(value = "my", required = false) boolean my) {
@@ -94,7 +94,11 @@ public class GoalController {
             // 파라미터 세팅
             Map<String, Object> param = new HashMap<>();
             param.put("user_idx", loginInfo.getUserIdx());
-            param.put("team_idx_list", authUtil.getTeamList(session));
+
+            List<Long> teamIdxList = authUtil.getTeamList(session);
+            if (!teamIdxList.isEmpty()) {
+                param.put("team_idx_list", teamIdxList);
+            }
 
             // 목표 조회
             List<GoalAndLogDto> goalList = goalService.getGoalMainList(param);
@@ -315,6 +319,7 @@ public class GoalController {
 
             // GoalDto 객체 생성
             GoalDto goalDto = GoalDto.builder()
+                    .goalIdx(goalIdx)
                     .title(title)
                     .description(description)
                     .status(status)
@@ -452,9 +457,9 @@ public class GoalController {
 
     @PostMapping("/log/create")
     public Map<String, Object> saveGoalLog(HttpServletRequest request,
-                                           @RequestParam(value = "goal_idx", required = false) long goalIdx,
-                                           @RequestParam(value = "progress_value", required = false) long progressValue,
-                                           @RequestParam(value = "content", required = false) String content
+                                           @RequestParam(value = "goal_idx") long goalIdx,
+                                           @RequestParam(value = "progress_value") long progressValue,
+                                           @RequestParam(value = "content") String content
                                         ){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();

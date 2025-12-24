@@ -31,8 +31,8 @@ public class ChattingController {
 
     @PostMapping("/list")
     public Map<String, Object> getChattingMessageList(HttpServletRequest request,
-                                                      @RequestParam(value = "page", required = false) int page,
-                                                      @RequestParam(value = "limit", required = false) int limit) {
+                                                      @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+                                                      @RequestParam(value = "limit", required = false, defaultValue = "10") int limit) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -93,8 +93,7 @@ public class ChattingController {
     public Map<String, Object> insertChattingMessage(HttpServletRequest request,
                                                      MultipartHttpServletRequest multipartHttpServletRequest,
                                                      @RequestParam(value = "chatting_idx") long chattingIdx,
-                                                     @RequestParam(value = "content") String content,
-                                                     @RequestParam(value = "user_idx") List<Long> userIdxList){
+                                                     @RequestParam(value = "content") String content){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -256,10 +255,19 @@ public class ChattingController {
         }
 
         try {
-            Map<String, Object> param = new HashMap<>();
-            param.put("user_idx", loginInfo.getUserIdx());
-            ChattingDto chattingDto = chattingService.getChattingByIdx(param);
+            ChattingDto chattingDto = chattingService.getChattingByIdx(chattingIdx);
             if (chattingDto == null) {
+                result.put("success", false);
+                result.put("error", "멤버를 추가하는데 실패했습니다.");
+
+                return result;
+            }
+
+            List<Long> chattingUserList = chattingService.getChattingUserLink(chattingIdx).stream()
+                    .map(ChattingUserLinkDto::getUserIdx)
+                    .toList();
+            if (!chattingUserList.contains(loginInfo.getUserIdx())) {
+                result.put("success", false);
                 result.put("error", "멤버를 추가하는데 실패했습니다.");
 
                 return result;
@@ -270,6 +278,7 @@ public class ChattingController {
 
             result.put("success", success == 1);
             if (success == 0) {
+                result.put("success", false);
                 result.put("error", "멤버를 추가하는데 실패했습니다.");
             }
         } catch (Exception e) {
@@ -295,20 +304,30 @@ public class ChattingController {
         }
 
         try {
-            Map<String, Object> param = new HashMap<>();
-            param.put("user_idx", loginInfo.getUserIdx());
-            ChattingDto chattingDto = chattingService.getChattingByIdx(param);
-            if (chattingDto == null) {
-                result.put("error", "멤버를 삭제하는데 실패했습니다.");
+            if (loginInfo.getAdminYn().equals("N")) {
+                ChattingUserLinkDto chattingUserLinkDto = chattingService.getChattingUserLinkByIdx(linkIdx);
+                if (chattingUserLinkDto == null) {
+                    result.put("success", false);
+                    result.put("error", "멤버를 삭제하는데 실패했습니다.");
 
-                return result;
+                    return result;
+                } else if (chattingUserLinkDto.getUserIdx() != loginInfo.getUserIdx()) {
+                    ChattingDto chattingDto = chattingService.getChattingByIdx(chattingUserLinkDto.getChattingIdx());
+                    if (chattingDto.getCreatorIdx() != loginInfo.getUserIdx()) {
+                        result.put("success", false);
+                        result.put("error", "멤버를 삭제하는데 실패했습니다.");
+
+                        return result;
+                    }
+                }
             }
 
             // 멤버 삭제
             int success = chattingService.deleteChattingUserLink(linkIdx);
 
-            result.put("success", success == 1);
+            result.put("success", success != 0);
             if (success == 0) {
+                result.put("success", false);
                 result.put("error", "멤버를 삭제하는데 실패했습니다.");
             }
         } catch (Exception e) {

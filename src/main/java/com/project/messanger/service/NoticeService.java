@@ -38,8 +38,8 @@ public class NoticeService {
      * return NoticeDto
      */
     @Transactional(readOnly = true)
-    public NoticeDto getNoticeDetail(Map<String, Object> param) {
-        return noticeMapper.getNoticeDetail(param);
+    public NoticeDto getNoticeByIdx(Map<String, Object> param) {
+        return noticeMapper.getNoticeByIdx(param);
     }
 
     /*

@@ -120,6 +120,10 @@ public class ChecklistService {
             valueList.add(checklistItemDto);
         }
 
+        if (valueList.isEmpty()) {
+            return 0;
+        }
+
         return checklistMapper.insertChecklistItem(valueList);
     }
 
@@ -180,6 +184,14 @@ public class ChecklistService {
      */
     @Transactional
     public int insertChecklistLog(ChecklistLogDto checklistLogDto) {
+        // 마지막 등록된 결과 조회
+        if (checklistLogDto.getIsChecked() == null) {
+            ChecklistLogDto lastData = checklistMapper.getChecklistLogLast(checklistLogDto.getItemIdx());
+            if (lastData != null) {
+                checklistLogDto.setIsChecked(lastData.getIsChecked());
+            }
+        }
+
         return checklistMapper.insertChecklistLog(checklistLogDto);
     }
 
@@ -210,18 +222,31 @@ public class ChecklistService {
      */
     @Transactional
     public int insertChecklistUserLinkByTeamIdx(long checklistIdx, List<Long> teamIdxList) {
-        List<ChecklistUserLinkDto> insertList = new ArrayList<>();
+        List<ChecklistUserLinkDto> valueList = new ArrayList<>();
+        List<Long> checklistUserList = new ArrayList<>(getChecklistUserLink(checklistIdx).stream()
+                .map(ChecklistUserLinkDto::getTeamIdx)
+                .toList());
 
         // 값 리스트
         for (long teamIdx : teamIdxList) {
+            if (checklistUserList.contains(teamIdx)) {
+                continue;
+            }
+
             ChecklistUserLinkDto checklistUserLinkDto = ChecklistUserLinkDto.builder()
                     .checklistIdx(checklistIdx)
                     .teamIdx(teamIdx)
                     .build();
-            insertList.add(checklistUserLinkDto);
+
+            valueList.add(checklistUserLinkDto);
+            checklistUserList.add(teamIdx);
         }
 
-        return insertChecklistUserLink(insertList);
+        if (valueList.isEmpty()) {
+            return 0;
+        }
+
+        return insertChecklistUserLink(valueList);
     }
 
     /*
@@ -231,17 +256,30 @@ public class ChecklistService {
      */
     @Transactional
     public int insertChecklistUserLinkByUserIdx(long checklistIdx, List<Long> userIdxList) {
-        List<ChecklistUserLinkDto> insertList = new ArrayList<>();
+        List<ChecklistUserLinkDto> valueList = new ArrayList<>();
+        List<Long> checklistUserList = new ArrayList<>(getChecklistUserLink(checklistIdx).stream()
+                .map(ChecklistUserLinkDto::getUserIdx)
+                .toList());
 
         // 값 리스트
         for (long userIdx : userIdxList) {
+            if (checklistUserList.contains(userIdx)) {
+                continue;
+            }
+
             ChecklistUserLinkDto checklistUserLinkDto = ChecklistUserLinkDto.builder()
                     .checklistIdx(checklistIdx)
                     .userIdx(userIdx)
                     .build();
-            insertList.add(checklistUserLinkDto);
+
+            valueList.add(checklistUserLinkDto);
+            checklistUserList.add(userIdx);
         }
 
-        return insertChecklistUserLink(insertList);
+        if (valueList.isEmpty()) {
+            return 0;
+        }
+
+        return insertChecklistUserLink(valueList);
     }
 }

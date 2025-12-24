@@ -10,7 +10,7 @@ import java.util.Map;
 public interface NoticeMapper {
     List<NoticeDto> getNoticeList(Map<String, Object> param);
 
-    NoticeDto getNoticeDetail(Map<String, Object> param);
+    NoticeDto getNoticeByIdx(Map<String, Object> param);
 
     long insertNotice(NoticeDto noticeDto);
 

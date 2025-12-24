@@ -30,7 +30,7 @@ public interface UserMapper {
 
     TeamDto getTeamByIdx(long teamIdx);
 
-    long insertTeam(String teamName);
+    long insertTeam(TeamDto teamDto);
 
     long updateTeam(TeamDto teamDto);
 

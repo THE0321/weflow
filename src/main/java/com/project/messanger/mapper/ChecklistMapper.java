@@ -30,6 +30,8 @@ public interface ChecklistMapper {
 
     int deleteChecklistItem(List<Long> itemIdx);
 
+    ChecklistLogDto getChecklistLogLast(long itemIdx);
+
     List<ChecklistUserLinkDto> getChecklistUserLink(long checklistIdx);
     
     int insertChecklistUserLink(List<ChecklistUserLinkDto> list);

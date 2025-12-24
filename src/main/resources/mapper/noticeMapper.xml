@@ -36,7 +36,7 @@
     <select id="getNoticeByIdx" parameterType="long" resultMap="NoticeMap">
         SELECT *
         FROM notice
-        WHERE notice_idx = #{noticeIdx}
+        WHERE notice_idx = #{notice_idx}
         <if test="!is_admin">
             AND (start_date IS NULL OR start_date &lt;= SYSDATE())
             AND (end_date IS NULL OR end_date &gt;= SYSDATE())

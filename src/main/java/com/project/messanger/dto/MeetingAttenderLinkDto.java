@@ -11,5 +11,5 @@ public class MeetingAttenderLinkDto {
     private long linkIdx;
     private long reservationIdx;
     private long userIdx;
-    private String isAttender;
+    private String isAttend;
 }

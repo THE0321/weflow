@@ -62,7 +62,7 @@
             WHERE log_idx IN
             (
                 SELECT MAX(log_idx)
-                FR0M goal_log
+                FROM goal_log
                 GROUP BY goal_idx
             )
         ) goal_log
@@ -110,7 +110,7 @@
             WHERE log_idx IN
             (
                 SELECT MAX(log_idx)
-                FR0M goal_log
+                FROM goal_log
                 GROUP BY goal_idx
             )
         ) goal_log
@@ -149,15 +149,15 @@
             WHERE log_idx IN
             (
                 SELECT MAX(log_idx)
-                FR0M goal_log
+                FROM goal_log
                 GROUP BY goal_idx
             )
         ) goal_log
-        ON goal.goal_idx = goal_log.goal_ix
-        WHERE goal_idx = #{goalIdx}
+        ON goal.goal_idx = goal_log.goal_idx
+        WHERE goal.goal_idx = #{goalIdx}
     </select>
 
-    <select id="getGoalGraph" parameterType="hashmap" resultMap="hashmap">
+    <select id="getGoalGraph" parameterType="hashmap" resultMap="GoalLogMap">
         SELECT *
         FROM goal_log
     </select>
@@ -219,8 +219,14 @@
         <foreach collection="list" item="item" separator=",">
         (
             #{item.goalIdx},
-            #{item.teamIdx},
-            #{item.userIdx}
+            <choose>
+                <when test="item.teamIdx != null"> #{item.teamIdx},</when>
+                <otherwise> null</otherwise>
+            </choose>
+            <choose>
+                <when test="item.userIdx != null"> #{item.userIdx}</when>
+                <otherwise> null</otherwise>
+            </choose>
         )
         </foreach>
     </insert>

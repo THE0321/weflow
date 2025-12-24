@@ -1,9 +1,6 @@
 package com.project.messanger.service;
 
-import com.project.messanger.dto.GoalUserLinkDto;
-import com.project.messanger.dto.NoticeDto;
-import com.project.messanger.dto.ScheduleAttenderLinkDto;
-import com.project.messanger.dto.ScheduleDto;
+import com.project.messanger.dto.*;
 import com.project.messanger.mapper.ScheduleMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -92,8 +89,8 @@ public class ScheduleService {
      * return List<ScheduleDto>
      */
     @Transactional(readOnly = true)
-    public List<ScheduleAttenderLinkDto> getScheduleAttenderLink(long scheduleIdx) {
-        return scheduleMapper.getScheduleAttenderLink(scheduleIdx);
+    public List<ScheduleAttenderLinkDto> getScheduleAttenderLinkList(long scheduleIdx) {
+        return scheduleMapper.getScheduleAttenderLinkList(scheduleIdx);
     }
 
     /*
@@ -122,11 +119,18 @@ public class ScheduleService {
      * return int
      */
     @Transactional
-    public int insertScheduleAttenderLinkByUserIdx(long scheduleIdx, List<Long> userIdxList) {
-        List<ScheduleAttenderLinkDto> insertList = new ArrayList<>();
+    public int insertScheduleAttenderLinkByUserIdx(long scheduleIdx, List<Long> userIdxList, boolean isCreate) {
+        List<ScheduleAttenderLinkDto> valueList = new ArrayList<>();
+        List<Long> scheduleAttenderList = new ArrayList<>(getScheduleAttenderLinkList(scheduleIdx).stream()
+                .map(ScheduleAttenderLinkDto::getUserIdx)
+                .toList());
 
         // 값 리스트
         for (int i = 0; i < userIdxList.size(); i++) {
+            if (scheduleAttenderList.contains(userIdxList.get(i))) {
+                continue;
+            }
+
             ScheduleAttenderLinkDto scheduleAttenderLinkDto = ScheduleAttenderLinkDto.builder()
                     .scheduleIdx(scheduleIdx)
                     .userIdx(userIdxList.get(i))
@@ -134,14 +138,15 @@ public class ScheduleService {
                     .build();
 
             // 등록자는 무조건 참석
-            if (i == 0) {
+            if (isCreate && i == 0) {
                 scheduleAttenderLinkDto.setIsAttend("Y");
             }
 
-            insertList.add(scheduleAttenderLinkDto);
+            valueList.add(scheduleAttenderLinkDto);
+            scheduleAttenderList.add(userIdxList.get(i));
         }
 
-        return insertScheduleAttenderLink(insertList);
+        return insertScheduleAttenderLink(valueList);
     }
 
     /*
@@ -161,7 +166,7 @@ public class ScheduleService {
      */
     @Transactional
     public int deleteScheduleAttenderLink(long scheduleIdx, List<Long> deleteLinkIdxList) {
-        List<ScheduleAttenderLinkDto> scheduleAttenderList = getScheduleAttenderLink(scheduleIdx);
+        List<ScheduleAttenderLinkDto> scheduleAttenderList = getScheduleAttenderLinkList(scheduleIdx);
 
         // 이미 참석 확정한 목록 제거
         List<Long> attenderIdxList = new ArrayList<>();

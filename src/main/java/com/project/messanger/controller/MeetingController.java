@@ -30,8 +30,8 @@ public class MeetingController {
 
     @PostMapping("/list")
     public Map<String, Object> getReservationList(HttpServletRequest request,
-                                                  @RequestParam(value = "page", required = false) int page,
-                                                  @RequestParam(value = "limit", required = false) int limit,
+                                                  @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+                                                  @RequestParam(value = "limit", required = false, defaultValue = "10") int limit,
                                                   @RequestParam(value = "description", required = false) String description,
                                                   @RequestParam(value = "reservation_date", required = false) String reservationDate,
                                                   @RequestParam(value = "my", required = false) boolean my) {
@@ -208,7 +208,7 @@ public class MeetingController {
 
             // 회의 참석자 등록
             userIdxList.add(0, reservationDto.getCreatorIdx());
-            meetingService.insertMeetingAttenderLinkByUserIdx(reservationIdx, userIdxList);
+            meetingService.insertMeetingAttenderLinkByUserIdx(reservationIdx, userIdxList, true);
 
             // 알림 등록
             NotificationDto notificationDto = NotificationDto.builder()
@@ -277,6 +277,7 @@ public class MeetingController {
 
             // ReservationDto 객체 생성
             ReservationDto reservationDto = ReservationDto.builder()
+                    .reservationIdx(reservationIdx)
                     .roomIdx(roomIdx)
                     .description(description)
                     .startDate(startDate)
@@ -290,8 +291,7 @@ public class MeetingController {
 
             // 회의 참석자 추가
             if (userIdxList != null) {
-                userIdxList.add(0, reservationDto.getCreatorIdx());
-                meetingService.insertMeetingAttenderLinkByUserIdx(reservationIdx, userIdxList);
+                meetingService.insertMeetingAttenderLinkByUserIdx(reservationIdx, userIdxList, false);
             }
 
             // 회의 참석자 삭제
@@ -367,7 +367,7 @@ public class MeetingController {
     @PostMapping("/attend")
     public Map<String, Object> updateMeetingAttender(HttpServletRequest request,
                                                      @RequestParam(value = "link_idx") long linkIdx,
-                                                     @RequestParam(value = "is_attender") String isAttender){
+                                                     @RequestParam(value = "is_attend") String isAttend){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -393,13 +393,13 @@ public class MeetingController {
             MeetingAttenderLinkDto meetingAttenderLinkDto = MeetingAttenderLinkDto.builder()
                     .linkIdx(linkIdx)
                     .userIdx(loginInfo.getUserIdx())
-                    .isAttender(isAttender)
+                    .isAttend(isAttend)
                     .build();
 
             // 회의 참석여부 수정
             int success = meetingService.updateMeetingAttenderLink(meetingAttenderLinkDto);
 
-            result.put("success", success == 1);
+            result.put("success", success != 0);
             if (success == 0) {
                 result.put("error", "회의 참석여부를 수정하는데 실패했습니다.");
             }

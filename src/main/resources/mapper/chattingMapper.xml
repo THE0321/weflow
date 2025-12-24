@@ -34,7 +34,7 @@
             WHERE chatting_idx = #{chatting_idx}
             ORDER BY created_date DESC
             LIMIT ${limit} OFFSET ${offset}
-        )
+        ) chatting
         ORDER BY created_date ASC
     </select>
 
@@ -73,16 +73,10 @@
             created_date = NOW()
     </insert>
 
-    <select id="getChattingByIdx" parameterType="hashmap" resultMap="ChattingUserLinkMap">
+    <select id="getChattingByIdx" parameterType="long" resultMap="ChattingMap">
         SELECT *
         FROM chatting
         WHERE chatting_idx = #{chattingIdx}
-          AND EXISTS (
-            SELECT 1
-            FROM chatting_user_link
-            WHERE chatting_idx = chatting_idx
-            AND user_idx = #{user_idx}
-          )
     </select>
 
     <insert id="insertChatting" parameterType="com.project.messanger.dto.ChattingDto" useGeneratedKeys="true" keyProperty="chattingIdx" keyColumn="chatting_idx">
@@ -106,6 +100,18 @@
         WHERE chatting_idx = #{chattingIdx}
     </delete>
 
+    <select id="getChattingUserLink" parameterType="long" resultMap="ChattingUserLinkMap">
+        SELECT *
+        FROM chatting_user_link
+        WHERE chatting_idx = #{chattingIdx}
+    </select>
+
+    <select id="getChattingUserLinkByIdx" parameterType="long" resultMap="ChattingUserLinkMap">
+        SELECT *
+        FROM chatting_user_link
+        WHERE link_idx = #{linkIdx}
+    </select>
+
     <insert id="insertChattingUserLink" parameterType="com.project.messanger.dto.ChattingUserLinkDto" useGeneratedKeys="true" keyProperty="linkIdx" keyColumn="link_idx">
         INSERT INTO chatting_user_link
         (
@@ -115,7 +121,7 @@
         VALUES
         <foreach collection="list" item="item" separator=",">
         (
-            #{item.chatting_idx},
+            #{item.chattingIdx},
             #{item.userIdx}
         )
         </foreach>

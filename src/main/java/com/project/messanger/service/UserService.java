@@ -130,7 +130,7 @@ public class UserService {
      * return long
      */
     @Transactional
-    public long insertTeam(String teamName) { return userMapper.insertTeam(teamName); }
+    public long insertTeam(TeamDto teamDto) { return userMapper.insertTeam(teamDto); }
 
     /*
      * update team
@@ -200,18 +200,25 @@ public class UserService {
      */
     @Transactional
     public int insertUserLinkByTeamIdx(long userIdx, List<Long> teamIdxList) {
-        List<TeamUserLinkDto> insertList = new ArrayList<>();
+        List<TeamUserLinkDto> valueList = new ArrayList<>();
+        List<Long> teamUserList = getTeamListByUserIdx(userIdx);
 
         // 값 리스트
         for (long teamIdx : teamIdxList) {
+            if (teamUserList.contains(teamIdx)) {
+                continue;
+            }
+
             TeamUserLinkDto teamUserLinkDto = TeamUserLinkDto.builder()
                     .userIdx(userIdx)
                     .teamIdx(teamIdx)
                     .build();
-            insertList.add(teamUserLinkDto);
+
+            valueList.add(teamUserLinkDto);
+            teamUserList.add(teamIdx);
         }
 
-        return insertTeamUserLink(insertList);
+        return insertTeamUserLink(valueList);
     }
 
     /*

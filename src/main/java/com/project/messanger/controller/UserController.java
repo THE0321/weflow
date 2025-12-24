@@ -25,8 +25,8 @@ public class UserController {
 
     @PostMapping("/list")
     public Map<String, Object> getUserList(HttpServletRequest request,
-                                           @RequestParam(value = "page", required = false) int page,
-                                           @RequestParam(value = "limit", required = false) int limit,
+                                           @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+                                           @RequestParam(value = "limit", required = false, defaultValue = "10") int limit,
                                            @RequestParam(value = "email", required = false) String email,
                                            @RequestParam(value = "user_name", required = false) String userName,
                                            @RequestParam(value = "phone_number", required = false) String phoneNumber) {
@@ -273,8 +273,8 @@ public class UserController {
 
     @PostMapping("/team/list")
     public Map<String, Object> getTeamList(HttpServletRequest request,
-                                           @RequestParam(value = "page", required = false) int page,
-                                           @RequestParam(value = "limit", required = false) int limit,
+                                           @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+                                           @RequestParam(value = "limit", required = false, defaultValue = "10") int limit,
                                            @RequestParam(value = "team_name", required = false) String teamName) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
@@ -361,8 +361,13 @@ public class UserController {
         }
 
         try {
+            // TeamDto 세팅
+            TeamDto teamDto = TeamDto.builder()
+                    .teamName(teamName)
+                    .build();
+
             // 팀 등록
-            long teamIdx = userService.insertTeam(teamName);
+            long teamIdx = userService.insertTeam(teamDto);
 
             result.put("success", true);
             result.put("idx", teamIdx);

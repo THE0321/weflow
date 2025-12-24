@@ -33,8 +33,8 @@ public class ScheduleController {
 
     @PostMapping("/list")
     public Map<String, Object> getScheduleList(HttpServletRequest request,
-                                               @RequestParam(value = "page", required = false) int page,
-                                               @RequestParam(value = "limit", required = false) int limit,
+                                               @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+                                               @RequestParam(value = "limit", required = false, defaultValue = "10") int limit,
                                                @RequestParam(value = "title", required = false) String title,
                                                @RequestParam(value = "schedule_date", required = false) String scheduleDate,
                                                @RequestParam(value = "my", required = false) boolean my) {
@@ -155,7 +155,7 @@ public class ScheduleController {
                 result.put("error", "조회할 데이터가 없습니다.");
             } else {
                 // 일정 참석자 조회
-                List<ScheduleAttenderLinkDto> scheduleAttenderList = scheduleService.getScheduleAttenderLink(scheduleIdx);
+                List<ScheduleAttenderLinkDto> scheduleAttenderList = scheduleService.getScheduleAttenderLinkList(scheduleIdx);
 
                 result.put("detail", scheduleDto);
                 result.put("attender_list", scheduleAttenderList);
@@ -211,7 +211,7 @@ public class ScheduleController {
             long scheduleIdx = scheduleService.insertSchedule(scheduleDto);
 
             userIdxList.add(0, scheduleDto.getCreatorIdx());
-            scheduleService.insertScheduleAttenderLinkByUserIdx(scheduleIdx, userIdxList);
+            scheduleService.insertScheduleAttenderLinkByUserIdx(scheduleIdx, userIdxList, true);
 
             // 알림 등록
             NotificationDto notificationDto = NotificationDto.builder()
@@ -293,8 +293,7 @@ public class ScheduleController {
 
             // 회의 참석자 추가
             if (userIdxList != null) {
-                userIdxList.add(0, scheduleDto.getCreatorIdx());
-                scheduleService.insertScheduleAttenderLinkByUserIdx(scheduleIdx, userIdxList);
+                scheduleService.insertScheduleAttenderLinkByUserIdx(scheduleIdx, userIdxList, false);
             }
 
             // 회의 참석자 삭제

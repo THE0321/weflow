@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.project.messanger.mapper.MeetingRoomMapper">
+<mapper namespace="com.project.messanger.mapper.MeetingMapper">
 
     <resultMap id="ReservationMap" type="com.project.messanger.dto.ReservationDto">
         <id property="reservationIdx" column="reservation_idx"/>
@@ -20,7 +20,7 @@
         <id property="linkIdx" column="link_idx"/>
         <result property="reservationIdx" column="reservation_idx"/>
         <result property="userIdx" column="user_idx"/>
-        <result property="isAttender" column="is_attender"/>
+        <result property="isAttend" column="is_attend"/>
     </resultMap>
 
     <resultMap id="MeetingRoomMap" type="com.project.messanger.dto.MeetingRoomDto">
@@ -54,7 +54,7 @@
         LIMIT ${limit} OFFSET ${offset}
     </select>
 
-    <select id="getDateList" parameterType="hashmap" resultMap="ScheduleMap">
+    <select id="getDateList" parameterType="hashmap" resultMap="ReservationMap">
         SELECT DISTINCT start_date, end_date
         FROM reservation
         <where>
@@ -134,21 +134,21 @@
         (
             reservation_idx,
             user_idx,
-            is_attender
+            is_attend
         )
         VALUES
         <foreach collection="list" item="item" separator=",">
         (
             #{item.reservationIdx},
             #{item.userIdx},
-            #{item.isAttender}
+            #{item.isAttend}
         )
         </foreach>
     </insert>
 
     <update id="updateMeetingAttenderLink" parameterType="com.project.messanger.dto.MeetingAttenderLinkDto">
         UPDATE meeting_attender_link
-        SET is_attender = #{isAttender}
+        SET is_attend = #{isAttend}
         WHERE link_idx = #{linkIdx}
           AND user_idx = #{userIdx}
     </update>

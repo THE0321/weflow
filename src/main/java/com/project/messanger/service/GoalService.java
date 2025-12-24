@@ -169,18 +169,27 @@ public class GoalService {
      */
     @Transactional
     public int insertGoalUserLinkByTeamIdx(long goalIdx, List<Long> teamIdxList) {
-        List<GoalUserLinkDto> insertList = new ArrayList<>();
+        List<GoalUserLinkDto> valueList = new ArrayList<>();
+        List<Long> goalUserList = new ArrayList<>(getGoalUserLink(goalIdx).stream()
+                .map(GoalUserLinkDto::getTeamIdx)
+                .toList());
 
         // 값 리스트
         for (long teamIdx : teamIdxList) {
+            if (goalUserList.contains(teamIdx)) {
+                continue;
+            }
+
             GoalUserLinkDto goalUserLinkDto = GoalUserLinkDto.builder()
                     .goalIdx(goalIdx)
                     .teamIdx(teamIdx)
                     .build();
-            insertList.add(goalUserLinkDto);
+
+            valueList.add(goalUserLinkDto);
+            goalUserList.add(teamIdx);
         }
 
-        return insertGoalUserLink(insertList);
+        return insertGoalUserLink(valueList);
     }
 
     /*
@@ -190,17 +199,26 @@ public class GoalService {
      */
     @Transactional
     public int insertGoalUserLinkByUserIdx(long goalIdx, List<Long> userIdxList) {
-        List<GoalUserLinkDto> insertList = new ArrayList<>();
+        List<GoalUserLinkDto> valueList = new ArrayList<>();
+        List<Long> goalUserList = new ArrayList<>(getGoalUserLink(goalIdx).stream()
+                .map(GoalUserLinkDto::getUserIdx)
+                .toList());
 
         // 값 리스트
         for (long userIdx : userIdxList) {
+            if (goalUserList.contains(userIdx)) {
+                continue;
+            }
+
             GoalUserLinkDto goalUserLinkDto = GoalUserLinkDto.builder()
                     .goalIdx(goalIdx)
                     .userIdx(userIdx)
                     .build();
-            insertList.add(goalUserLinkDto);
+
+            valueList.add(goalUserLinkDto);
+            goalUserList.add(userIdx);
         }
 
-        return insertGoalUserLink(insertList);
+        return insertGoalUserLink(valueList);
     }
 }

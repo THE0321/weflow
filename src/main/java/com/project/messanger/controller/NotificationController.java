@@ -28,8 +28,8 @@ public class NotificationController {
 
     @PostMapping("/list")
     public Map<String, Object> getNotificationList(HttpServletRequest request,
-                                                   @RequestParam(value = "page", required = false) int page,
-                                                   @RequestParam(value = "limit", required = false) int limit,
+                                                   @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+                                                   @RequestParam(value = "limit", required = false, defaultValue = "10") int limit,
                                                    @RequestParam(value = "type", required = false) String type) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();

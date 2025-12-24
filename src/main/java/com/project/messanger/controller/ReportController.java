@@ -29,8 +29,8 @@ public class ReportController {
 
     @PostMapping("/list")
     public Map<String, Object> getReportList(HttpServletRequest request,
-                                             @RequestParam(value = "page", required = false) int page,
-                                             @RequestParam(value = "limit", required = false) int limit,
+                                             @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+                                             @RequestParam(value = "limit", required = false, defaultValue = "10") int limit,
                                              @RequestParam(value = "title", required = false) String title) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
@@ -92,6 +92,7 @@ public class ReportController {
                 result.put("success", true);
                 result.put("detail", reportDto);
             } else {
+                System.out.println("1");
                 result.put("success", false);
                 result.put("error", "보고서 상세를 불러올 수 없습니다.");
             }
@@ -248,8 +249,9 @@ public class ReportController {
 
             return result;
         } else if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N")) {
+            System.out.println("1"+1);
             result.put("success", false);
-            result.put("error", "보고서를 수정하는데 실패했습니다.");
+            result.put("error", "보고서를 승인하는데 실패했습니다.");
 
             return result;
         }
@@ -275,11 +277,11 @@ public class ReportController {
 
             result.put("success", success != 0);
             if (success == 0) {
-                result.put("error", "보고서를 수정하는데 실패했습니다.");
+                result.put("error", "보고서를 승인하는데 실패했습니다.");
             }
         } catch (Exception e) {
             result.put("success", false);
-            result.put("error", "보고서를 수정하는데 실패했습니다.");
+            result.put("error", "보고서를 승인하는데 실패했습니다.");
         }
 
         return result;

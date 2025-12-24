@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class MeetingService {
@@ -130,26 +131,38 @@ public class MeetingService {
      * return int
      */
     @Transactional
-    public int insertMeetingAttenderLinkByUserIdx(long reservationIdx, List<Long> userIdxList) {
-        List<MeetingAttenderLinkDto> insertList = new ArrayList<>();
+    public int insertMeetingAttenderLinkByUserIdx(long reservationIdx, List<Long> userIdxList, boolean isCreate) {
+        List<MeetingAttenderLinkDto> valueList = new ArrayList<>();
+        List<Long> meetingAttenderList = new ArrayList<>(getMeetingAttenderLink(reservationIdx).stream()
+                .map(MeetingAttenderLinkDto::getUserIdx)
+                .toList());
 
         // 값 리스트
         for (int i = 0; i < userIdxList.size(); i++) {
+            if (meetingAttenderList.contains(userIdxList.get(i))) {
+                continue;
+            }
+
             MeetingAttenderLinkDto meetingAttenderLinkDto = MeetingAttenderLinkDto.builder()
                     .reservationIdx(reservationIdx)
                     .userIdx(userIdxList.get(i))
-                    .isAttender("N")
+                    .isAttend("N")
                     .build();
 
             // 등록자는 무조건 참석
-            if (i == 0) {
-                meetingAttenderLinkDto.setIsAttender("Y");
+            if (isCreate && i == 0) {
+                meetingAttenderLinkDto.setIsAttend("Y");
             }
 
-            insertList.add(meetingAttenderLinkDto);
+            valueList.add(meetingAttenderLinkDto);
+            meetingAttenderList.add(userIdxList.get(i));
         }
 
-        return insertMeetingAttenderLink(insertList);
+        if (valueList.isEmpty()) {
+            return 0;
+        }
+
+        return insertMeetingAttenderLink(valueList);
     }
 
     /*
@@ -164,7 +177,7 @@ public class MeetingService {
         // 이미 참석 확정한 목록 제거
         List<Long> attenderIdxList = new ArrayList<>();
         for (MeetingAttenderLinkDto meetingAttenderLinkDto : meetingAttenderList) {
-            if (meetingAttenderLinkDto.getIsAttender().equals("Y")) {
+            if (meetingAttenderLinkDto.getIsAttend().equals("Y")) {
                 attenderIdxList.add(meetingAttenderLinkDto.getUserIdx());
             }
         }
