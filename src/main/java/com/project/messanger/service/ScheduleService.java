@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,13 +35,13 @@ public class ScheduleService {
     }
 
     /*
-     * get date list
+     * get schedule list by month
      * @param Map<String, Object>
      * return List<ScheduleDto>
      */
     @Transactional(readOnly = true)
-    public List<ScheduleDto> getDateList(Map<String, Object> param) {
-        return scheduleMapper.getDateList(param);
+    public List<ScheduleDto> getScheduleListByMonth(Map<String, Object> param) {
+        return scheduleMapper.getScheduleListByMonth(param);
     }
 
     /*
@@ -165,7 +166,7 @@ public class ScheduleService {
      * return int
      */
     @Transactional
-    public int deleteScheduleAttenderLink(long scheduleIdx, List<Long> deleteLinkIdxList) {
+    public int deleteScheduleAttenderLink(long scheduleIdx, List<Long> deleteUserIdxList) {
         List<ScheduleAttenderLinkDto> scheduleAttenderList = getScheduleAttenderLinkList(scheduleIdx);
 
         // 이미 참석 확정한 목록 제거
@@ -176,16 +177,20 @@ public class ScheduleService {
             }
         }
 
-        for (int i = 0; i < deleteLinkIdxList.size(); i++) {
-            if (attenderIdxList.contains(deleteLinkIdxList.get(i))) {
-                deleteLinkIdxList.remove(i);
+        for (int i = 0; i < deleteUserIdxList.size(); i++) {
+            if (attenderIdxList.contains(deleteUserIdxList.get(i))) {
+                deleteUserIdxList.remove(i);
             }
         }
 
-        if (deleteLinkIdxList.isEmpty()) {
+        if (deleteUserIdxList.isEmpty()) {
             return 0;
         }
 
-        return scheduleMapper.deleteScheduleAttenderLink(deleteLinkIdxList);
+        Map<String, Object> param = new HashMap<>();
+        param.put("schedule_idx", scheduleIdx);
+        param.put("user_idx_list", deleteUserIdxList);
+
+        return scheduleMapper.deleteScheduleAttenderLink(param);
     }
 }

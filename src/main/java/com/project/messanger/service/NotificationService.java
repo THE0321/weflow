@@ -1,6 +1,7 @@
 package com.project.messanger.service;
 
 import com.project.messanger.dto.NotificationDto;
+import com.project.messanger.dto.UserDto;
 import com.project.messanger.mapper.NotificationMapper;
 import com.project.messanger.mapper.UserMapper;
 import org.springframework.stereotype.Service;
@@ -100,7 +101,9 @@ public class NotificationService {
         List<Long> containList = new ArrayList<>();;
 
         for (long teamIdx : teamIdxList) {
-            List<Long> userIdxList = userMapper.getUserListByTeamIdx(teamIdx);
+            List<Long> userIdxList = new ArrayList<>(userMapper.getUserListByTeamIdx(teamIdx).stream()
+                    .map(UserDto::getUserIdx)
+                    .toList());
 
             for (long userIdx : userIdxList) {
                 if (containList.contains(userIdx)) continue;

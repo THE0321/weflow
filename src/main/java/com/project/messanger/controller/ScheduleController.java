@@ -65,14 +65,7 @@ public class ScheduleController {
 
             // 일정 목록 조회
             List<ScheduleDto> scheduleList = scheduleService.getScheduleList(param);
-            boolean isEmpty = scheduleList.isEmpty();
-
-            result.put("success", !isEmpty);
-            if (isEmpty) {
-                result.put("error", "조회할 데이터가 없습니다.");
-            } else {
-                result.put("list", scheduleList);
-            }
+            result.put("list", scheduleList);
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "일정을 불러올 수 없습니다.");
@@ -81,9 +74,9 @@ public class ScheduleController {
         return result;
     }
 
-    @PostMapping("/date/list")
-    public Map<String, Object> getDateList(HttpServletRequest request,
-                                           @RequestParam(value = "schedule_date") String scheduleDate) {
+    @PostMapping("/list/month")
+    public Map<String, Object> getScheduleListByMonth(HttpServletRequest request,
+                                                      @RequestParam(value = "schedule_date") String scheduleDate) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -106,18 +99,11 @@ public class ScheduleController {
             }
 
             // 회원 목록 조회
-            List<ScheduleDto> dateList = scheduleService.getDateList(param);
-            boolean isEmpty = dateList.isEmpty();
-
-            result.put("success", !isEmpty);
-            if (isEmpty) {
-                result.put("error", "조회할 데이터가 없습니다.");
-            } else {
-                result.put("list", dateList);
-            }
+            List<ScheduleDto> scheduleList = scheduleService.getScheduleListByMonth(param);
+            result.put("list", scheduleList);
         } catch (Exception e) {
             result.put("success", false);
-            result.put("error", "날짜 리스트를 불러올 수 없습니다.");
+            result.put("error", "일정을 불러올 수 없습니다.");
         }
 
         return result;
@@ -242,7 +228,7 @@ public class ScheduleController {
                                               @RequestParam(value = "end_date", required = false) String endDate,
                                               @RequestParam(value = "is_allday", required = false) String isAllday,
                                               @RequestParam(value = "user_idx", required = false) List<Long> userIdxList,
-                                              @RequestParam(value = "delete_idx", required = false) List<Long> deleteIdxList){
+                                              @RequestParam(value = "delete_user_idx", required = false) List<Long> deleteUserIdxList){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -297,8 +283,8 @@ public class ScheduleController {
             }
 
             // 회의 참석자 삭제
-            if (deleteIdxList != null) {
-                scheduleService.deleteScheduleAttenderLink(scheduleIdx, deleteIdxList);
+            if (deleteUserIdxList != null) {
+                scheduleService.deleteScheduleAttenderLink(scheduleIdx, deleteUserIdxList);
             }
 
             result.put("success", success != 0);

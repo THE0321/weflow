@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +45,7 @@ public class ChattingService {
     }
 
     /*
-     * get chatting list
+     * get chatting by idx
      * @param long
      * return ChattingDto
      */
@@ -105,17 +106,6 @@ public class ChattingService {
     }
 
     /*
-     * get chatting user link by idx
-     * @param long
-     * return ChattingUserLinkDto
-     */
-    @Transactional
-    public ChattingUserLinkDto getChattingUserLinkByIdx(long linkIdx)
-    {
-        return chattingMapper.getChattingUserLinkByIdx(linkIdx);
-    }
-
-    /*
      * insert chatting user link
      * @param List<ChattingUserLinkDto>
      * return int
@@ -160,38 +150,16 @@ public class ChattingService {
     }
 
     /*
-     * insert chatting user link
-     * @param long, List<Long>
-     * return int
-     */
-    @Transactional
-    public int insertChattingUserLinkByUserIdx(long chattingIdx, long userIdx) {
-        List<ChattingUserLinkDto> insertList = new ArrayList<>();
-        List<Long> chattingUserList = getChattingUserLink(chattingIdx).stream()
-                .map(ChattingUserLinkDto::getUserIdx)
-                .toList();
-
-        if (chattingUserList.contains(userIdx)) {
-            return 0;
-        }
-
-        ChattingUserLinkDto chattingUserLinkDto = ChattingUserLinkDto.builder()
-                .chattingIdx(chattingIdx)
-                .userIdx(userIdx)
-                .build();
-
-        insertList.add(chattingUserLinkDto);
-
-        return insertChattingUserLink(insertList);
-    }
-
-    /*
      * delete chatting user link
      * @param long
      * return int
      */
     @Transactional
-    public int deleteChattingUserLink(long chattingIdx) {
-        return chattingMapper.deleteChattingUserLink(chattingIdx);
+    public int deleteChattingUserLink(long chattingIdx, List<Long> deleteUserIdxList) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("chatting_idx", chattingIdx);
+        param.put("user_idx_list", deleteUserIdxList);
+
+        return chattingMapper.deleteChattingUserLink(param);
     }
 }

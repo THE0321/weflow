@@ -129,6 +129,7 @@
 
     <delete id="deleteChattingUserLink" parameterType="long">
         DELETE FROM chatting_user_link
-        WHERE link_idx = #{linkIdx}
+        WHERE chatting_idx = #{chattingIdx}
+          AND user_idx IN <foreach collection="user_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
     </delete>
 </mapper>

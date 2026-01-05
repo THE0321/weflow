@@ -37,9 +37,9 @@
         <result property="title" column="title"/>
         <result property="description" column="description"/>
         <result property="status" column="status"/>
-        <result property="targetValue" column="targetValue"/>
-        <result property="startDate" column="startDate"/>
-        <result property="endDate" column="endDate"/>
+        <result property="targetValue" column="target_value"/>
+        <result property="startDate" column="start_date"/>
+        <result property="endDate" column="end_date"/>
         <result property="creatorIdx" column="creator_idx"/>
         <result property="createdDate" column="created_date"/>
         <result property="updatedDate" column="updated_date"/>
@@ -48,6 +48,42 @@
         <result property="content" column="content"/>
         <result property="logDate" column="log_date"/>
     </resultMap>
+
+    <sql id="sqlGoalListCondition">
+        <where>
+            <if test="title != null">
+                AND UPPER(title) LIKE CONCAT('%', UPPER(#{title}), '%')
+            </if>
+            <if test="status != null">
+                AND UPPER(status) = UPPER(#{status})
+            </if>
+            <if test="user_idx != null">
+                AND (
+                EXISTS (
+                SELECT 1
+                FROM goal_user_link
+                WHERE goal_idx = goal.goal_idx
+                AND user_idx = #{user_idx}
+                )
+                <if test="team_idx_list != null">
+                    OR EXISTS (
+                    SELECT 1
+                    FROM goal_user_link
+                    WHERE goal_idx = goal.goal_idx
+                    AND team_idx IN <foreach collection="team_idx_list" item="teamIdx" open="(" close=")" separator=",">#{teamIdx}</foreach>
+                    )
+                </if>
+                )
+            </if>
+        </where>
+        ORDER BY goal.goal_idx DESC
+    </sql>
+
+    <select id="getGoalCount" parameterType="hashmap" resultType="long">
+        SELECT COUNT(goal.goal_idx)
+        FROM goal
+        <include refid="sqlGoalListCondition" />
+    </select>
 
     <select id="getGoalList" parameterType="hashmap" resultMap="GoalAndLogMap">
         SELECT goal.*,
@@ -67,33 +103,7 @@
             )
         ) goal_log
         ON goal.goal_idx = goal_log.goal_idx
-        <where>
-            <if test="title != null">
-                AND UPPER(title) LIKE CONCAT('%', UPPER(#{title}), '%')
-            </if>
-            <if test="status != null">
-                AND UPPER(status) LIKE CONCAT('%', UPPER(#{status}), '%')
-            </if>
-            <if test="user_idx != null">
-                AND (
-                    EXISTS (
-                        SELECT 1
-                        FROM goal_user_link
-                        WHERE goal_idx = goal.goal_idx
-                        AND user_idx = #{user_idx}
-                    )
-                <if test="team_idx_list != null">
-                    OR EXISTS (
-                        SELECT 1
-                        FROM goal_user_link
-                        WHERE goal_idx = goal.goal_idx
-                        AND team_idx IN <foreach collection="team_idx_list" item="teamIdx" open="(" close=")" separator=",">#{teamIdx}</foreach>
-                    )
-                </if>
-                )
-            </if>
-        </where>
-        ORDER BY goal.goal_idx DESC
+        <include refid="sqlGoalListCondition" />
         LIMIT ${limit} OFFSET ${offset}
     </select>
 
@@ -231,9 +241,16 @@
         </foreach>
     </insert>
 
-    <delete id="deleteGoalUserLink" parameterType="long">
+    <delete id="deleteGoalUserLinkByUserIdx" parameterType="hashmap">
         DELETE FROM goal_user_link
-        WHERE link_idx IN <foreach collection="list" item="value" open="(" close=")" separator=",">#{value}</foreach>
+        WHERE goal_idx = #{goal_idx}
+          AND user_idx IN <foreach collection="user_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
+    </delete>
+
+    <delete id="deleteGoalUserLinkByTeamIdx" parameterType="hashmap">
+        DELETE FROM goal_user_link
+        WHERE goal_idx = #{goal_idx}
+          AND team_idx IN <foreach collection="team_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
     </delete>
 
     <insert id="insertGoalLog" parameterType="com.project.messanger.dto.GoalLogDto">

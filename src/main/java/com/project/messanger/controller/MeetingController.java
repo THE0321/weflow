@@ -62,14 +62,7 @@ public class MeetingController {
 
             // 회의실 조회
             List<ReservationDto> reservationList = meetingService.getReservationList(param);
-            boolean isEmpty = reservationList.isEmpty();
-
-            result.put("success", !isEmpty);
-            if (isEmpty) {
-                result.put("error", "조회할 데이터가 없습니다.");
-            } else {
-                result.put("list", reservationList);
-            }
+            result.put("list", reservationList);
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "회의실을 불러올 수 없습니다.");
@@ -78,9 +71,9 @@ public class MeetingController {
         return result;
     }
 
-    @PostMapping("/date/list")
-    public Map<String, Object> getDateList(HttpServletRequest request,
-                                           @RequestParam(value = "reservation_date", required = false) String reservationDate) {
+    @PostMapping("/list/month")
+    public Map<String, Object> getReservationListByMonth(HttpServletRequest request,
+                                                         @RequestParam(value = "reservation_date", required = false) String reservationDate) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -103,15 +96,8 @@ public class MeetingController {
             }
 
             // 회원 목록 조회
-            List<ReservationDto> dateList = meetingService.getDateList(param);
-            boolean isEmpty = dateList.isEmpty();
-
-            result.put("success", !isEmpty);
-            if (isEmpty) {
-                result.put("error", "조회할 데이터가 없습니다.");
-            } else {
-                result.put("list", dateList);
-            }
+            List<ReservationDto> dateList = meetingService.getReservationListByMonth(param);
+            result.put("list", dateList);
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "날짜 리스트를 불러올 수 없습니다.");
@@ -152,10 +138,10 @@ public class MeetingController {
                 result.put("error", "조회할 데이터가 없습니다.");
             } else {
                 // 회의 참석자 조회
-                List<MeetingAttenderLinkDto> scheduleAttenderList = meetingService.getMeetingAttenderLink(reservationIdx);
+                List<MeetingAttenderLinkDto> meetingAttenderList = meetingService.getMeetingAttenderLink(reservationIdx);
 
                 result.put("detail", reservationDto);
-                result.put("attender_list", scheduleAttenderList);
+                result.put("attender_list", meetingAttenderList);
             }
         } catch (Exception e) {
             result.put("success", false);
@@ -172,7 +158,6 @@ public class MeetingController {
                                                  @RequestParam(value = "start_date") String startDate,
                                                  @RequestParam(value = "end_date") String endDate,
                                                  @RequestParam(value = "creator_idx", required = false) long creatorIdx,
-                                                 @RequestParam(value = "approver_idx", required = false) long approverIdx,
                                                  @RequestParam(value = "user_idx", required = false) List<Long> userIdxList){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
@@ -192,7 +177,6 @@ public class MeetingController {
                     .description(description)
                     .startDate(startDate)
                     .endDate(endDate)
-                    .approverIdx(approverIdx)
                     .creatorIdx(loginInfo.getUserIdx())
                     .build();
 
@@ -237,9 +221,8 @@ public class MeetingController {
                                                  @RequestParam(value = "start_date") String startDate,
                                                  @RequestParam(value = "end_date") String endDate,
                                                  @RequestParam(value = "creator_idx", required = false) long creatorIdx,
-                                                 @RequestParam(value = "approver_idx", required = false) long approverIdx,
                                                  @RequestParam(value = "user_idx", required = false) List<Long> userIdxList,
-                                                 @RequestParam(value = "delete_idx", required = false) List<Long> deleteIdxList){
+                                                 @RequestParam(value = "delete_user_idx", required = false) List<Long> deleteUserIdxList){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -282,7 +265,6 @@ public class MeetingController {
                     .description(description)
                     .startDate(startDate)
                     .endDate(endDate)
-                    .approverIdx(approverIdx)
                     .creatorIdx(loginInfo.getUserIdx())
                     .build();
 
@@ -295,8 +277,8 @@ public class MeetingController {
             }
 
             // 회의 참석자 삭제
-            if (deleteIdxList != null) {
-                meetingService.deleteMeetingAttenderLink(reservationIdx, deleteIdxList);
+            if (deleteUserIdxList != null) {
+                meetingService.deleteMeetingAttenderLink(reservationIdx, deleteUserIdxList);
             }
 
             result.put("success", success != 0);
@@ -406,6 +388,29 @@ public class MeetingController {
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "회의 참석여부를 수정하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/room/list")
+    public Map<String, Object> getMeetingRoomList(HttpServletRequest request) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        if (!authUtil.loginCheck(session)) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
+        try {
+            List<MeetingRoomDto> meetingRoomDtoList = meetingService.getMeetingRoomList();
+            result.put("list", meetingRoomDtoList);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "회의실을 조회하는데 실패했습니다.");
         }
 
         return result;

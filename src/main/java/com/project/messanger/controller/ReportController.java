@@ -31,6 +31,7 @@ public class ReportController {
     public Map<String, Object> getReportList(HttpServletRequest request,
                                              @RequestParam(value = "page", required = false, defaultValue = "1") int page,
                                              @RequestParam(value = "limit", required = false, defaultValue = "10") int limit,
+                                             @RequestParam(value = "type", required = false) String type,
                                              @RequestParam(value = "title", required = false) String title) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
@@ -47,6 +48,7 @@ public class ReportController {
             Map<String, Object> param = new HashMap<>();
             param.put("page", page);
             param.put("limit", limit);
+            param.put("type", type);
             param.put("title", title);
 
             if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N")) {
@@ -55,14 +57,8 @@ public class ReportController {
 
             // 보고서 목록 조회
             List<ReportDto> reportList = reportService.getReportList(param);
-            boolean isEmpty = reportList.isEmpty();
-
-            result.put("success", !isEmpty);
-            if (isEmpty) {
-                result.put("error", "조회할 데이터가 없습니다.");
-            } else {
-                result.put("list", reportList);
-            }
+            result.put("list", reportList);
+            result.put("count", reportService.getReportCount(param));
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "보고서 불러올 수 없습니다.");

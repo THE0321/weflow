@@ -9,6 +9,8 @@ import java.util.Map;
 
 @Mapper
 public interface GoalMapper {
+    long getGoalCount(Map<String, Object> param);
+
     List<GoalAndLogDto> getGoalList(Map<String, Object> param);
 
     List<GoalAndLogDto> getGoalMainList(Map<String, Object> param);
@@ -29,7 +31,9 @@ public interface GoalMapper {
 
     int insertGoalUserLink(List<GoalUserLinkDto> list);
 
-    int deleteGoalUserLink(List<Long> list);
+    int deleteGoalUserLinkByUserIdx(Map<String, Object> param);
+
+    int deleteGoalUserLinkByTeamIdx(Map<String, Object> param);
 
     long insertGoalLog(GoalLogDto goalLogDto);
 

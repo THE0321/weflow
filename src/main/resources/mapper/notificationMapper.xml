@@ -16,7 +16,7 @@
     <select id="getNotificationList" parameterType="hashmap" resultMap="NotificationMap">
         SELECT *
         FROM notification
-        WHERE creator_idx = #{creator_idx}
+        WHERE creator_idx = #{user_idx}
         <if test="type != null">
             AND type = #{type}
         </if>

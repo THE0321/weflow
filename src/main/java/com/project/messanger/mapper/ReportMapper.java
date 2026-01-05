@@ -8,6 +8,8 @@ import java.util.Map;
 
 @Mapper
 public interface ReportMapper {
+    long getReportCount(Map<String, Object> param);
+
     List<ReportDto> getReportList(Map<String, Object> param);
 
     ReportDto getReportByIdx(long reportIdx);

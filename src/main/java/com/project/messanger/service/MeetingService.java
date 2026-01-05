@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -36,13 +37,13 @@ public class MeetingService {
     }
 
     /*
-     * get date list
+     * get reservation list by month
      * @param Map<String, Object>
      * return List<ReservationDto>
      */
     @Transactional(readOnly = true)
-    public List<ReservationDto> getDateList(Map<String, Object> param) {
-        return meetingMapper.getDateList(param);
+    public List<ReservationDto> getReservationListByMonth(Map<String, Object> param) {
+        return meetingMapper.getReservationListByMonth(param);
     }
 
     /*
@@ -171,7 +172,7 @@ public class MeetingService {
      * return int
      */
     @Transactional
-    public int deleteMeetingAttenderLink(long reservationIdx, List<Long> deleteLinkIdxList) {
+    public int deleteMeetingAttenderLink(long reservationIdx, List<Long> deleteUserIdxList) {
         List<MeetingAttenderLinkDto> meetingAttenderList = getMeetingAttenderLink(reservationIdx);
 
         // 이미 참석 확정한 목록 제거
@@ -182,17 +183,26 @@ public class MeetingService {
             }
         }
 
-        for (int i = 0; i < deleteLinkIdxList.size(); i++) {
-            if (attenderIdxList.contains(deleteLinkIdxList.get(i))) {
-                deleteLinkIdxList.remove(i);
+        for (int i = 0; i < deleteUserIdxList.size(); i++) {
+            if (attenderIdxList.contains(deleteUserIdxList.get(i))) {
+                deleteUserIdxList.remove(i);
             }
         }
 
-        if (deleteLinkIdxList.isEmpty()) {
+        if (deleteUserIdxList.isEmpty()) {
             return 0;
         }
 
-        return meetingMapper.deleteMeetingAttenderLink(deleteLinkIdxList);
+        Map<String, Object> param = new HashMap<>();
+        param.put("reservation_idx", reservationIdx);
+        param.put("user_idx_list", deleteUserIdxList);
+
+        return meetingMapper.deleteMeetingAttenderLink(param);
+    }
+
+    @Transactional(readOnly = true)
+    public List<MeetingRoomDto> getMeetingRoomList() {
+        return meetingMapper.getMeetingRoomList();
     }
 
     /*
@@ -200,7 +210,7 @@ public class MeetingService {
      * @param long
      * return MeetingRoomDto
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public MeetingRoomDto getMeetingRoomByIdx(long roomIdx) {
         return meetingMapper.getMeetingRoomByIdx(roomIdx);
     }

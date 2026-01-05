@@ -15,14 +15,26 @@
         <result property="updatedDate" column="updated_date"/>
     </resultMap>
 
-    <select id="getReportList" parameterType="hashmap" resultMap="ReportMap">
-        SELECT *
+    <sql id="sqlReportListCondition">
         FROM report
         <where>
+            <if test="type != null">
+                AND UPPER(type) = #{type}
+            </if>
             <if test="title != null">
                 AND UPPER(title) LIKE CONCAT('%', UPPER(#{title}), '%')
             </if>
         </where>
+    </sql>
+
+    <select id="getReportCount" parameterType="hashmap" resultType="long">
+        SELECT COUNT(report_idx)
+        <include refid="sqlReportListCondition" />
+    </select>
+
+    <select id="getReportList" parameterType="hashmap" resultMap="ReportMap">
+        SELECT *
+        <include refid="sqlReportListCondition" />
         ORDER BY report_idx DESC
         LIMIT ${limit} OFFSET ${offset}
     </select>
