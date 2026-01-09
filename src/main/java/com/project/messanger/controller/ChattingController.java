@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import java.util.ArrayList;
@@ -64,6 +65,7 @@ public class ChattingController {
     @PostMapping("/create")
     public Map<String, Object> insertChattingMessage(HttpServletRequest request,
                                                      MultipartHttpServletRequest multipartHttpServletRequest,
+                                                     @RequestParam(value = "file", required = false) MultipartFile file,
                                                      @RequestParam(value = "chatting_idx") long chattingIdx,
                                                      @RequestParam(value = "content") String content){
         Map<String, Object> result = new HashMap<>();
@@ -85,7 +87,7 @@ public class ChattingController {
                     .creatorIdx(loginInfo.getUserIdx())
                     .build();
 
-            if (multipartHttpServletRequest.getFile("file") != null) {
+            if (file != null && !file.isEmpty()) {
                 FileDto fileDto = fileService.uploadFile(multipartHttpServletRequest);
                 fileDto.setUserIdx(loginInfo.getUserIdx());
 

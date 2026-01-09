@@ -14,15 +14,34 @@
         <result property="description" column="description"/>
     </resultMap>
 
+    <resultMap id="AILogMap" type="com.project.messanger.dto.AILogDto">
+        <id property="aiLogIdx" column="ai_log_idx"/>
+        <result property="feature" column="feature"/>
+        <result property="prompt" column="prompt"/>
+        <result property="result" column="result"/>
+        <result property="creatorIdx" column="creator_idx"/>
+        <result property="createdDate" column="created_date"/>
+    </resultMap>
+
     <select id="getFeatureList" resultMap="string">
         SELECT DISTINCT feature
         FROM ai_schema
         WHERE is_use = 'Y'
     </select>
 
-    <select id="getColumnList" parameterType="" resultMap="">
+    <select id="getColumnList" parameterType="string" resultMap="AISchemaMap">
         SELECT *
         FROM ai_schema
-        WHERE
+        WHERE feature = #{feature}
+          AND is_use = 'Y'
     </select>
+
+    <insert id="insertAILog" parameterType="com.project.messanger.dto.AILogDto">
+        INSERT ai_log
+        SET <if test="feature != null"> feature = #{feature},</if>
+            prompt = #{prompt},
+            result = #{result},
+            creator_idx = #{creatorIdx},
+            created_date = NOW()
+    </insert>
 </mapper>

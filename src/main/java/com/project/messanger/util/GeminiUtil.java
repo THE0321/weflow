@@ -2,6 +2,7 @@ package com.project.messanger.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.messanger.dto.AISchemaDto;
 import com.project.messanger.mapper.AIMapper;
 import com.project.messanger.service.AIService;
 import lombok.NoArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 @Component
@@ -24,9 +26,9 @@ public class GeminiUtil {
     @Value("${gemini.api.key}")
     private String apiKey;
 
-    // 답변내용이랑 필요한 작업이 파라미터로 들어감
     public Map<String, Object> callGemini(String prompt, List<String> featureList) throws JsonProcessingException {
         // 파라메터 세팅
+        // 답변내용이랑 필요한 작업이 파라미터로 들어감
         Map<String, Object> body = Map.of(
             "contents", List.of(Map.of(  // AI에 명령 및 히스토리(이력관리) 보냄
                 "parts", List.of(Map.of("text", prompt))
@@ -51,55 +53,108 @@ public class GeminiUtil {
             )
         );
 
-        // GEMINI AI 호출
-        Mono<String> output = webClient.post()
-            .uri(uriBuilder -> uriBuilder
-                .path("/v1beta/models/" + apiVersion + ":generateContent")
-                .queryParam("key", apiKey)
-                .build())
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(body)
-            .retrieve()
-            .bodyToMono(String.class);
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, Object> resultData = objectMapper.readValue(output.block(), HashMap.class);
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", false);
-
-        List<LinkedHashMap<String, Object>> candidates = (List<LinkedHashMap<String, Object>>) resultData.get("candidates");
-        if (candidates.isEmpty()) {
-            return result;
-        }
-
-        LinkedHashMap<String, Object> candidate = candidates.get(0);
-        if (candidate.get("content") == null || !candidate.get("finishReason").equals("STOP")) {
-            return result;
-        }
-
-        LinkedHashMap<String, Object> content = (LinkedHashMap<String, Object>) candidate.get("content");
-        if (content.get("parts") == null) {
-            return result;
-        }
-
-        List<LinkedHashMap<String, Object>> parts = (List<LinkedHashMap<String, Object>>) content.get("parts");
-        if (parts.isEmpty()) {
-            return result;
-        }
-
-        LinkedHashMap<String, Object> part = parts.get(0);
-        if (part.get("text") == null) {
-            return result;
-        }
-
-        String value = (String) part.get("text");
+        Map<String, Object> result = call(body);
+        result.put("prompt", prompt);
 
         return result;
     }
 
-    // 컬럼리스트에다가 값을 세팅해서 보내주는 게 필요함
     public Map<String, Object> getData(Map<String, Object> resultData) {
+        List<AISchemaDto> schemaDtoList = (List<AISchemaDto>) resultData.get("schema_list");
 
+        Map<String, Object> propertiesMap = new HashMap<>();
+        for (AISchemaDto schemaDto : schemaDtoList) {
+            propertiesMap.put(schemaDto.getName(), Map.of(
+                "type", "string",
+                "description", schemaDto.getDescription()
+            ));
+        }
+
+        // 파라메터 세팅
+        Map<String, Object> body = Map.of(
+            "contents", List.of(
+                Map.of(
+                    "role", "user",
+                    "parts", List.of(Map.of("text", resultData.get("prompt")))
+                ),
+                Map.of(
+                    "role", "model",
+                    "parts", List.of(Map.of("text", resultData.get("content")))
+                ),
+                Map.of(
+                    "role", "user",
+                    "parts", List.of(Map.of("text", "파라메터 세팅해줘"))
+                )
+            ),
+            "generationConfig", Map.of(
+                "responseMimeType", "application/json",
+                "responseJsonSchema", Map.of(
+                    "type", "object",
+                    "properties", propertiesMap
+                )
+            )
+        );
+
+        Map<String, Object> result = call(body);
+        result.put("prompt", resultData.get("prompt"));
+        result.put("content", resultData.get("content"));
+        result.put("command", resultData.get("command"));
+
+        return result;
+    }
+
+    private Map<String, Object> call(Map<String, Object> body) {
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", false);
+
+        try {
+            // GEMINI AI 호출
+            Mono<String> output = webClient.post()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/v1beta/models/" + apiVersion + ":generateContent")
+                            .queryParam("key", apiKey)
+                            .build())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(body)
+                    .retrieve()
+                    .bodyToMono(String.class);
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            Map<String, Object> resultData = objectMapper.readValue(output.block(), HashMap.class);
+
+            List<LinkedHashMap<String, Object>> candidates = (List<LinkedHashMap<String, Object>>) resultData.get("candidates");
+            if (candidates.isEmpty()) {
+                return result;
+            }
+
+            LinkedHashMap<String, Object> candidate = candidates.get(0);
+            if (candidate.get("content") == null || !candidate.get("finishReason").equals("STOP")) {
+                return result;
+            }
+
+            LinkedHashMap<String, Object> content = (LinkedHashMap<String, Object>) candidate.get("content");
+            if (content.get("parts") == null) {
+                return result;
+            }
+
+            List<LinkedHashMap<String, Object>> parts = (List<LinkedHashMap<String, Object>>) content.get("parts");
+            if (parts.isEmpty()) {
+                return result;
+            }
+
+            LinkedHashMap<String, Object> part = parts.get(0);
+            if (part.get("text") == null) {
+                return result;
+            }
+
+            String value = (String) part.get("text");
+            result = objectMapper.readValue(value, HashMap.class);
+            result.put("success", true);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return result;
+        }
+
+        return result;
     }
 }

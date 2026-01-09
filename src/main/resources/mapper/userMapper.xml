@@ -42,32 +42,6 @@
     </select>
 
     <select id="getUserList" parameterType="hashmap" resultMap="UserMap">
-        SELECT user_idx
-             , email
-             , password
-             , user_name
-             , phone_number
-             , admin_yn
-             , leader_yn
-             , is_deleted
-        <include refid="sqlUserListCondition" />
-        <if test="email != null">
-            AND UPPER(email) LIKE CONCAT('%', UPPER(#{email}), '%')
-        </if>
-        <if test="userName != null">
-            AND UPPER(user_name) LIKE CONCAT('%', UPPER(#{user_name}), '%')
-        </if>
-        <if test="phoneNumber != null">
-            AND UPPER(phone_number) LIKE CONCAT('%', UPPER(#{phone_number}), '%')
-        </if>
-    </sql>
-
-    <select id="getUserCount" parameterType="hashmap" resultType="long">
-        SELECT COUNT(user_idx)
-        <include refid="sqlUserListCondition" />
-    </select>
-
-    <select id="getUserList" parameterType="hashmap" resultMap="UserMap">
         SELECT *
         <include refid="sqlUserListCondition" />
         LIMIT ${limit} OFFSET ${offset}

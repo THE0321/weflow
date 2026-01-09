@@ -1,6 +1,7 @@
 package com.project.messanger.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.project.messanger.dto.AILogDto;
 import com.project.messanger.mapper.AIMapper;
 import com.project.messanger.util.GeminiUtil;
 import org.springframework.stereotype.Service;
@@ -28,8 +29,28 @@ public class AIService {
         return aiMapper.getFeatureList();
     }
 
+    /*
+     * insert AI log
+     * param AILogDto
+     * return int
+     */
+    @Transactional
+    public void insertAILog(AILogDto aiLogDto) {
+        aiMapper.insertAILog(aiLogDto);
+    }
+
+    /*
+     * call gemini api
+     * param String
+     * return Map<String, Object>
+     */
     @Transactional(readOnly = true)
     public Map<String, Object> callGemini(String prompt) throws JsonProcessingException {
-        return geminiUtil.callGemini(prompt, getFeatureList());
+        Map<String, Object> result = geminiUtil.callGemini(prompt, getFeatureList());
+        if (result.get("command") != null) {
+            result = geminiUtil.getData(result);
+        }
+
+        return result;
     }
 }
