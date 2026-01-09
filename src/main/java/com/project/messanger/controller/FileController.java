@@ -19,6 +19,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -30,6 +31,45 @@ public class FileController {
     public FileController(FileService fileService, AuthUtil authUtil) {
         this.fileService = fileService;
         this.authUtil = authUtil;
+    }
+
+    @PostMapping("/list")
+    public Map<String, Object> getFileListByUserIdx(HttpServletRequest request,
+                                                    @RequestParam(value = "page", required = false, defaultValue = "1") int page,
+                                                    @RequestParam(value = "limit", required = false, defaultValue = "10") int limit,
+                                                    @RequestParam(value = "name", required = false) String name){
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        if (!authUtil.loginCheck(session)) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
+        try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("page", page);
+            param.put("limit", limit);
+            param.put("name", name);
+
+            List<FileDto> fileList = fileService.getFileList(param);
+            boolean isEmpty = fileList.isEmpty();
+
+            long listCount = 0;
+            if (!isEmpty) {
+                listCount = fileService.getFileCount(param);
+            }
+
+            result.put("list", fileList);
+            result.put("count", listCount);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "파일을 조회하는데 실패했습니다.");
+        }
+
+        return result;
     }
 
     @PostMapping("/upload")

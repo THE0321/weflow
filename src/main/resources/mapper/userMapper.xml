@@ -22,6 +22,25 @@
         <result property="updatedDate" column="updated_date"/>
     </resultMap>
 
+    <sql id="sqlUserListCondition">
+        FROM user
+        WHERE is_deleted = 'N'
+        <if test="email != null">
+            AND UPPER(email) LIKE CONCAT('%', UPPER(#{email}), '%')
+        </if>
+        <if test="userName != null">
+            AND UPPER(user_name) LIKE CONCAT('%', UPPER(#{user_name}), '%')
+        </if>
+        <if test="phoneNumber != null">
+            AND UPPER(phone_number) LIKE CONCAT('%', UPPER(#{phone_number}), '%')
+        </if>
+    </sql>
+
+    <select id="getUserCount" parameterType="hashmap" resultType="long">
+        SELECT COUNT(user_idx)
+        <include refid="sqlUserListCondition" />
+    </select>
+
     <select id="getUserList" parameterType="hashmap" resultMap="UserMap">
         SELECT user_idx
              , email
@@ -31,24 +50,41 @@
              , admin_yn
              , leader_yn
              , is_deleted
-        FROM user
-        WHERE is_deleted = 'N'
-            <if test="email != null">
-                AND UPPER(email) LIKE CONCAT('%', UPPER(#{email}), '%')
-            </if>
-            <if test="userName != null">
-                AND UPPER(user_name) LIKE CONCAT('%', UPPER(#{user_name}), '%')
-            </if>
-            <if test="phoneNumber != null">
-                AND UPPER(phone_number) LIKE CONCAT('%', UPPER(#{phone_number}), '%')
-            </if>
+        <include refid="sqlUserListCondition" />
+        <if test="email != null">
+            AND UPPER(email) LIKE CONCAT('%', UPPER(#{email}), '%')
+        </if>
+        <if test="userName != null">
+            AND UPPER(user_name) LIKE CONCAT('%', UPPER(#{user_name}), '%')
+        </if>
+        <if test="phoneNumber != null">
+            AND UPPER(phone_number) LIKE CONCAT('%', UPPER(#{phone_number}), '%')
+        </if>
+    </sql>
+
+    <select id="getUserCount" parameterType="hashmap" resultType="long">
+        SELECT COUNT(user_idx)
+        <include refid="sqlUserListCondition" />
+    </select>
+
+    <select id="getUserList" parameterType="hashmap" resultMap="UserMap">
+        SELECT *
+        <include refid="sqlUserListCondition" />
         LIMIT ${limit} OFFSET ${offset}
     </select>
 
-    <select id="getUserListByTeamIdx" parameterType="long" resultType="long">
-        SELECT user_idx
+    <select id="getAllUserList" resultMap="UserMap">
+        SELECT *
+        FROM user
+        WHERE is_deleted = 'N'
+    </select>
+
+    <select id="getUserListByTeamIdx" parameterType="long" resultMap="UserMap">
+        SELECT user.*
         FROM team_user_link
-        WHERE team_idx = #{teamIdx}
+        INNER JOIN user
+           ON user.user_idx = team_user_link.user_idx
+        WHERE team_user_link.team_idx = #{teamIdx}
     </select>
 
     <select id="getUserByIdx" parameterType="long" resultMap="UserMap">
@@ -96,11 +132,7 @@
         WHERE user_idx = #{userIdx}
     </update>
 
-    <select id="getTeamList" parameterType="hashmap" resultMap="TeamMap">
-        SELECT team_idx
-             , team_name
-             , created_date
-             , updated_date
+    <sql id="sqlTeamListCondition">
         FROM team
         <where>
             <if test="team_name != null">
@@ -108,13 +140,33 @@
             </if>
         </where>
         ORDER BY team_idx DESC
+    </sql>
+
+    <select id="getTeamCount" parameterType="hashmap" resultType="long">
+        SELECT COUNT(team_idx)
+        <include refid="sqlTeamListCondition" />
+    </select>
+
+    <select id="getTeamList" parameterType="hashmap" resultMap="TeamMap">
+        SELECT team_idx
+             , team_name
+             , created_date
+             , updated_date
+        <include refid="sqlTeamListCondition" />
         LIMIT ${limit} OFFSET ${offset}
     </select>
 
-    <select id="getTeamListByUserIdx" parameterType="long" resultType="long">
-        SELECT team_idx
+    <select id="getAllTeamList" resultMap="TeamMap">
+        SELECT *
+        FROM team
+    </select>
+
+    <select id="getTeamListByUserIdx" parameterType="long" resultMap="TeamMap">
+        SELECT team.*
         FROM team_user_link
-        WHERE user_idx = #{userIdx}
+        INNER JOIN team
+           ON team.team_idx = team_user_link.team_idx
+        WHERE team_user_link.user_idx = #{userIdx}
     </select>
 
     <select id="getTeamByIdx" parameterType="long" resultMap="TeamMap">
@@ -160,9 +212,16 @@
         </foreach>
     </insert>
 
-    <delete id="deleteTeamUserLink" parameterType="long">
+    <delete id="deleteTeamUserLinkByUserIdx" parameterType="long">
         DELETE FROM team_user_link
-        WHERE link_idx IN <foreach collection="list" item="value" open="(" close=")" separator=",">#{value}</foreach>
+        WHERE user_idx = #{user_idx}
+          AND team_idx IN <foreach collection="team_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
+    </delete>
+
+    <delete id="deleteTeamUserLinkByTeamIdx" parameterType="hashmap">
+        DELETE FROM team_user_link
+        WHERE team_idx = #{team_idx}
+          AND user_idx IN <foreach collection="user_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
     </delete>
 
 </mapper>

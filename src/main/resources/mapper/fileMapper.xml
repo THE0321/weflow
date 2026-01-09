@@ -14,6 +14,25 @@
         <result property="createdDate" column="created_date"/>
     </resultMap>
 
+    <sql id="sqlFileListCondition">
+        FROM file
+        WHERE is_drive = 'Y'
+        <if test="name != null">
+            AND UPPER(name) LIKE CONCAT('%', UPPER(#{name}), '%')
+        </if>
+    </sql>
+
+    <select id="getFileCount" parameterType="hashmap" resultType="long">
+        SELECT COUNT(file_idx)
+        <include refid="sqlFileListCondition" />
+    </select>
+
+    <select id="getFileList" parameterType="hashmap" resultMap="FileMap">
+        SELECT *
+        <include refid="sqlFileListCondition" />
+        LIMIT ${limit} OFFSET ${offset}
+    </select>
+
     <select id="getFileByIdx" parameterType="long" resultMap="FileMap">
         SELECT *
         FROM file

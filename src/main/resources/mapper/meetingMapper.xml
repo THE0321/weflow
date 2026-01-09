@@ -38,8 +38,8 @@
                 AND (UPPER(description) LIKE CONCAT('%', UPPER(#{description}), '%')
             </if>
             <if test="reservation_date != null">
-                AND (start_date IS NULL OR DATE_FORMAT(start_date, '%Y-%m') &lt;= #{reservation_date})
-                AND (end_date IS NULL OR DATE_FORMAT(end_date, '%Y-%m') &gt;= #{reservation_date})
+                AND (start_date IS NULL OR DATE_FORMAT(start_date, '%Y-%m-%d') &lt;= #{reservation_date})
+                AND (end_date IS NULL OR DATE_FORMAT(end_date, '%Y-%m-%d') &gt;= #{reservation_date})
             </if>
             <if test="user_idx != null">
                 AND EXISTS (
@@ -54,8 +54,8 @@
         LIMIT ${limit} OFFSET ${offset}
     </select>
 
-    <select id="getDateList" parameterType="hashmap" resultMap="ReservationMap">
-        SELECT DISTINCT start_date, end_date
+    <select id="getReservationListByMonth" parameterType="hashmap" resultMap="ReservationMap">
+        SELECT *
         FROM reservation
         <where>
             <if test="reservation_date != null">
@@ -155,8 +155,15 @@
 
     <delete id="deleteMeetingAttenderLink" parameterType="long">
         DELETE FROM meeting_attender_link
-        WHERE link_idx IN <foreach collection="list" item="value" open="(" close=")" separator=",">#{value}</foreach>
+        WHERE reservation_idx = #{reservation_idx}
+          AND user_idx IN <foreach collection="user_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
     </delete>
+
+    <select id="getMeetingRoomList" resultMap="MeetingRoomMap">
+        SELECT *
+        FROM meeting_room
+        ORDER BY name
+    </select>
 
     <select id="getMeetingRoomByIdx" parameterType="long" resultMap="MeetingRoomMap">
         SELECT *

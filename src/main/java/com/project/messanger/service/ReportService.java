@@ -17,6 +17,16 @@ public class ReportService {
     }
 
     /*
+     * get report count
+     * @param Map<String, Object>
+     * return long
+     */
+    @Transactional(readOnly = true)
+    public long getReportCount(Map<String, Object> param) {
+        return reportMapper.getReportCount(param);
+    }
+
+    /*
      * get report list
      * @param Map<String, Object>
      * return List<ReportDto>

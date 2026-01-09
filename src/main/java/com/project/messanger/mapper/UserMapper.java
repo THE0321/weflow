@@ -10,9 +10,13 @@ import java.util.Map;
 
 @Mapper
 public interface UserMapper {
+    long getUserCount(Map<String, Object> param);
+
     List<UserDto> getUserList(Map<String, Object> param);
 
-    List<Long> getUserListByTeamIdx(long teamIdx);
+    List<UserDto> getAllUserList();
+
+    List<UserDto> getUserListByTeamIdx(long teamIdx);
 
     UserDto getUserByIdx(long userIdx);
 
@@ -24,9 +28,13 @@ public interface UserMapper {
 
     int deleteUser(long userIdx);
 
+    long getTeamCount(Map<String, Object> param);
+
     List<TeamDto> getTeamList(Map<String, Object> param);
 
-    List<Long> getTeamListByUserIdx(long userIdx);
+    List<TeamDto> getAllTeamList();
+
+    List<TeamDto> getTeamListByUserIdx(long userIdx);
 
     TeamDto getTeamByIdx(long teamIdx);
 
@@ -38,5 +46,8 @@ public interface UserMapper {
 
     int insertTeamUserLink(List<TeamUserLinkDto> list);
 
-    int deleteTeamUserLink(List<Long> list);
+    int deleteTeamUserLinkByUserIdx(Map<String, Object> param);
+
+    int deleteTeamUserLinkByTeamIdx(Map<String, Object> param);
+
 }

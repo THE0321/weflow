@@ -47,8 +47,8 @@
         LIMIT ${limit} OFFSET ${offset}
     </select>
 
-    <select id="getDateList" parameterType="hashmap" resultMap="ScheduleMap">
-        SELECT DISTINCT start_date, end_date
+    <select id="getScheduleListByMonth" parameterType="hashmap" resultMap="ScheduleMap">
+        SELECT *
         FROM schedule
         <where>
             <if test="schedule_date != null">
@@ -153,9 +153,10 @@
           AND user_idx = #{userIdx}
     </update>
 
-    <delete id="deleteScheduleAttenderLink" parameterType="long">
+    <delete id="deleteScheduleAttenderLink" parameterType="hashmap">
         DELETE FROM schedule_attender_link
-        WHERE link_idx IN <foreach collection="list" item="value" open="(" close=")" separator=",">#{value}</foreach>
+        WHERE schedule_idx = #{schedule_idx}
+          AND user_idx IN <foreach collection="user_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
     </delete>
 
 </mapper>

@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +60,39 @@ public class UserController {
                 result.put("error", "조회할 데이터가 없습니다.");
             } else {
                 result.put("list", userList);
+                result.put("count", userService.getUserCount(param));
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "회원 정보를 불러올 수 없습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/list/all")
+    public Map<String, Object> getAllUserList(HttpServletRequest request) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        // 권한 체크
+        if (!authUtil.authCheck(session)) {
+            result.put("success", false);
+            result.put("error", "회원 목록을 조회할 권한이 없습니다.");
+
+            return result;
+        }
+
+        try {
+            // 전체 회원 목록 조회
+            List<UserDto> userList = userService.getAllUserList();
+            boolean isEmpty = userList.isEmpty();
+
+            result.put("success", !isEmpty);
+            if (isEmpty) {
+                result.put("error", "조회할 데이터가 없습니다.");
+            } else {
+                result.put("list", userList);
             }
         } catch (Exception e) {
             result.put("success", false);
@@ -89,7 +123,11 @@ public class UserController {
             if (userDto == null) {
                 result.put("error", "조회할 데이터가 없습니다.");
             } else {
+                // 유저가 소속된 팀 목록 조회
+                List<TeamDto> teamDtoList = userService.getTeamListByUserIdx(userDto.getUserIdx());
+
                 result.put("detail", userDto);
+                result.put("team_list", teamDtoList);
             }
         } catch (Exception e) {
             result.put("success", false);
@@ -148,7 +186,7 @@ public class UserController {
 
             // 회원 팀 추가
             if (teamIdxList != null) {
-                userService.insertUserLinkByTeamIdx(userIdx, teamIdxList);
+                userService.insertUserLinkByUserIdx(userIdx, teamIdxList);
             }
 
             result.put("success", true);
@@ -170,7 +208,7 @@ public class UserController {
                                           @RequestParam(value = "admin_yn", required = false, defaultValue = "N") String adminYn,
                                           @RequestParam(value = "leader_yn", required = false, defaultValue = "N") String leaderYn,
                                           @RequestParam(value = "team_idx", required = false) List<Long> teamIdxList,
-                                          @RequestParam(value = "delete_link_idx", required = false) List<Long> deleteLinkIdxList) {
+                                          @RequestParam(value = "delete_team_idx", required = false) List<Long> deleteTeamIdxList) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -212,12 +250,12 @@ public class UserController {
 
             // 회원 팀 추가
             if (teamIdxList != null) {
-                userService.insertUserLinkByTeamIdx(userIdx, teamIdxList);
+                userService.insertUserLinkByUserIdx(userIdx, teamIdxList);
             }
 
-            // 회원 삭제
-            if (deleteLinkIdxList != null) {
-                userService.deleteTeamUserLink(deleteLinkIdxList);
+            // 팀 삭제
+            if (deleteTeamIdxList != null) {
+                userService.deleteTeamUserLinkByUserIdx(userIdx, deleteTeamIdxList);
             }
 
             result.put("success", success != 0);
@@ -302,6 +340,39 @@ public class UserController {
                 result.put("error", "조회할 데이터가 없습니다.");
             } else {
                 result.put("list", teamList);
+                result.put("count", userService.getTeamCount(param));
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "팀 목록을 조회하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/team/list/all")
+    public Map<String, Object> getAllTeamList(HttpServletRequest request) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        // 권한 체크
+        if (!authUtil.authCheck(session)) {
+            result.put("success", false);
+            result.put("error", "팀을 조회할 권한이 없습니다.");
+
+            return result;
+        }
+
+        try {
+            // 팀 목록 조회
+            List<TeamDto> teamList = userService.getAllTeamList();
+            boolean isEmpty = teamList.isEmpty();
+
+            result.put("success", !isEmpty);
+            if (isEmpty) {
+                result.put("error", "조회할 데이터가 없습니다.");
+            } else {
+                result.put("list", teamList);
             }
         } catch (Exception e) {
             result.put("success", false);
@@ -333,7 +404,7 @@ public class UserController {
                 result.put("error", "조회할 데이터가 없습니다.");
             } else {
                 // 팀에 소속된 유저 목록 조회
-                List<Long> userList = userService.getUserListByTeamIdx(teamIdx);
+                List<UserDto> userList = userService.getUserListByTeamIdx(teamIdx);
 
                 result.put("detail", teamDto);
                 result.put("user_list", userList);
@@ -348,7 +419,8 @@ public class UserController {
 
     @PostMapping("/team/create")
     public Map<String, Object> teamCreate(HttpServletRequest request,
-                                          @RequestParam(value = "team_name", required = false) String teamName) {
+                                          @RequestParam(value = "team_name", required = false) String teamName,
+                                          @RequestParam(value = "user_idx", required = false) List<Long> userIdxList) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -369,6 +441,11 @@ public class UserController {
             // 팀 등록
             long teamIdx = userService.insertTeam(teamDto);
 
+            // 팀 회원 추가
+            if (userIdxList != null) {
+                userService.insertUserLinkByTeamIdx(teamIdx, userIdxList);
+            }
+
             result.put("success", true);
             result.put("idx", teamIdx);
         } catch (Exception e) {
@@ -382,7 +459,9 @@ public class UserController {
     @PostMapping("/team/modify")
     public Map<String, Object> teamModify(HttpServletRequest request,
                                           @RequestParam("team_idx") long teamIdx,
-                                          @RequestParam(value = "team_name", required = false) String teamName) {
+                                          @RequestParam(value = "team_name", required = false) String teamName,
+                                          @RequestParam(value = "user_idx", required = false) List<Long> userIdxList,
+                                          @RequestParam(value = "delete_user_idx", required = false) List<Long> deleteUserIdxList) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -412,6 +491,16 @@ public class UserController {
 
             // 팀 수정
             long success = userService.updateTeam(teamDto);
+
+            // 팀 회원 추가
+            if (userIdxList != null) {
+                userService.insertUserLinkByTeamIdx(teamIdx, userIdxList);
+            }
+
+            // 회원 삭제
+            if (deleteUserIdxList != null) {
+                userService.deleteTeamUserLinkByTeamIdx(teamIdx, deleteUserIdxList);
+            }
 
             result.put("success", success == 1);
             if (success == 0) {
@@ -481,7 +570,9 @@ public class UserController {
             } else {
                 // 로그인 정보 저장
                 UserDto userDto = userService.getUserByIdx(userIdx);
-                List<Long> teamIdxList = userService.getTeamListByUserIdx(userIdx);
+                List<Long> teamIdxList = new ArrayList<>(userService.getTeamListByUserIdx(userIdx).stream()
+                        .map(TeamDto::getTeamIdx)
+                        .toList());
 
                 ObjectMapper objectMapper = new ObjectMapper();
                 String jsonData = objectMapper.writeValueAsString(userDto);
@@ -489,6 +580,8 @@ public class UserController {
 
                 session.setAttribute("login_info", jsonData);
                 session.setAttribute("team_idx_list", teamJsonData);
+
+                result.put("login_info", userDto);
             }
         } catch (Exception e) {
             result.put("success", false);

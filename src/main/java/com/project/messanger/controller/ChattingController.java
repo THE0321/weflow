@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,35 +53,6 @@ public class ChattingController {
 
             result.put("success", true);
             result.put("list", chattingService.getChattingMessageList(param));
-        } catch (Exception e) {
-            result.put("success", false);
-            result.put("error", "채팅방을 불러올 수 없습니다.");
-        }
-
-        return result;
-    }
-
-    @PostMapping("/room/list")
-    public Map<String, Object> getChattingList(HttpServletRequest request,
-                                               @RequestParam(value = "name", required = false) String name) {
-        Map<String, Object> result = new HashMap<>();
-        HttpSession session = request.getSession();
-
-        UserDto loginInfo = authUtil.getLoginInfo(session);
-        if (loginInfo == null) {
-            result.put("success", false);
-            result.put("error", "로그인 해주세요.");
-
-            return result;
-        }
-
-        try {
-            Map<String, Object> param = new HashMap<>();
-            param.put("name", name);
-            param.put("user_idx", loginInfo.getUserIdx());
-
-            result.put("success", true);
-            result.put("list", chattingService.getChattingList(param));
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "채팅방을 불러올 수 없습니다.");
@@ -132,10 +104,91 @@ public class ChattingController {
         return result;
     }
 
+    @PostMapping("/room/list")
+    public Map<String, Object> getChattingList(HttpServletRequest request,
+                                               @RequestParam(value = "name", required = false) String name) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
+        try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("name", name);
+            param.put("user_idx", loginInfo.getUserIdx());
+
+            // 채팅방 목록 조회
+            List<ChattingDto> chattingList = chattingService.getChattingList(param);
+
+            result.put("success", true);
+            result.put("list", chattingList);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "채팅방을 불러올 수 없습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/room/detail")
+    public Map<String, Object> getChattingDetail(HttpServletRequest request,
+                                                 @RequestParam(value = "chatting_idx") long chattingIdx){
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
+        try {
+            // 채팅 조회
+            ChattingDto chattingDto = chattingService.getChattingByIdx(chattingIdx);
+            if (chattingDto == null) {
+                result.put("success", false);
+                result.put("error", "채팅방 상세를 불러올 수 없습니다.");
+
+                return result;
+            }
+
+            List<ChattingUserLinkDto> chattingUserLinkList = chattingService.getChattingUserLink(chattingIdx);
+            if (!loginInfo.getAdminYn().equals("Y") && chattingDto.getCreatorIdx() != loginInfo.getUserIdx()) {
+                List<Long> chattingUserIdxList = new ArrayList<>(chattingUserLinkList.stream()
+                        .map(ChattingUserLinkDto::getUserIdx)
+                        .toList());
+
+                if (!chattingUserIdxList.contains(loginInfo.getUserIdx())) {
+                    result.put("success", false);
+                    result.put("error", "채팅방을 불러올 수 없습니다.");
+
+                    return result;
+                }
+            }
+
+            result.put("success", true);
+            result.put("detail", chattingDto);
+            result.put("user_list", chattingUserLinkList);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "채팅방을 불러올 수 없습니다.");
+        }
+
+        return result;
+    }
+
     @PostMapping("/room/create")
     public Map<String, Object> insertChatting(HttpServletRequest request,
-                                              @RequestParam(value = "name") String name,
-                                              @RequestParam(value = "user_idx") List<Long> userIdxList){
+                                                  @RequestParam(value = "name") String name,
+                                                  @RequestParam(value = "user_idx", required = false) List<Long> userIdxList){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -157,10 +210,12 @@ public class ChattingController {
             long chattingIdx = chattingService.insertChatting(chattingDto);
 
             // 채팅 멤버 추가
-            if (userIdxList != null) {
-                userIdxList.add(0, chattingDto.getCreatorIdx());
-                chattingService.insertChattingUserLinkByUserIdx(chattingIdx, userIdxList);
+            if (userIdxList == null) {
+                userIdxList = new ArrayList<>();
             }
+
+            userIdxList.add(0, chattingDto.getCreatorIdx());
+            chattingService.insertChattingUserLinkByUserIdx(chattingIdx, userIdxList);
 
             result.put("success", true);
             result.put("idx", chattingIdx);
@@ -175,7 +230,9 @@ public class ChattingController {
     @PostMapping("/room/modify")
     public Map<String, Object> updateChatting(HttpServletRequest request,
                                               @RequestParam(value = "chatting_idx") long chattingIdx,
-                                              @RequestParam(value = "name", required = false) String name){
+                                              @RequestParam(value = "name", required = false) String name,
+                                              @RequestParam(value = "user_idx", required = false) List<Long> userIdxList,
+                                              @RequestParam(value = "delete_user_idx", required = false) List<Long> deleteUserIdxList){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -196,6 +253,16 @@ public class ChattingController {
 
             // 채팅방 수정
             int success = chattingService.updateChatting(chattingDto);
+
+            // 채팅 멤버 추가
+            if (userIdxList != null) {
+                chattingService.insertChattingUserLinkByUserIdx(chattingIdx, userIdxList);
+            }
+
+            // 채팅 멤버 삭제
+            if (deleteUserIdxList != null) {
+                chattingService.deleteChattingUserLink(chattingIdx, deleteUserIdxList);
+            }
 
             result.put("success", success == 1);
             if (success == 0) {
@@ -234,105 +301,6 @@ public class ChattingController {
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "채팅방을 삭제하는데 실패했습니다.");
-        }
-
-        return result;
-    }
-
-    @PostMapping("/user/create")
-    public Map<String, Object> insertChattingUserLinkByUserIdx(HttpServletRequest request,
-                                                               @RequestParam(value = "chatting_idx") long chattingIdx,
-                                                               @RequestParam(value = "user_idx") long userIdx){
-        Map<String, Object> result = new HashMap<>();
-        HttpSession session = request.getSession();
-
-        UserDto loginInfo = authUtil.getLoginInfo(session);
-        if (loginInfo == null) {
-            result.put("success", false);
-            result.put("error", "로그인 해주세요.");
-
-            return result;
-        }
-
-        try {
-            ChattingDto chattingDto = chattingService.getChattingByIdx(chattingIdx);
-            if (chattingDto == null) {
-                result.put("success", false);
-                result.put("error", "멤버를 추가하는데 실패했습니다.");
-
-                return result;
-            }
-
-            List<Long> chattingUserList = chattingService.getChattingUserLink(chattingIdx).stream()
-                    .map(ChattingUserLinkDto::getUserIdx)
-                    .toList();
-            if (!chattingUserList.contains(loginInfo.getUserIdx())) {
-                result.put("success", false);
-                result.put("error", "멤버를 추가하는데 실패했습니다.");
-
-                return result;
-            }
-
-            // 멤버 추가
-            int success = chattingService.insertChattingUserLinkByUserIdx(chattingIdx, userIdx);
-
-            result.put("success", success == 1);
-            if (success == 0) {
-                result.put("success", false);
-                result.put("error", "멤버를 추가하는데 실패했습니다.");
-            }
-        } catch (Exception e) {
-            result.put("success", false);
-            result.put("error", "멤버를 추가하는데 실패했습니다.");
-        }
-
-        return result;
-    }
-
-    @PostMapping("/user/delete")
-    public Map<String, Object> deleteChattingUserLink(HttpServletRequest request,
-                                                      @RequestParam(value = "link_idx") long linkIdx) {
-        Map<String, Object> result = new HashMap<>();
-        HttpSession session = request.getSession();
-
-        UserDto loginInfo = authUtil.getLoginInfo(session);
-        if (loginInfo == null) {
-            result.put("success", false);
-            result.put("error", "로그인 해주세요.");
-
-            return result;
-        }
-
-        try {
-            if (loginInfo.getAdminYn().equals("N")) {
-                ChattingUserLinkDto chattingUserLinkDto = chattingService.getChattingUserLinkByIdx(linkIdx);
-                if (chattingUserLinkDto == null) {
-                    result.put("success", false);
-                    result.put("error", "멤버를 삭제하는데 실패했습니다.");
-
-                    return result;
-                } else if (chattingUserLinkDto.getUserIdx() != loginInfo.getUserIdx()) {
-                    ChattingDto chattingDto = chattingService.getChattingByIdx(chattingUserLinkDto.getChattingIdx());
-                    if (chattingDto.getCreatorIdx() != loginInfo.getUserIdx()) {
-                        result.put("success", false);
-                        result.put("error", "멤버를 삭제하는데 실패했습니다.");
-
-                        return result;
-                    }
-                }
-            }
-
-            // 멤버 삭제
-            int success = chattingService.deleteChattingUserLink(linkIdx);
-
-            result.put("success", success != 0);
-            if (success == 0) {
-                result.put("success", false);
-                result.put("error", "멤버를 삭제하는데 실패했습니다.");
-            }
-        } catch (Exception e) {
-            result.put("success", false);
-            result.put("error", "멤버를 삭제하는데 실패했습니다.");
         }
 
         return result;

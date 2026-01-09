@@ -4,12 +4,12 @@ import com.project.messanger.dto.TeamDto;
 import com.project.messanger.dto.TeamUserLinkDto;
 import com.project.messanger.dto.UserDto;
 import com.project.messanger.mapper.UserMapper;
-import org.apache.catalina.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +24,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<Long> getUserListByTeamIdx(long teamIdx) {
+    public List<UserDto> getUserListByTeamIdx(long teamIdx) {
         return userMapper.getUserListByTeamIdx(teamIdx);
     }
 
@@ -89,6 +89,17 @@ public class UserService {
     }
 
     /*
+     * get team count
+     * @param Map<String, Object>
+     * return long
+     */
+    @Transactional(readOnly = true)
+    public long getTeamCount(Map<String, Object> param)
+    {
+        return userMapper.getTeamCount(param);
+    }
+
+    /*
      * get team list
      * @param Map<String, Object>
      * return List<TeamDto>
@@ -105,12 +116,21 @@ public class UserService {
     }
 
     /*
+     * get all team list
+     * return List<UserDto>
+     */
+    @Transactional(readOnly = true)
+    public List<TeamDto> getAllTeamList() {
+        return userMapper.getAllTeamList();
+    }
+
+    /*
      * get team list by user idx
      * @param long
      * return List<Long>
      */
     @Transactional(readOnly = true)
-    public List<Long> getTeamListByUserIdx(long userIdx) {
+    public List<TeamDto> getTeamListByUserIdx(long userIdx) {
         return userMapper.getTeamListByUserIdx(userIdx);
     }
 
@@ -168,6 +188,17 @@ public class UserService {
     }
 
     /*
+     * get user count
+     * @param Map<String, Object>
+     * return long
+     */
+    @Transactional(readOnly = true)
+    public long getUserCount(Map<String, Object> param)
+    {
+        return userMapper.getUserCount(param);
+    }
+
+    /*
      * get user list
      * @param Map<String, Object>
      * return List<UserDto>
@@ -181,6 +212,15 @@ public class UserService {
         param.put("offset", (page-1) * limit);
 
         return userMapper.getUserList(param);
+    }
+
+    /*
+     * get all user list
+     * return List<UserDto>
+     */
+    @Transactional(readOnly = true)
+    public List<UserDto> getAllUserList() {
+        return userMapper.getAllUserList();
     }
 
     /*
@@ -199,9 +239,11 @@ public class UserService {
      * return int
      */
     @Transactional
-    public int insertUserLinkByTeamIdx(long userIdx, List<Long> teamIdxList) {
+    public int insertUserLinkByUserIdx(long userIdx, List<Long> teamIdxList) {
         List<TeamUserLinkDto> valueList = new ArrayList<>();
-        List<Long> teamUserList = getTeamListByUserIdx(userIdx);
+        List<Long> teamUserList = new ArrayList<>(getTeamListByUserIdx(userIdx).stream()
+                .map(TeamDto::getTeamIdx)
+                .toList());
 
         // 값 리스트
         for (long teamIdx : teamIdxList) {
@@ -222,12 +264,60 @@ public class UserService {
     }
 
     /*
-     * delete team user link
-     * @param List<Long>
+     * insert team link by user idx
+     * @param long, List<Long>
      * return int
      */
     @Transactional
-    public int deleteTeamUserLink(List<Long> deleteLinkIdxList) {
-        return userMapper.deleteTeamUserLink(deleteLinkIdxList);
+    public int insertUserLinkByTeamIdx(long teamIdx, List<Long> userIdxList) {
+        List<TeamUserLinkDto> valueList = new ArrayList<>();
+        List<Long> teamUserList = new ArrayList<>(getUserListByTeamIdx(teamIdx).stream()
+                .map(UserDto::getUserIdx)
+                .toList());
+
+        // 값 리스트
+        for (long userIdx : userIdxList) {
+            if (teamUserList.contains(userIdx)) {
+                continue;
+            }
+
+            TeamUserLinkDto teamUserLinkDto = TeamUserLinkDto.builder()
+                    .userIdx(userIdx)
+                    .teamIdx(teamIdx)
+                    .build();
+
+            valueList.add(teamUserLinkDto);
+            teamUserList.add(userIdx);
+        }
+
+        return insertTeamUserLink(valueList);
+    }
+
+    /*
+     * delete team user link by user idx
+     * @param long, List<Long>
+     * return int
+     */
+    @Transactional
+    public int deleteTeamUserLinkByUserIdx(long userIdx, List<Long> deleteTeamIdxList) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("user_idx", userIdx);
+        param.put("team_idx_list", deleteTeamIdxList);
+
+        return userMapper.deleteTeamUserLinkByUserIdx(param);
+    }
+
+    /*
+     * delete team user link by team idx
+     * @param long, List<Long>
+     * return int
+     */
+    @Transactional
+    public int deleteTeamUserLinkByTeamIdx(long teamIdx, List<Long> deleteUserIdxList) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("team_idx", teamIdx);
+        param.put("user_idx_list", deleteUserIdxList);
+
+        return userMapper.deleteTeamUserLinkByTeamIdx(param);
     }
 }

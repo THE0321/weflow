@@ -12,7 +12,7 @@ import java.util.Map;
 public interface MeetingMapper {
     List<ReservationDto> getReservationList(Map<String, Object> param);
 
-    List<ReservationDto> getDateList(Map<String, Object> param);
+    List<ReservationDto> getReservationListByMonth(Map<String, Object> param);
 
     ReservationDto getReservationByIdx(Map<String, Object> param);
 
@@ -30,7 +30,9 @@ public interface MeetingMapper {
 
     int insertMeetingAttenderLink(List<MeetingAttenderLinkDto> list);
 
-    int deleteMeetingAttenderLink(List<Long> list);
+    int deleteMeetingAttenderLink(Map<String, Object> param);
+
+    List<MeetingRoomDto> getMeetingRoomList();
 
     MeetingRoomDto getMeetingRoomByIdx(long roomIdx);
 

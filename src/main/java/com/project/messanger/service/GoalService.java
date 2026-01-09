@@ -19,6 +19,15 @@ public class GoalService {
     }
 
     /*
+     * get goal count
+     * @param Map<String, Object>
+     * return long
+     */
+    public long getGoalCount(Map<String, Object> param) {
+        return goalMapper.getGoalCount(param);
+    }
+
+    /*
      * get goal list
      * @param Map<String, Object>
      * return List<GoalAndLogDto>
@@ -123,13 +132,31 @@ public class GoalService {
     }
 
     /*
-     * delete goal user link
+     * delete goal user link by user idx
      * @param List<Long>
      * return int
      */
     @Transactional
-    public int deleteGoalUserLink(List<Long> deleteLinkIdxList) {
-        return goalMapper.deleteGoalUserLink(deleteLinkIdxList);
+    public int deleteGoalUserLinkByUserIdx(long goalIdx, List<Long> deleteUserIdxList) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("goal_idx", goalIdx);
+        param.put("user_idx_list", deleteUserIdxList);
+
+        return goalMapper.deleteGoalUserLinkByUserIdx(param);
+    }
+
+    /*
+     * delete goal user link by team idx
+     * @param List<Long>
+     * return int
+     */
+    @Transactional
+    public int deleteGoalUserLinkByTeamIdx(long goalIdx, List<Long> deleteTeamIdxList) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("goal_idx", goalIdx);
+        param.put("team_idx_list", deleteTeamIdxList);
+
+        return goalMapper.deleteGoalUserLinkByTeamIdx(param);
     }
 
     /*

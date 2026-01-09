@@ -23,9 +23,35 @@ public class FileService {
     }
 
     /*
-     * get goal by goal idx
+     * get file count
+     * @param Map<String, Object>
+     * return long
+     */
+    @Transactional(readOnly = true)
+    public long getFileCount(Map<String, Object> param) {
+        return fileMapper.getFileCount(param);
+    }
+
+    /*
+     * get file list
+     * @param Map<String, Object>
+     * return List<FileDto>
+     */
+    @Transactional(readOnly = true)
+    public List<FileDto> getFileList(Map<String, Object> param) {
+        int page = param.get("page") != null ? (int)param.get("page") : 1;
+
+        param.putIfAbsent("limit", 10);
+        int limit = (int)param.get("limit");
+        param.put("offset", (page-1) * limit);
+
+        return fileMapper.getFileList(param);
+    }
+
+    /*
+     * get file by file idx
      * @param long
-     * return goalDto
+     * return fileDto
      */
     @Transactional(readOnly = true)
     public FileDto getFileByIdx(long fileIdx) {

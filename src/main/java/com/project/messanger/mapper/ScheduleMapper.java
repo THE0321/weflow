@@ -4,6 +4,7 @@ import com.project.messanger.dto.ScheduleAttenderLinkDto;
 import com.project.messanger.dto.ScheduleDto;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,7 +12,7 @@ import java.util.Map;
 public interface ScheduleMapper {
     List<ScheduleDto> getScheduleList(Map<String, Object> param);
 
-    List<ScheduleDto> getDateList(Map<String, Object> param);
+    List<ScheduleDto> getScheduleListByMonth(Map<String, Object> param);
 
     ScheduleDto getScheduleByIdx(Map<String, Object> param);
 
@@ -27,7 +28,7 @@ public interface ScheduleMapper {
 
     int insertScheduleAttenderLink(List<ScheduleAttenderLinkDto> list);
 
-    int deleteScheduleAttenderLink(List<Long> list);
+    int deleteScheduleAttenderLink(Map<String, Object> param);
 
     int updateScheduleAttender(ScheduleAttenderLinkDto scheduleAttenderLinkDto);
 }

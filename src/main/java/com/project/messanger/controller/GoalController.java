@@ -68,8 +68,10 @@ public class GoalController {
                 result.put("error", "조회할 데이터가 없습니다.");
             } else {
                 result.put("list", goalList);
+                result.put("count", goalService.getGoalCount(param));
             }
         } catch (Exception e) {
+            e.printStackTrace();
             result.put("success", false);
             result.put("error", "목표를 불러올 수 없습니다.");
         }
@@ -149,7 +151,7 @@ public class GoalController {
                 result.put("error", "목표 상세를 불러올 수 없습니다.");
 
                 return result;
-            } else {
+            } else if (loginInfo.getLeaderYn().equals("N") && loginInfo.getAdminYn().equals("N")) {
                 List<Long> teamIdxList = authUtil.getTeamList(session);
                 boolean isMyGoal = false;
                 for (GoalUserLinkDto goalUserLinkDto : goalUserLinkList) {
@@ -295,7 +297,8 @@ public class GoalController {
                                           @RequestParam(value = "end_date", required = false) String endDate,
                                           @RequestParam(value = "user_idx", required = false) List<Long> userIdxList,
                                           @RequestParam(value = "team_idx", required = false) List<Long> teamIdxList,
-                                          @RequestParam(value = "delete_link_idx", required = false) List<Long> deleteLinkIdxList){
+                                          @RequestParam(value = "delete_user_idx", required = false) List<Long> deleteUserIdxList,
+                                          @RequestParam(value = "delete_team_idx", required = false) List<Long> deleteTeamIdxList){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -342,8 +345,13 @@ public class GoalController {
             }
 
             // 담당자 삭제
-            if (deleteLinkIdxList != null) {
-                goalService.deleteGoalUserLink(deleteLinkIdxList);
+            if (deleteUserIdxList != null) {
+                goalService.deleteGoalUserLinkByUserIdx(goalIdx, deleteUserIdxList);
+            }
+
+            // 팀 삭제
+            if (deleteTeamIdxList != null) {
+                goalService.deleteGoalUserLinkByTeamIdx(goalIdx, deleteTeamIdxList);
             }
 
             result.put("success", success != 0);
@@ -351,6 +359,7 @@ public class GoalController {
                 result.put("error", "목표를 수정하는데 실패했습니다.");
             }
         } catch (Exception e) {
+            e.printStackTrace();
             result.put("success", false);
             result.put("error", "목표를 수정하는데 실패했습니다.");
         }
@@ -572,7 +581,7 @@ public class GoalController {
 
             // 수정할 데이터 확인
             List<GoalLogDto> goalLogList = goalService.getGoalLog(goalIdx);
-            if (goalLogList.getFirst().getLogIdx() == logIdx) {
+            if (goalLogList.getFirst().getLogIdx() != logIdx) {
                 result.put("success", false);
                 result.put("error", "실적을 수정할 수 없습니다.");
 
@@ -595,7 +604,7 @@ public class GoalController {
             }
         } catch (Exception e) {
             result.put("success", false);
-            result.put("error", "실적을 삭제하는데 실패했습니다.");
+            result.put("error", "실적을 수정하는데 실패했습니다.");
         }
 
         return result;
@@ -645,7 +654,7 @@ public class GoalController {
 
             // 삭제할 데이터 확인
             List<GoalLogDto> goalLogList = goalService.getGoalLog(goalIdx);
-            if (goalLogList.getFirst().getLogIdx() == logIdx) {
+            if (goalLogList.getFirst().getLogIdx() != logIdx) {
                 result.put("success", false);
                 result.put("error", "실적을 삭제할 수 없습니다.");
 

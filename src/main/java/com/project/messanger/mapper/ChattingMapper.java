@@ -26,9 +26,7 @@ public interface ChattingMapper {
 
     List<ChattingUserLinkDto> getChattingUserLink(long chattingIdx);
 
-    ChattingUserLinkDto getChattingUserLinkByIdx(long linkIdx);
-
     int insertChattingUserLink(List<ChattingUserLinkDto> list);
 
-    int deleteChattingUserLink(long linkIdx);
+    int deleteChattingUserLink(Map<String, Object> param);
 }
