@@ -2,6 +2,7 @@ package com.project.messanger.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.project.messanger.dto.AILogDto;
+import com.project.messanger.dto.AISchemaDto;
 import com.project.messanger.mapper.AIMapper;
 import com.project.messanger.util.GeminiUtil;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,11 @@ public class AIService {
         return aiMapper.getFeatureList();
     }
 
+    @Transactional(readOnly = true)
+    public List<AISchemaDto> getColumnList(String feature) {
+        return aiMapper.getColumnList(feature);
+    }
+
     /*
      * insert AI log
      * param AILogDto
@@ -48,7 +54,16 @@ public class AIService {
     public Map<String, Object> callGemini(String prompt) throws JsonProcessingException {
         Map<String, Object> result = geminiUtil.callGemini(prompt, getFeatureList());
         if (result.get("command") != null) {
-            result = geminiUtil.getData(result);
+            List<AISchemaDto> schemaDtoList = getColumnList(result.get("command").toString());
+            result.put("properties", schemaDtoList);
+
+            Map<String, Object> properties = geminiUtil.getData(result);
+            for (AISchemaDto schemaDto : schemaDtoList) {
+                if (!properties.containsKey(schemaDto.getName())) {
+                    properties.put(schemaDto.getName(), null);
+                }
+            }
+            result.put("properties", properties);
         }
 
         return result;

@@ -23,7 +23,7 @@
         <result property="createdDate" column="created_date"/>
     </resultMap>
 
-    <select id="getFeatureList" resultMap="string">
+    <select id="getFeatureList" resultType="string">
         SELECT DISTINCT feature
         FROM ai_schema
         WHERE is_use = 'Y'

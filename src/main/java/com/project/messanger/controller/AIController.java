@@ -56,6 +56,7 @@ public class AIController {
             // 이력 저장
             aiService.insertAILog(aiLogDto);
         } catch (Exception e) {
+            e.printStackTrace();
             result.put("success", false);
             result.put("error", "AI 결과를 가져오는데 실패했습니다.");
         }

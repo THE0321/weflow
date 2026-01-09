@@ -3,8 +3,6 @@ package com.project.messanger.util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.messanger.dto.AISchemaDto;
-import com.project.messanger.mapper.AIMapper;
-import com.project.messanger.service.AIService;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -12,7 +10,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 @Component
@@ -60,7 +57,7 @@ public class GeminiUtil {
     }
 
     public Map<String, Object> getData(Map<String, Object> resultData) {
-        List<AISchemaDto> schemaDtoList = (List<AISchemaDto>) resultData.get("schema_list");
+        List<AISchemaDto> schemaDtoList = (List<AISchemaDto>) resultData.get("properties");
 
         Map<String, Object> propertiesMap = new HashMap<>();
         for (AISchemaDto schemaDto : schemaDtoList) {
@@ -95,12 +92,7 @@ public class GeminiUtil {
             )
         );
 
-        Map<String, Object> result = call(body);
-        result.put("prompt", resultData.get("prompt"));
-        result.put("content", resultData.get("content"));
-        result.put("command", resultData.get("command"));
-
-        return result;
+        return call(body);
     }
 
     private Map<String, Object> call(Map<String, Object> body) {
