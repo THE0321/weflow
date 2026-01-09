@@ -23,7 +23,14 @@
     </resultMap>
 
     <select id="getUserList" parameterType="hashmap" resultMap="UserMap">
-        SELECT *
+        SELECT user_idx
+             , email
+             , password
+             , user_name
+             , phone_number
+             , admin_yn
+             , leader_yn
+             , is_deleted
         FROM user
         WHERE is_deleted = 'N'
             <if test="email != null">
@@ -90,7 +97,10 @@
     </update>
 
     <select id="getTeamList" parameterType="hashmap" resultMap="TeamMap">
-        SELECT *
+        SELECT team_idx
+             , team_name
+             , created_date
+             , updated_date
         FROM team
         <where>
             <if test="team_name != null">
@@ -108,7 +118,10 @@
     </select>
 
     <select id="getTeamByIdx" parameterType="long" resultMap="TeamMap">
-        SELECT *
+        SELECT team_idx
+             , team_name
+             , created_date
+             , updated_date
         FROM team
         WHERE team_idx = #{teamIdx}
     </select>
