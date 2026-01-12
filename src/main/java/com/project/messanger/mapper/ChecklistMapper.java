@@ -8,6 +8,8 @@ import java.util.Map;
 
 @Mapper
 public interface ChecklistMapper {
+    long getChecklistCount(Map<String, Object> param);
+
     List<ChecklistDto> getChecklistList(Map<String, Object> param);
 
     List<ChecklistDto> getChecklistMainList(Map<String, Object> param);
@@ -21,6 +23,8 @@ public interface ChecklistMapper {
     int updateChecklist(ChecklistDto checklistDto);
 
     int deleteChecklist(long checklistIdx);
+
+    List<ChecklistItemDto> getChecklistItemList(long checklistIdx);
 
     ChecklistItemDto getChecklistItemByIdx(long itemIdx);
 
@@ -36,7 +40,9 @@ public interface ChecklistMapper {
     
     int insertChecklistUserLink(List<ChecklistUserLinkDto> list);
 
-    int deleteChecklistUserLink(List<Long> linkIdx);
+    int deleteChecklistUserLinkByUserIdx(Map<String, Object> param);
+
+    int deleteChecklistUserLinkByTeamIdx(Map<String, Object> param);
 
     int insertChecklistLog(ChecklistLogDto checklistLogDto);
 

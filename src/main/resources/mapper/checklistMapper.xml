@@ -36,8 +36,7 @@
         <result property="createdDate" column="created_date"/>
     </resultMap>
 
-    <select id="getChecklistList" parameterType="hashmap" resultMap="ChecklistMap">
-        SELECT *
+    <sql id="sqlChecklistListCondition">
         FROM checklist
         <where>
             <if test="title != null">
@@ -65,11 +64,31 @@
                 )
             </if>
         </where>
+    </sql>
+
+    <select id="getChecklistCount" parameterType="hashmap" resultType="long">
+        SELECT COUNT(checklist_idx)
+        <include refid="sqlChecklistListCondition" />
+    </select>
+
+    <select id="getChecklistList" parameterType="hashmap" resultMap="ChecklistMap">
+        SELECT checklist_idx
+             , title
+             , description
+             , creator_idx
+             , created_date
+             , updated_date
+        <include refid="sqlChecklistListCondition" />
         LIMIT ${limit} OFFSET ${offset}
     </select>
 
     <select id="getChecklistMainList" parameterType="hashmap" resultMap="ChecklistMap">
-        SELECT *
+        SELECT checklist_idx
+             , title
+             , description
+             , creator_idx
+             , created_date
+             , updated_date
         FROM checklist
         WHERE status != 'COMPLETED'
         AND (
@@ -93,13 +112,23 @@
     </select>
 
     <select id="getChecklistByIdx" parameterType="long" resultMap="ChecklistMap">
-        SELECT checklist.*
+        SELECT checklist_idx
+             , title
+             , description
+             , creator_idx
+             , created_date
+             , updated_date
         FROM checklist
         WHERE checklist_idx = #{checklistIdx}
     </select>
 
     <select id="getChecklistLog" parameterType="long" resultMap="ChecklistLogMap">
-        SELECT *
+        SELECT log_idx
+             , item_idx
+             , is_checked
+             , content
+             , creator_idx
+             , created_date
         FROM checklist_log
         WHERE item_idx = #{itemIdx}
         ORDER BY item_idx DESC
@@ -132,8 +161,21 @@
         WHERE checklist_idx = #{checklistIdx}
     </delete>
 
-    <select id="getChecklistItemByIdx" parameterType="long" resultMap="ChecklistMap">
-        SELECT *
+    <select id="getChecklistItemList" parameterType="long" resultMap="ChecklistItemMap">
+        SELECT item_idx
+             , checklist_idx
+             , title
+             , description
+        FROM checklist_item
+        WHERE checklist_idx = #{checklistIdx}
+        ORDER BY item_idx ASC
+    </select>
+
+    <select id="getChecklistItemByIdx" parameterType="long" resultMap="ChecklistItemMap">
+        SELECT item_idx
+             , checklist_idx
+             , title
+             , description
         FROM checklist_item
         WHERE item_idx = #{itemIdx}
     </select>
@@ -171,7 +213,10 @@
     </delete>
 
     <select id="getChecklistUserLink" parameterType="long" resultMap="ChecklistUserLinkMap">
-        SELECT *
+        SELECT link_idx
+             , checklist_idx
+             , team_idx
+             , user_idx
         FROM checklist_user_link
         WHERE checklist_idx = #{checklistIdx}
     </select>
@@ -199,13 +244,25 @@
         </foreach>
     </insert>
 
-    <delete id="deleteChecklistUserLink" parameterType="long">
+    <delete id="deleteChecklistUserLinkByUserIdx" parameterType="hashmap">
         DELETE FROM checklist_user_link
-        WHERE link_idx IN <foreach collection="list" item="value" open="(" close=")" separator=",">#{value}</foreach>
+        WHERE checklist_idx = #{checklist_idx}
+          AND user_idx IN <foreach collection="user_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
+    </delete>
+
+    <delete id="deleteChecklistUserLinkByTeamIdx" parameterType="hashmap">
+        DELETE FROM checklist_user_link
+        WHERE checklist_idx = #{checklist_idx}
+          AND team_idx IN <foreach collection="team_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
     </delete>
 
     <select id="getChecklistLogLast" parameterType="long" resultMap="ChecklistLogMap">
-        SELECT *
+        SELECT log_idx
+             , item_idx
+             , is_checked
+             , content
+             , creator_idx
+             , created_date
         FROM checklist_log
         WHERE item_idx = #{itemIdx}
         ORDER BY log_idx DESC

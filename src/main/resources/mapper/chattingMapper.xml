@@ -29,7 +29,12 @@
     <select id="getChattingMessageList" parameterType="hashmap" resultMap="ChattingMessageMap">
         SELECT *
         FROM (
-            SELECT *
+            SELECT message_idx
+                 , chatting_idx
+                 , file_idx
+                 , content
+                 , creator_idx
+                 , created_date
             FROM chatting_message
             WHERE chatting_idx = #{chatting_idx}
             ORDER BY created_date DESC
@@ -39,7 +44,10 @@
     </select>
 
     <select id="getChattingList" parameterType="hashmap" resultMap="ChattingMap">
-        SELECT chatting.*
+        SELECT chatting.chatting_idx
+             , chatting.name
+             , chatting.creator_idx
+             , chatting.created_date
         FROM chatting
         LEFT JOIN
         (
@@ -74,7 +82,10 @@
     </insert>
 
     <select id="getChattingByIdx" parameterType="long" resultMap="ChattingMap">
-        SELECT *
+        SELECT chatting_idx
+             , name
+             , creator_idx
+             , created_date
         FROM chatting
         WHERE chatting_idx = #{chattingIdx}
     </select>
@@ -101,13 +112,17 @@
     </delete>
 
     <select id="getChattingUserLink" parameterType="long" resultMap="ChattingUserLinkMap">
-        SELECT *
+        SELECT link_idx
+             , chatting_idx
+             , user_idx
         FROM chatting_user_link
         WHERE chatting_idx = #{chattingIdx}
     </select>
 
     <select id="getChattingUserLinkByIdx" parameterType="long" resultMap="ChattingUserLinkMap">
-        SELECT *
+        SELECT link_idx
+             , chatting_idx
+             , user_idx
         FROM chatting_user_link
         WHERE link_idx = #{linkIdx}
     </select>

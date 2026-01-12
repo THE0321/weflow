@@ -33,14 +33,28 @@
     </select>
 
     <select id="getReportList" parameterType="hashmap" resultMap="ReportMap">
-        SELECT *
+        SELECT report_idx
+             , title
+             , description
+             , type
+             , approver_idx
+             , creator_idx
+             , created_date
+             , updated_date
         <include refid="sqlReportListCondition" />
         ORDER BY report_idx DESC
         LIMIT ${limit} OFFSET ${offset}
     </select>
     
     <select id="getReportByIdx" parameterType="long" resultMap="ReportMap">
-        SELECT *
+        SELECT report_idx
+             , title
+             , description
+             , type
+             , approver_idx
+             , creator_idx
+             , created_date
+             , updated_date
         FROM report
         WHERE report_idx = #{reportIdx}
     </select>

@@ -28,13 +28,25 @@
     </select>
 
     <select id="getFileList" parameterType="hashmap" resultMap="FileMap">
-        SELECT *
+        SELECT file_idx
+             , name
+             , file_path
+             , size
+             , is_drive
+             , user_idx
+             , created_date
         <include refid="sqlFileListCondition" />
         LIMIT ${limit} OFFSET ${offset}
     </select>
 
     <select id="getFileByIdx" parameterType="long" resultMap="FileMap">
-        SELECT *
+        SELECT file_idx
+             , name
+             , file_path
+             , size
+             , is_drive
+             , user_idx
+             , created_date
         FROM file
         WHERE file_idx = #{fileIdx}
     </select>

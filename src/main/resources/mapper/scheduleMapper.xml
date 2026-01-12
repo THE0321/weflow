@@ -24,7 +24,15 @@
     </resultMap>
 
     <select id="getScheduleList" parameterType="hashmap" resultMap="ScheduleMap">
-        SELECT *
+        SELECT schedule_idx
+             , title
+             , description
+             , location
+             , start_date
+             , end_date
+             , is_allday
+        approver_idx
+        updated_date
         FROM schedule
         <where>
             <if test="title != null">
@@ -48,7 +56,15 @@
     </select>
 
     <select id="getScheduleListByMonth" parameterType="hashmap" resultMap="ScheduleMap">
-        SELECT *
+        SELECT schedule_idx
+             , title
+             , description
+             , location
+             , start_date
+             , end_date
+             , is_allday
+             , approver_idx
+             , updated_date
         FROM schedule
         <where>
             <if test="schedule_date != null">
@@ -68,7 +84,15 @@
     </select>
 
     <select id="getScheduleByIdx" parameterType="hashmap" resultMap="ScheduleMap">
-        SELECT *
+        SELECT schedule_idx
+             , title
+             , description
+             , location
+             , start_date
+             , end_date
+             , is_allday
+             , approver_idx
+             , updated_date
         FROM schedule
         WHERE schedule_idx = #{schedule_idx}
         <if test="user_idx != null">
@@ -118,13 +142,19 @@
     </delete>
 
     <select id="getScheduleAttenderLinkList" parameterType="long" resultMap="ScheduleAttenderLinkMap">
-        SELECT *
+        SELECT link_idx
+             , schedule_idx
+             , user_idx
+             , is_attend
         FROM schedule_attender_link
         WHERE schedule_idx = #{scheduleIdx}
     </select>
 
     <select id="getScheduleAttenderLinkByIdx" parameterType="long" resultMap="ScheduleAttenderLinkMap">
-        SELECT *
+        SELECT link_idx
+             , schedule_idx
+             , user_idx
+             , is_attend
         FROM schedule_attender_link
         WHERE link_idx = #{linkIdx}
     </select>

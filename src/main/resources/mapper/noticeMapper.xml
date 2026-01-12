@@ -17,7 +17,15 @@
     </resultMap>
 
     <select id="getNoticeList" parameterType="hashmap" resultMap="NoticeMap">
-        SELECT *
+        SELECT notice_idx
+             , title
+             , content
+             , linkUrl
+             , start_date
+             , end_date
+             , is_active
+             , creator_idx
+             , created_date
         FROM notice
         <where>
             <if test="!is_admin">
@@ -34,7 +42,15 @@
     </select>
 
     <select id="getNoticeByIdx" parameterType="long" resultMap="NoticeMap">
-        SELECT *
+        SELECT notice_idx
+             , title
+             , content
+             , linkUrl
+             , start_date
+             , end_date
+             , is_active
+             , creator_idx
+             , created_date
         FROM notice
         WHERE notice_idx = #{notice_idx}
         <if test="!is_admin">

@@ -246,6 +246,10 @@ public class GoalService {
             goalUserList.add(userIdx);
         }
 
+        if (valueList.isEmpty()) {
+            return 0;
+        }
+
         return insertGoalUserLink(valueList);
     }
 }

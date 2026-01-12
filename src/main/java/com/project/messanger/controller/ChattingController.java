@@ -34,7 +34,8 @@ public class ChattingController {
     @PostMapping("/list")
     public Map<String, Object> getChattingMessageList(HttpServletRequest request,
                                                       @RequestParam(value = "page", required = false, defaultValue = "1") int page,
-                                                      @RequestParam(value = "limit", required = false, defaultValue = "10") int limit) {
+                                                      @RequestParam(value = "limit", required = false, defaultValue = "10") int limit,
+                                                      @RequestParam(value = "chatting_idx") Long chattingIdx) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -50,6 +51,7 @@ public class ChattingController {
             Map<String, Object> param = new HashMap<>();
             param.put("page", page);
             param.put("limit", limit);
+            param.put("chatting_idx", chattingIdx);
             param.put("user_idx", loginInfo.getUserIdx());
 
             result.put("success", true);
@@ -64,8 +66,7 @@ public class ChattingController {
 
     @PostMapping("/create")
     public Map<String, Object> insertChattingMessage(HttpServletRequest request,
-                                                     MultipartHttpServletRequest multipartHttpServletRequest,
-                                                     @RequestParam(value = "file", required = false) MultipartFile file,
+                                                     @RequestParam(value = "file", required = false) MultipartHttpServletRequest multipartHttpServletRequest,
                                                      @RequestParam(value = "chatting_idx") long chattingIdx,
                                                      @RequestParam(value = "content") String content){
         Map<String, Object> result = new HashMap<>();
@@ -87,7 +88,7 @@ public class ChattingController {
                     .creatorIdx(loginInfo.getUserIdx())
                     .build();
 
-            if (file != null && !file.isEmpty()) {
+            if (multipartHttpServletRequest != null && multipartHttpServletRequest.getFile("file") != null) {
                 FileDto fileDto = fileService.uploadFile(multipartHttpServletRequest);
                 fileDto.setUserIdx(loginInfo.getUserIdx());
 
@@ -100,7 +101,7 @@ public class ChattingController {
             result.put("idx", chattingMessageIdx);
         } catch (Exception e) {
             result.put("success", false);
-            result.put("error", "채팅방을 등록하는데 실패했습니다.");
+            result.put("error", "채팅을 등록하는데 실패했습니다.");
         }
 
         return result;

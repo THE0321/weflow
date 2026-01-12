@@ -334,22 +334,22 @@ public class GoalController {
             // 목표 수정
             int success = goalService.updateGoal(goalDto);
 
-            // 담당자 팀 추가
-            if (teamIdxList != null) {
-                goalService.insertGoalUserLinkByTeamIdx(goalIdx, teamIdxList);
-            }
-
             // 담당자 유저 추가
             if (userIdxList != null) {
                 goalService.insertGoalUserLinkByUserIdx(goalIdx, userIdxList);
             }
 
-            // 담당자 삭제
+            // 담당자 팀 추가
+            if (teamIdxList != null) {
+                goalService.insertGoalUserLinkByTeamIdx(goalIdx, teamIdxList);
+            }
+
+            // 담당자 유저 삭제
             if (deleteUserIdxList != null) {
                 goalService.deleteGoalUserLinkByUserIdx(goalIdx, deleteUserIdxList);
             }
 
-            // 팀 삭제
+            // 담당자 팀 삭제
             if (deleteTeamIdxList != null) {
                 goalService.deleteGoalUserLinkByTeamIdx(goalIdx, deleteTeamIdxList);
             }

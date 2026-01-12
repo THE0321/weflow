@@ -30,7 +30,13 @@
     </select>
 
     <select id="getColumnList" parameterType="string" resultMap="AISchemaMap">
-        SELECT *
+        SELECT schema_idx
+             , feature
+             , is_use
+             , is_required
+             , column_key
+             , name
+             , description
         FROM ai_schema
         WHERE feature = #{feature}
           AND is_use = 'Y'

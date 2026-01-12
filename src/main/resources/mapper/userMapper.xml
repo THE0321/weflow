@@ -42,19 +42,37 @@
     </select>
 
     <select id="getUserList" parameterType="hashmap" resultMap="UserMap">
-        SELECT *
+        SELECT user_idx
+             , email
+             , user_name
+             , phone_number
+             , admin_yn
+             , leader_yn
+             , is_deleted
         <include refid="sqlUserListCondition" />
         LIMIT ${limit} OFFSET ${offset}
     </select>
 
     <select id="getAllUserList" resultMap="UserMap">
-        SELECT *
+        SELECT user_idx
+             , email
+             , user_name
+             , phone_number
+             , admin_yn
+             , leader_yn
+             , is_deleted
         FROM user
         WHERE is_deleted = 'N'
     </select>
 
     <select id="getUserListByTeamIdx" parameterType="long" resultMap="UserMap">
-        SELECT user.*
+        SELECT user.user_idx
+             , user.email
+             , user.user_name
+             , user.phone_number
+             , user.admin_yn
+             , user.leader_yn
+             , user.is_deleted
         FROM team_user_link
         INNER JOIN user
            ON user.user_idx = team_user_link.user_idx
@@ -62,13 +80,20 @@
     </select>
 
     <select id="getUserByIdx" parameterType="long" resultMap="UserMap">
-        SELECT user_idx, email, user_name, phone_number, admin_yn, leader_yn
+        SELECT user_idx
+             , email
+             , user_name
+             , phone_number
+             , admin_yn
+             , leader_yn
         FROM user
         WHERE user_idx = #{userIdx}
     </select>
 
     <select id="getUserByEmail" parameterType="string" resultMap="UserMap">
-        SELECT user_idx, email, password
+        SELECT user_idx
+             , email
+             , password
         FROM user
         WHERE email = #{email}
     </select>
@@ -131,12 +156,18 @@
     </select>
 
     <select id="getAllTeamList" resultMap="TeamMap">
-        SELECT *
+        SELECT team_idx
+             , team_name
+             , created_date
+             , updated_date
         FROM team
     </select>
 
     <select id="getTeamListByUserIdx" parameterType="long" resultMap="TeamMap">
-        SELECT team.*
+        SELECT team.team_idx
+             , team.team_name
+             , team.created_date
+             , team.updated_date
         FROM team_user_link
         INNER JOIN team
            ON team.team_idx = team_user_link.team_idx

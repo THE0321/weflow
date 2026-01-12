@@ -31,7 +31,15 @@
     </resultMap>
 
     <select id="getReservationList" parameterType="hashmap" resultMap="ReservationMap">
-        SELECT *
+        SELECT reservation_idx
+             , room_idx
+             , description
+             , start_date
+             , end_date
+             , approver_idx
+             , creator_idx
+             , created_date
+             , updated_date
         FROM reservation
         <where>
             <if test="description != null">
@@ -55,7 +63,15 @@
     </select>
 
     <select id="getReservationListByMonth" parameterType="hashmap" resultMap="ReservationMap">
-        SELECT *
+        SELECT reservation_idx
+             , room_idx
+             , description
+             , start_date
+             , end_date
+             , approver_idx
+             , creator_idx
+             , created_date
+             , updated_date
         FROM reservation
         <where>
             <if test="reservation_date != null">
@@ -75,7 +91,15 @@
     </select>
 
     <select id="getReservationByIdx" parameterType="hashmap" resultMap="ReservationMap">
-        SELECT *
+        SELECT reservation_idx
+             , room_idx
+             , description
+             , start_date
+             , end_date
+             , approver_idx
+             , creator_idx
+             , created_date
+             , updated_date
         FROM reservation
         WHERE reservation_idx = #{reservation_idx}
         <if test="user_idx != null">
@@ -118,13 +142,19 @@
     </delete>
 
     <select id="getMeetingAttenderLink" parameterType="long" resultMap="MeetingAttenderLinkMap">
-        SELECT *
+        SELECT link_idx
+             , reservation_idx
+             , user_idx
+             , is_attend
         FROM meeting_attender_link
         WHERE reservation_idx = #{reservationIdx}
     </select>
 
     <select id="getMeetingAttenderLinkByIdx" parameterType="long" resultMap="MeetingAttenderLinkMap">
-        SELECT *
+        SELECT link_idx
+             , reservation_idx
+             , user_idx
+             , is_attend
         FROM meeting_attender_link
         WHERE link_idx = #{linkIdx}
     </select>
@@ -160,13 +190,19 @@
     </delete>
 
     <select id="getMeetingRoomList" resultMap="MeetingRoomMap">
-        SELECT *
+        SELECT room_idx
+             , name
+             , location
+             , capacity
         FROM meeting_room
         ORDER BY name
     </select>
 
     <select id="getMeetingRoomByIdx" parameterType="long" resultMap="MeetingRoomMap">
-        SELECT *
+        SELECT room_idx
+             , name
+             , location
+             , capacity
         FROM meeting_room
         WHERE room_idx = #{roomIdx}
     </select>

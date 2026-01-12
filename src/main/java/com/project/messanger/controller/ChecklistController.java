@@ -67,6 +67,7 @@ public class ChecklistController {
                 result.put("error", "조회할 데이터가 없습니다.");
             } else {
                 result.put("list", checklistList);
+                result.put("count", checklistService.getChecklistCount(param));
             }
         } catch (Exception e) {
             result.put("success", false);
@@ -147,7 +148,7 @@ public class ChecklistController {
                 result.put("error", "체크리스트 상세를 불러올 수 없습니다.");
 
                 return result;
-            } else {
+            } else if (loginInfo.getLeaderYn().equals("N") && loginInfo.getAdminYn().equals("N")) {
                 List<Long> teamIdxList = authUtil.getTeamList(session);
                 boolean isMyGoal = false;
                 for (ChecklistUserLinkDto checklistUserLinkDto : goalUserLinkList) {
@@ -160,7 +161,7 @@ public class ChecklistController {
 
                 if (!isMyGoal) {
                     result.put("success", false);
-                    result.put("error", "목표 상세를 불러올 수 없습니다.");
+                    result.put("error", "체크리스트 상세를 불러올 수 없습니다.");
 
                     return result;
                 }
@@ -168,10 +169,11 @@ public class ChecklistController {
 
             result.put("success", true);
             result.put("detail", checklistDto);
+            result.put("item_list", checklistService.getChecklistItemList(checklistIdx));
             result.put("user_link_list", goalUserLinkList);
         } catch (Exception e) {
             result.put("success", false);
-            result.put("error", "목표 상세를 불러올 수 없습니다.");
+            result.put("error", "체크리스트 상세를 불러올 수 없습니다.");
         }
 
         return result;
@@ -211,6 +213,14 @@ public class ChecklistController {
             long checklistIdx = checklistService.insertChecklist(checklistDto);
 
             // 체크리스트 항목 등록
+            if (itemTitleList == null)
+            {
+                result.put("success", false);
+                result.put("error", "체크리스트를 등록할 수 없습니다.");
+
+                return result;
+            }
+
             checklistService.insertChecklistItem(checklistIdx, itemTitleList, itemDescriptionList);
 
             NotificationDto notificationDto = NotificationDto.builder()
@@ -239,7 +249,7 @@ public class ChecklistController {
             result.put("idx", checklistIdx);
         } catch (Exception e) {
             result.put("success", false);
-            result.put("error", "체크리스트를 등록할 권한이 없습니다.");
+            result.put("error", "체크리스트를 등록할 수 없습니다.");
         }
 
         return result;
@@ -257,7 +267,8 @@ public class ChecklistController {
                                                @RequestParam(value = "delete_item_idx", required = false) List<Long> deleteItemIdxList,
                                                @RequestParam(value = "user_idx", required = false) List<Long> userIdxList,
                                                @RequestParam(value = "team_idx", required = false) List<Long> teamIdxList,
-                                               @RequestParam(value = "delete_link_idx", required = false) List<Long> deleteLinkIdxList){
+                                               @RequestParam(value = "delete_user_idx", required = false) List<Long> deleteUserIdxList,
+                                               @RequestParam(value = "delete_team_idx", required = false) List<Long> deleteTeamIdxList){
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -299,33 +310,36 @@ public class ChecklistController {
             int success = checklistService.updateChecklist(checklistDto);
 
             // 체크리스트 항목 수정
-            List<Integer> updateIdxList = new ArrayList<>();
-            for (int i = 0; i < itemTitleList.size(); i++) {
-                if (itemIdxList.get(i) == 0) {
-                    continue;
+            if (itemTitleList != null)
+            {
+                List<Integer> updateIdxList = new ArrayList<>();
+                for (int i = 0; i < itemTitleList.size(); i++) {
+                    if (itemIdxList.get(i) == null) {
+                        continue;
+                    }
+
+                    // ChecklistItemDto 세팅
+                    ChecklistItemDto checklistItemDto = ChecklistItemDto.builder()
+                            .itemIdx(itemIdxList.get(i))
+                            .title(itemTitleList.get(i))
+                            .description(itemDescriptionList.get(i))
+                            .build();
+
+                    checklistService.updateChecklistItem(checklistItemDto);
+                    updateIdxList.add(i);
                 }
 
-                // ChecklistItemDto 세팅
-                ChecklistItemDto checklistItemDto = ChecklistItemDto.builder()
-                        .itemIdx(itemIdxList.get(i))
-                        .title(itemTitleList.get(i))
-                        .description(itemDescriptionList.get(i))
-                        .build();
+                // 수정한 항목 목록 제거
+                for (int idx : updateIdxList) {
+                    itemIdxList.remove(idx);
+                    itemTitleList.remove(idx);
+                    itemDescriptionList.remove(idx);
+                }
 
-                checklistService.updateChecklistItem(checklistItemDto);
-                updateIdxList.add(i);
-            }
-
-            // 수정한 항목 목록 제거
-            for (int idx : updateIdxList) {
-                itemTitleList.remove(idx);
-                itemDescriptionList.remove(idx);
-                itemIdxList.remove(idx);
-            }
-
-            // 체크리스트 항목 등록
-            if (itemTitleList != null) {
-                checklistService.insertChecklistItem(checklistIdx, itemTitleList, itemDescriptionList);
+                // 체크리스트 항목 등록
+                if (!itemTitleList.isEmpty()) {
+                    checklistService.insertChecklistItem(checklistIdx, itemTitleList, itemDescriptionList);
+                }
             }
 
             // 체크리스트 항목 삭제
@@ -333,19 +347,24 @@ public class ChecklistController {
                 checklistService.deleteChecklistItem(deleteItemIdxList);
             }
 
-            // 담당자 팀 추가
-            if (teamIdxList != null) {
-                checklistService.insertChecklistUserLinkByTeamIdx(checklistIdx, teamIdxList);
-            }
-
             // 담당자 유저 추가
             if (userIdxList != null) {
                 checklistService.insertChecklistUserLinkByUserIdx(checklistIdx, userIdxList);
             }
 
-            // 담당자 삭제
-            if (deleteLinkIdxList != null) {
-                checklistService.deleteChecklistUserLink(deleteLinkIdxList);
+            // 담당자 팀 추가
+            if (teamIdxList != null) {
+                checklistService.insertChecklistUserLinkByTeamIdx(checklistIdx, teamIdxList);
+            }
+
+            // 담당자 유저 삭제
+            if (deleteUserIdxList != null) {
+                checklistService.deleteChecklistUserLinkByUserIdx(checklistIdx, deleteUserIdxList);
+            }
+
+            // 담당자 팀 삭제
+            if (deleteTeamIdxList != null) {
+                checklistService.deleteChecklistUserLinkByTeamIdx(checklistIdx, deleteTeamIdxList);
             }
 
             result.put("success", success != 0);
@@ -353,6 +372,8 @@ public class ChecklistController {
                 result.put("error", "체크리스트를 수정하는데 실패했습니다.");
             }
         } catch (Exception e) {
+            e.printStackTrace();
+
             result.put("success", false);
             result.put("error", "체크리스트를 수정하는데 실패했습니다.");
         }
@@ -402,6 +423,64 @@ public class ChecklistController {
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "체크리스트를 삭제하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/log/list")
+    public Map<String, Object> getChecklistLogList(HttpServletRequest request,
+                                                   @RequestParam(value = "checklist_idx") long checklistIdx){
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        }
+
+        try {
+            // 체크리스트 담당자 확인
+            List<ChecklistUserLinkDto> checklistUserLinkList = checklistService.getChecklistUserLink(checklistIdx);
+            if (checklistUserLinkList == null) {
+                result.put("success", false);
+                result.put("error", "실적을 조회할 수 없습니다.");
+
+                return result;
+            } else if (loginInfo.getLeaderYn().equals("N") && loginInfo.getAdminYn().equals("N")) {
+                List<Long> teamIdxList = authUtil.getTeamList(session);
+                boolean isMyGoal = false;
+                for (ChecklistUserLinkDto checklistUserLinkDto : checklistUserLinkList) {
+                    if (checklistUserLinkDto.getUserIdx() == loginInfo.getUserIdx() ||
+                            teamIdxList.contains(checklistUserLinkDto.getTeamIdx())) {
+                        isMyGoal = true;
+                        break;
+                    }
+                }
+
+                if (!isMyGoal) {
+                    result.put("success", false);
+                    result.put("error", "실적을 조회할 수 없습니다.");
+
+                    return result;
+                }
+            }
+
+            // 체크리스트 로그 조회
+            List<ChecklistLogDto> checklistLogList = checklistService.getChecklistLog(checklistIdx);
+
+            result.put("success", checklistLogList != null);
+            if (checklistLogList == null) {
+                result.put("error", "조회할 데이터가 없습니다.");
+            } else {
+                result.put("list", checklistLogList);
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "실적을 조회할 수 없습니다.");
         }
 
         return result;

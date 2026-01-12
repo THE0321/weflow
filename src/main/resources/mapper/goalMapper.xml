@@ -86,14 +86,26 @@
     </select>
 
     <select id="getGoalList" parameterType="hashmap" resultMap="GoalAndLogMap">
-        SELECT goal.*,
-                goal_log.progress_value,
-                goal_log.content,
-                goal_log.created_date AS log_date
+        SELECT goal.goal_idx
+             , goal.title
+             , goal.description
+             , goal.status
+             , goal.target_value
+             , goal.start_date
+             , goal.end_date
+             , goal.creator_idx
+             , goal.created_date
+             , goal.updated_date
+             , goal_log.progress_value
+             , goal_log.content
+             , goal_log.created_date AS log_date
         FROM goal
         LEFT JOIN
         (
-            SELECT *
+            SELECT goal_idx
+                 , progress_value
+                 , content
+                 , created_date
             FROM goal_log
             WHERE log_idx IN
             (
@@ -108,14 +120,26 @@
     </select>
 
     <select id="getGoalMainList" parameterType="hashmap" resultMap="GoalAndLogMap">
-        SELECT goal.*,
-                goal_log.progress_value,
-                goal_log.content,
-                goal_log.created_date AS log_date
+        SELECT goal.goal_idx
+             , goal.title
+             , goal.description
+             , goal.status
+             , goal.target_value
+             , goal.start_date
+             , goal.end_date
+             , goal.creator_idx
+             , goal.created_date
+             , goal.updated_date
+             , goal_log.progress_value
+             , goal_log.content
+             , goal_log.created_date AS log_date
         FROM goal
         LEFT JOIN
         (
-            SELECT *
+            SELECT goal_idx
+                 , progress_value
+                 , content
+                 , created_date
             FROM goal_log
             WHERE log_idx IN
             (
@@ -146,41 +170,46 @@
         LIMIT 10
     </select>
 
-    <select id="getGoalByIdx" parameterType="long" resultMap="GoalAndLogMap">
-        SELECT goal.*,
-                goal_log.progress_value,
-                goal_log.content,
-                goal_log.created_date AS log_date
+    <select id="getGoalByIdx" parameterType="long" resultMap="GoalMap">
+        SELECT goal_idx
+             , title
+             , description
+             , status
+             , targetValue
+             , startDate
+             , endDate
+             , creator_idx
+             , created_date
+             , updated_date
         FROM goal
-        LEFT JOIN
-        (
-            SELECT *
-            FROM goal_log
-            WHERE log_idx IN
-            (
-                SELECT MAX(log_idx)
-                FROM goal_log
-                GROUP BY goal_idx
-            )
-        ) goal_log
-        ON goal.goal_idx = goal_log.goal_idx
-        WHERE goal.goal_idx = #{goalIdx}
+        WHERE goal_idx = #{goalIdx}
     </select>
 
     <select id="getGoalGraph" parameterType="hashmap" resultMap="GoalLogMap">
-        SELECT *
+        SELECT log_idx
+             , progress_value
+             , content
+             , creator_idx
+             , created_date
         FROM goal_log
     </select>
 
     <select id="getGoalLog" parameterType="long" resultMap="GoalLogMap">
-        SELECT *
+        SELECT log_idx
+             , progress_value
+             , content
+             , creator_idx
+             , created_date
         FROM goal_log
         WHERE goal_idx = #{goalIdx}
         ORDER BY log_idx DESC
     </select>
 
     <select id="getGoalUserLink" parameterType="long" resultMap="GoalUserLinkMap">
-        SELECT *
+        SELECT link_idx
+             , goal_idx
+             , team_idx
+             , user_idx
         FROM goal_user_link
         WHERE goal_idx = #{goalIdx}
     </select>
@@ -230,11 +259,11 @@
         (
             #{item.goalIdx},
             <choose>
-                <when test="item.teamIdx != null"> #{item.teamIdx},</when>
-                <otherwise> null</otherwise>
+                <when test="item.teamIdx > 0"> #{item.teamIdx},</when>
+                <otherwise> null,</otherwise>
             </choose>
             <choose>
-                <when test="item.userIdx != null"> #{item.userIdx}</when>
+                <when test="item.userIdx > 0"> #{item.userIdx}</when>
                 <otherwise> null</otherwise>
             </choose>
         )

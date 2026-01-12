@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +16,15 @@ public class ChecklistService {
 
     public ChecklistService(ChecklistMapper checklistMapper) {
         this.checklistMapper = checklistMapper;
+    }
+
+    /*
+     * get checklist count
+     * @param Map<String, Object>
+     * return long
+     */
+    public long getChecklistCount(Map<String, Object> param) {
+        return checklistMapper.getChecklistCount(param);
     }
 
     /*
@@ -92,9 +102,19 @@ public class ChecklistService {
     }
 
     /*
+     * get checklist item list
+     * @param long
+     * return List<ChecklistItemDto>
+     */
+    @Transactional(readOnly = true)
+    public List<ChecklistItemDto> getChecklistItemList(long checklistIdx) {
+        return checklistMapper.getChecklistItemList(checklistIdx);
+    }
+
+    /*
      * get checklist item by idx
      * @param long
-     * return goalDto
+     * return ChecklistItemDto
      */
     @Transactional(readOnly = true)
     public ChecklistItemDto getChecklistItemByIdx(long itemIdx) {
@@ -168,13 +188,31 @@ public class ChecklistService {
     }
 
     /*
-     * delete checklist user link
+     * delete checklist user link by user idx
      * @param List<Long>
      * return int
      */
     @Transactional
-    public int deleteChecklistUserLink(List<Long> deleteLinkIdxList) {
-        return checklistMapper.deleteChecklistUserLink(deleteLinkIdxList);
+    public int deleteChecklistUserLinkByUserIdx(long checklistIdx, List<Long> deleteLinkIdxList) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("checklist_idx", checklistIdx);
+        param.put("user_idx_list", deleteLinkIdxList);
+
+        return checklistMapper.deleteChecklistUserLinkByUserIdx(param);
+    }
+
+    /*
+     * delete checklist user link by team idx
+     * @param List<Long>
+     * return int
+     */
+    @Transactional
+    public int deleteChecklistUserLinkByTeamIdx(long checklistIdx, List<Long> deleteLinkIdxList) {
+        Map<String, Object> param = new HashMap<>();
+        param.put("checklist_idx", checklistIdx);
+        param.put("team_idx_list", deleteLinkIdxList);
+
+        return checklistMapper.deleteChecklistUserLinkByTeamIdx(param);
     }
 
     /*

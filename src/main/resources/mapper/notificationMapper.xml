@@ -14,7 +14,12 @@
     </resultMap>
 
     <select id="getNotificationList" parameterType="hashmap" resultMap="NotificationMap">
-        SELECT *
+        SELECT notification_idx
+             , type
+             , content
+             , is_read
+             , link_url
+             , creator_idx
         FROM notification
         WHERE creator_idx = #{user_idx}
         <if test="type != null">
@@ -25,7 +30,12 @@
     </select>
 
     <select id="getNotificationByIdx" parameterType="long" resultMap="NotificationMap">
-        SELECT *
+        SELECT notification_idx
+             , type
+             , content
+             , is_read
+             , link_url
+             , creator_idx
         FROM notification
         WHERE notification_idx = #{notification_idx}
     </select>
