@@ -7,20 +7,16 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class GoalAndLogDto {
-    private long goalIdx;
-    private String title;
+public class ReservationWithUserDto {
+    private long reservationIdx;
+    private long roomIdx;
     private String description;
-    private String status;
-    private long targetValue;
     private String startDate;
     private String endDate;
+    private long approverIdx;
+    private String approverName;
     private long creatorIdx;
     private String creatorName;
     private String createdDate;
     private String updatedDate;
-
-    private long progressValue;
-    private String content;
-    private String logDate;
 }

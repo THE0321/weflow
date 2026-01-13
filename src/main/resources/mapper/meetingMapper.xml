@@ -16,10 +16,33 @@
         <result property="updatedDate" column="updated_date"/>
     </resultMap>
 
+    <resultMap id="ReservationWithUserMap" type="com.project.messanger.dto.ReservationWithUserDto">
+        <id property="reservationIdx" column="reservation_idx"/>
+        <result property="roomIdx" column="room_idx"/>
+        <result property="description" column="description"/>
+        <result property="startDate" column="start_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="approverIdx" column="approver_idx"/>
+        <result property="approverName" column="approver_name"/>
+        <result property="creatorIdx" column="creator_idx"/>
+        <result property="creatorName" column="creator_name"/>
+        <result property="createdDate" column="created_date"/>
+        <result property="updatedDate" column="updated_date"/>
+    </resultMap>
+
     <resultMap id="MeetingAttenderLinkMap" type="com.project.messanger.dto.MeetingAttenderLinkDto">
         <id property="linkIdx" column="link_idx"/>
         <result property="reservationIdx" column="reservation_idx"/>
         <result property="userIdx" column="user_idx"/>
+        <result property="isAttend" column="is_attend"/>
+    </resultMap>
+
+    <resultMap id="MeetingAttenderLinkWithUserMap" type="com.project.messanger.dto.MeetingAttenderLinkWithUserDto">
+        <id property="linkIdx" column="link_idx"/>
+        <result property="reservationIdx" column="reservation_idx"/>
+        <result property="userIdx" column="user_idx"/>
+        <result property="email" column="email"/>
+        <result property="userName" column="user_name"/>
         <result property="isAttend" column="is_attend"/>
     </resultMap>
 
@@ -30,35 +53,41 @@
         <result property="capacity" column="capacity"/>
     </resultMap>
 
-    <select id="getReservationList" parameterType="hashmap" resultMap="ReservationMap">
-        SELECT reservation_idx
-             , room_idx
-             , description
-             , start_date
-             , end_date
-             , approver_idx
-             , creator_idx
-             , created_date
-             , updated_date
+    <select id="getReservationList" parameterType="hashmap" resultMap="GoalUserLinkWithUserMap">
+        SELECT reservation.reservation_idx
+             , reservation.room_idx
+             , reservation.description
+             , reservation.start_date
+             , reservation.end_date
+             , reservation.approver_idx
+             , approver.user_name AS approver_name
+             , reservation.creator_idx
+             , creator.user_name AS creator_name
+             , reservation.created_date
+             , reservation.updated_date
         FROM reservation
+        INNER JOIN user AS creator
+           ON creator.user_idx = reservation.creator_idx
+        LEFT JOIN user AS approver
+          ON approver.user_idx = reservation.approver_idx
         <where>
             <if test="description != null">
-                AND (UPPER(description) LIKE CONCAT('%', UPPER(#{description}), '%')
+                AND (UPPER(reservation.description) LIKE CONCAT('%', UPPER(#{description}), '%')
             </if>
             <if test="reservation_date != null">
-                AND (start_date IS NULL OR DATE_FORMAT(start_date, '%Y-%m-%d') &lt;= #{reservation_date})
-                AND (end_date IS NULL OR DATE_FORMAT(end_date, '%Y-%m-%d') &gt;= #{reservation_date})
+                AND (reservation.start_date IS NULL OR DATE_FORMAT(reservation.start_date, '%Y-%m-%d') &lt;= #{reservation_date})
+                AND (reservation.end_date IS NULL OR DATE_FORMAT(reservation.end_date, '%Y-%m-%d') &gt;= #{reservation_date})
             </if>
             <if test="user_idx != null">
                 AND EXISTS (
                     SELECT 1
                     FROM meeting_attender_link
-                    WHERE reservation_idx = reservation_idx
-                    AND user_idx = #{user_idx}
+                    WHERE meeting_attender_link.reservation_idx = reservation.reservation_idx
+                      AND meeting_attender_link.user_idx = #{user_idx}
                 )
             </if>
         </where>
-        ORDER BY start_date ASC, end_date ASC
+        ORDER BY reservation.start_date ASC, reservation.end_date ASC
         LIMIT ${limit} OFFSET ${offset}
     </select>
 
@@ -90,24 +119,27 @@
         ORDER BY start_date ASC, end_date ASC
     </select>
 
-    <select id="getReservationByIdx" parameterType="hashmap" resultMap="ReservationMap">
-        SELECT reservation_idx
-             , room_idx
-             , description
-             , start_date
-             , end_date
-             , approver_idx
-             , creator_idx
-             , created_date
-             , updated_date
+    <select id="getReservationByIdx" parameterType="hashmap" resultMap="GoalUserLinkWithUserMap">
+        SELECT reservation.reservation_idx
+             , reservation.room_idx
+             , reservation.description
+             , reservation.start_date
+             , reservation.end_date
+             , reservation.approver_idx
+             , reservation.creator_idx
+             , user.user_name AS creator_name
+             , reservation.created_date
+             , reservation.updated_date
         FROM reservation
-        WHERE reservation_idx = #{reservation_idx}
+        INNER JOIN user
+          AND user.user_idx = reservation.creator_idx
+        WHERE reservation.reservation_idx = #{reservation_idx}
         <if test="user_idx != null">
         AND EXISTS (
             SELECT 1
             FROM meeting_attender_link
-            WHERE reservation_idx = reservation_idx
-            AND user_idx = #{user_idx}
+            WHERE meeting_attender_link.reservation_idx = reservation.reservation_idx
+              AND meeting_attender_link.user_idx = #{user_idx}
         )
         </if>
     </select>
@@ -141,13 +173,17 @@
         WHERE reservation_idx = #{reservationIdx}
     </delete>
 
-    <select id="getMeetingAttenderLink" parameterType="long" resultMap="MeetingAttenderLinkMap">
-        SELECT link_idx
-             , reservation_idx
-             , user_idx
-             , is_attend
+    <select id="getMeetingAttenderLink" parameterType="long" resultMap="MeetingAttenderLinkWithUserMap">
+        SELECT meeting_attender_link.link_idx
+             , meeting_attender_link.reservation_idx
+             , user.user_idx
+             , user.email
+             , user.user_name
+             , meeting_attender_link.is_attend
         FROM meeting_attender_link
-        WHERE reservation_idx = #{reservationIdx}
+        INNER JOIN user
+           ON user.user_idx = meeting_attender_link.user_idx
+        WHERE meeting_attender_link.reservation_idx = #{reservationIdx}
     </select>
 
     <select id="getMeetingAttenderLinkByIdx" parameterType="long" resultMap="MeetingAttenderLinkMap">

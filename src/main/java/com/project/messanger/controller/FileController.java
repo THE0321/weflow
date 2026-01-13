@@ -1,6 +1,7 @@
 package com.project.messanger.controller;
 
 import com.project.messanger.dto.FileDto;
+import com.project.messanger.dto.FileWithUserDto;
 import com.project.messanger.dto.UserDto;
 import com.project.messanger.service.FileService;
 import com.project.messanger.util.AuthUtil;
@@ -34,7 +35,7 @@ public class FileController {
     }
 
     @PostMapping("/list")
-    public Map<String, Object> getFileListByUserIdx(HttpServletRequest request,
+    public Map<String, Object> getFileList(HttpServletRequest request,
                                                     @RequestParam(value = "page", required = false, defaultValue = "1") int page,
                                                     @RequestParam(value = "limit", required = false, defaultValue = "10") int limit,
                                                     @RequestParam(value = "name", required = false) String name){
@@ -54,7 +55,7 @@ public class FileController {
             param.put("limit", limit);
             param.put("name", name);
 
-            List<FileDto> fileList = fileService.getFileList(param);
+            List<FileWithUserDto> fileList = fileService.getFileList(param);
             boolean isEmpty = fileList.isEmpty();
 
             long listCount = 0;
@@ -100,7 +101,7 @@ public class FileController {
 
                 return result;
             }
-            fileDto.setUserIdx(loginInfo.getUserIdx());
+            fileDto.setCreatorIdx(loginInfo.getUserIdx());
 
             // 파일 등록
             long fileIdx = fileService.insertFile(fileDto);

@@ -10,31 +10,45 @@
         <result property="filePath" column="file_path"/>
         <result property="size" column="size"/>
         <result property="isDrive" column="is_drive"/>
-        <result property="userIdx" column="user_idx"/>
+        <result property="creatorIdx" column="creator_idx"/>
+        <result property="createdDate" column="created_date"/>
+    </resultMap>
+
+    <resultMap id="FileWithUserMap" type="com.project.messanger.dto.FileWithUserDto">
+        <id property="fileIdx" column="file_idx"/>
+        <result property="name" column="name"/>
+        <result property="filePath" column="file_path"/>
+        <result property="size" column="size"/>
+        <result property="isDrive" column="is_drive"/>
+        <result property="creatorIdx" column="creator_idx"/>
+        <result property="creatorName" column="creator_name"/>
         <result property="createdDate" column="created_date"/>
     </resultMap>
 
     <sql id="sqlFileListCondition">
         FROM file
-        WHERE is_drive = 'Y'
+        INNER JOIN user
+           ON user.user_idx = file.creator_idx
+        WHERE file.is_drive = 'Y'
         <if test="name != null">
-            AND UPPER(name) LIKE CONCAT('%', UPPER(#{name}), '%')
+            AND UPPER(file.name) LIKE CONCAT('%', UPPER(#{name}), '%')
         </if>
     </sql>
 
     <select id="getFileCount" parameterType="hashmap" resultType="long">
-        SELECT COUNT(file_idx)
+        SELECT COUNT(file.file_idx)
         <include refid="sqlFileListCondition" />
     </select>
 
-    <select id="getFileList" parameterType="hashmap" resultMap="FileMap">
-        SELECT file_idx
-             , name
-             , file_path
-             , size
-             , is_drive
-             , user_idx
-             , created_date
+    <select id="getFileList" parameterType="hashmap" resultMap="FileWithUserMap">
+        SELECT file.file_idx
+             , file.name
+             , file.file_path
+             , file.size
+             , file.is_drive
+             , file.creator_idx
+             , user.user_name AS creator_name
+             , file.created_date
         <include refid="sqlFileListCondition" />
         LIMIT ${limit} OFFSET ${offset}
     </select>
@@ -45,7 +59,7 @@
              , file_path
              , size
              , is_drive
-             , user_idx
+             , creator_idx
              , created_date
         FROM file
         WHERE file_idx = #{fileIdx}
@@ -60,7 +74,7 @@
                 <when test="isDrive != null"> is_drive = #{isDrive},</when>
                 <otherwise> is_drive = 'N',</otherwise>
             </choose>
-            user_idx = #{userIdx},
+            creator_idx = #{creatorIdx},
             created_date = NOW()
     </insert>
 

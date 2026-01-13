@@ -17,6 +17,14 @@
         <result property="userIdx" column="user_idx"/>
     </resultMap>
 
+    <resultMap id="ChattingUserLinkWithUserMap" type="com.project.messanger.dto.ChattingUserLinkWithUserDto">
+        <id property="linkIdx" column="link_idx"/>
+        <result property="chattingIdx" column="chatting_idx"/>
+        <result property="userIdx" column="user_idx"/>
+        <result property="email" column="email"/>
+        <result property="userName" column="user_name"/>
+    </resultMap>
+
     <resultMap id="ChattingMessageMap" type="com.project.messanger.dto.ChattingMessageDto">
         <id property="messageIdx" column="message_idx"/>
         <result property="chattingIdx" column="chatting_idx"/>
@@ -58,18 +66,18 @@
         ON chatting.chatting_idx = chatting_message.chatting_idx
         <where>
             <if test="name != null">
-                AND (UPPER(name) LIKE CONCAT('%', UPPER(#{name}), '%')
+                AND (UPPER(chatting.name) LIKE CONCAT('%', UPPER(#{name}), '%')
             </if>
             <if test="user_idx != null">
                 AND EXISTS (
                     SELECT 1
                     FROM chatting_user_link
-                    WHERE chatting_idx = chatting.chatting_idx
-                    AND user_idx = #{user_idx}
+                    WHERE chatting_user_link.chatting_idx = chatting.chatting_idx
+                      AND chatting_user_link.user_idx = #{user_idx}
                 )
             </if>
         </where>
-        ORDER BY chatting_date DESC
+        ORDER BY chatting_message.chatting_date DESC
     </select>
 
     <insert id="insertChattingMessage" parameterType="com.project.messanger.dto.ChattingMessageDto" useGeneratedKeys="true" keyProperty="messageIdx" keyColumn="message_idx">
@@ -111,12 +119,16 @@
         WHERE chatting_idx = #{chattingIdx}
     </delete>
 
-    <select id="getChattingUserLink" parameterType="long" resultMap="ChattingUserLinkMap">
-        SELECT link_idx
-             , chatting_idx
-             , user_idx
+    <select id="getChattingUserLink" parameterType="long" resultMap="ChattingUserLinkWithUserMap">
+        SELECT chatting_user_link.link_idx
+             , chatting_user_link.chatting_idx
+             , user.user_idx
+             , user.email
+             , user.user_name
         FROM chatting_user_link
-        WHERE chatting_idx = #{chattingIdx}
+        INNER JOIN user
+           ON user.user_idx = chatting_user_link.user_idx
+        WHERE chatting_user_link.chatting_idx = #{chattingIdx}
     </select>
 
     <select id="getChattingUserLinkByIdx" parameterType="long" resultMap="ChattingUserLinkMap">

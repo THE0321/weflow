@@ -59,7 +59,7 @@ public class ChecklistController {
             }
 
             // 체크리스트 목록 조회
-            List<ChecklistDto> checklistList = checklistService.getChecklistList(param);
+            List<ChecklistWithUserDto> checklistList = checklistService.getChecklistList(param);
             boolean isEmpty = checklistList.isEmpty();
 
             result.put("success", !isEmpty);
@@ -100,7 +100,7 @@ public class ChecklistController {
             }
 
             // 체크리스트 메인 목록 조회
-            List<ChecklistDto> checklistList = checklistService.getChecklistMainList(param);
+            List<ChecklistWithUserDto> checklistList = checklistService.getChecklistMainList(param);
             boolean isEmpty = checklistList.isEmpty();
 
             result.put("success", !isEmpty);
@@ -142,7 +142,7 @@ public class ChecklistController {
             }
 
             // 체크리스트 상세 조회
-            List<ChecklistUserLinkDto> goalUserLinkList = checklistService.getChecklistUserLink(checklistIdx);
+            List<ChecklistUserLinkWithUserDto> goalUserLinkList = checklistService.getChecklistUserLink(checklistIdx);
             if (goalUserLinkList == null) {
                 result.put("success", false);
                 result.put("error", "체크리스트 상세를 불러올 수 없습니다.");
@@ -151,7 +151,7 @@ public class ChecklistController {
             } else if (loginInfo.getLeaderYn().equals("N") && loginInfo.getAdminYn().equals("N")) {
                 List<Long> teamIdxList = authUtil.getTeamList(session);
                 boolean isMyGoal = false;
-                for (ChecklistUserLinkDto checklistUserLinkDto : goalUserLinkList) {
+                for (ChecklistUserLinkWithUserDto checklistUserLinkDto : goalUserLinkList) {
                     if (checklistUserLinkDto.getUserIdx() == loginInfo.getUserIdx() ||
                             teamIdxList.contains(checklistUserLinkDto.getTeamIdx())) {
                         isMyGoal = true;
@@ -444,7 +444,7 @@ public class ChecklistController {
 
         try {
             // 체크리스트 담당자 확인
-            List<ChecklistUserLinkDto> checklistUserLinkList = checklistService.getChecklistUserLink(checklistIdx);
+            List<ChecklistUserLinkWithUserDto> checklistUserLinkList = checklistService.getChecklistUserLink(checklistIdx);
             if (checklistUserLinkList == null) {
                 result.put("success", false);
                 result.put("error", "실적을 조회할 수 없습니다.");
@@ -453,7 +453,7 @@ public class ChecklistController {
             } else if (loginInfo.getLeaderYn().equals("N") && loginInfo.getAdminYn().equals("N")) {
                 List<Long> teamIdxList = authUtil.getTeamList(session);
                 boolean isMyGoal = false;
-                for (ChecklistUserLinkDto checklistUserLinkDto : checklistUserLinkList) {
+                for (ChecklistUserLinkWithUserDto checklistUserLinkDto : checklistUserLinkList) {
                     if (checklistUserLinkDto.getUserIdx() == loginInfo.getUserIdx() ||
                             teamIdxList.contains(checklistUserLinkDto.getTeamIdx())) {
                         isMyGoal = true;
@@ -505,7 +505,7 @@ public class ChecklistController {
 
         try {
             // 체크리스트 담당자 확인
-            List<ChecklistUserLinkDto> checklistUserLinkList = checklistService.getChecklistUserLink(checklistIdx);
+            List<ChecklistUserLinkWithUserDto> checklistUserLinkList = checklistService.getChecklistUserLink(checklistIdx);
             if (checklistUserLinkList == null) {
                 result.put("success", false);
                 result.put("error", "체크리스트 결과를 등록할 수 없습니다.");
@@ -514,7 +514,7 @@ public class ChecklistController {
             } else if (loginInfo.getLeaderYn().equals("N") && loginInfo.getAdminYn().equals("N")) {
                 List<Long> teamIdxList = authUtil.getTeamList(session);
                 boolean isMyGoal = false;
-                for (ChecklistUserLinkDto checklistUserLinkDto : checklistUserLinkList) {
+                for (ChecklistUserLinkWithUserDto checklistUserLinkDto : checklistUserLinkList) {
                     if (checklistUserLinkDto.getUserIdx() == loginInfo.getUserIdx() ||
                             teamIdxList.contains(checklistUserLinkDto.getTeamIdx())) {
                         isMyGoal = true;
@@ -535,6 +535,7 @@ public class ChecklistController {
                     .itemIdx(itemIdx)
                     .isChecked(isChecked)
                     .content(content)
+                    .creatorIdx(loginInfo.getUserIdx())
                     .build();
 
             // 체크리스트 등록
@@ -576,7 +577,7 @@ public class ChecklistController {
 
         try {
             // 체크리스트 담당자 확인
-            List<ChecklistUserLinkDto> checklistUserLinkList = checklistService.getChecklistUserLink(checklistIdx);
+            List<ChecklistUserLinkWithUserDto> checklistUserLinkList = checklistService.getChecklistUserLink(checklistIdx);
             if (checklistUserLinkList == null) {
                 result.put("success", false);
                 result.put("error", "체크리스트 결과를 수정할 수 없습니다.");
@@ -585,7 +586,7 @@ public class ChecklistController {
             } else if (loginInfo.getLeaderYn().equals("N") && loginInfo.getAdminYn().equals("N")) {
                 List<Long> teamIdxList = authUtil.getTeamList(session);
                 boolean isMyGoal = false;
-                for (ChecklistUserLinkDto checklistUserLinkDto : checklistUserLinkList) {
+                for (ChecklistUserLinkWithUserDto checklistUserLinkDto : checklistUserLinkList) {
                     if (checklistUserLinkDto.getUserIdx() == loginInfo.getUserIdx() ||
                             teamIdxList.contains(checklistUserLinkDto.getTeamIdx())) {
                         isMyGoal = true;
@@ -651,7 +652,7 @@ public class ChecklistController {
 
         try {
             // 체크리스트 담당자 확인
-            List<ChecklistUserLinkDto> checklistUserLinkList = checklistService.getChecklistUserLink(checklistIdx);
+            List<ChecklistUserLinkWithUserDto> checklistUserLinkList = checklistService.getChecklistUserLink(checklistIdx);
             if (checklistUserLinkList == null) {
                 result.put("success", false);
                 result.put("error", "체크리스트 결과를 삭제할 수 없습니다.");
@@ -660,7 +661,7 @@ public class ChecklistController {
             } else if (loginInfo.getLeaderYn().equals("N") && loginInfo.getAdminYn().equals("N")) {
                 List<Long> teamIdxList = authUtil.getTeamList(session);
                 boolean isMyGoal = false;
-                for (ChecklistUserLinkDto checklistUserLinkDto : checklistUserLinkList) {
+                for (ChecklistUserLinkWithUserDto checklistUserLinkDto : checklistUserLinkList) {
                     if (checklistUserLinkDto.getUserIdx() == loginInfo.getUserIdx() ||
                             teamIdxList.contains(checklistUserLinkDto.getTeamIdx())) {
                         isMyGoal = true;

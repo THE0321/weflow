@@ -404,7 +404,7 @@ public class UserController {
                 result.put("error", "조회할 데이터가 없습니다.");
             } else {
                 // 팀에 소속된 유저 목록 조회
-                List<UserDto> userList = userService.getUserListByTeamIdx(teamIdx);
+                List<TeamUserLinkWithUserDto> userList = userService.getUserListByTeamIdx(teamIdx);
 
                 result.put("detail", teamDto);
                 result.put("user_list", userList);

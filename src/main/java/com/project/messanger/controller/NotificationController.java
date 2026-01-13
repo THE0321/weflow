@@ -58,6 +58,7 @@ public class NotificationController {
                 result.put("error", "조회할 데이터가 없습니다.");
             } else {
                 result.put("list", notificationList);
+                result.put("count", notificationService.getNotificationCount(param));
             }
         } catch (Exception e) {
             result.put("success", false);

@@ -74,20 +74,20 @@ public class GoalService {
     /*
      * get goal log
      * @param long
-     * return List<goalLogDto>
+     * return List<GoalLogWithUserDto>
      */
     @Transactional(readOnly = true)
-    public List<GoalLogDto> getGoalLog(long goalIdx) {
+    public List<GoalLogWithUserDto> getGoalLog(long goalIdx) {
         return goalMapper.getGoalLog(goalIdx);
     }
 
     /*
      * get goal user link
      * @param long
-     * return List<GoalUserLinkDto>
+     * return List<GoalUserLinkWithUserDto>
      */
     @Transactional(readOnly = true)
-    public List<GoalUserLinkDto> getGoalUserLink(long goalIdx) {
+    public List<GoalUserLinkWithUserDto> getGoalUserLink(long goalIdx) {
         return goalMapper.getGoalUserLink(goalIdx);
     }
 
@@ -198,7 +198,7 @@ public class GoalService {
     public int insertGoalUserLinkByTeamIdx(long goalIdx, List<Long> teamIdxList) {
         List<GoalUserLinkDto> valueList = new ArrayList<>();
         List<Long> goalUserList = new ArrayList<>(getGoalUserLink(goalIdx).stream()
-                .map(GoalUserLinkDto::getTeamIdx)
+                .map(GoalUserLinkWithUserDto::getTeamIdx)
                 .toList());
 
         // 값 리스트
@@ -228,7 +228,7 @@ public class GoalService {
     public int insertGoalUserLinkByUserIdx(long goalIdx, List<Long> userIdxList) {
         List<GoalUserLinkDto> valueList = new ArrayList<>();
         List<Long> goalUserList = new ArrayList<>(getGoalUserLink(goalIdx).stream()
-                .map(GoalUserLinkDto::getUserIdx)
+                .map(GoalUserLinkWithUserDto::getUserIdx)
                 .toList());
 
         // 값 리스트

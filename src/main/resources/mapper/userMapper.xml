@@ -22,6 +22,15 @@
         <result property="updatedDate" column="updated_date"/>
     </resultMap>
 
+    <resultMap id="TeamUserLinkWithUserMap" type="com.project.messanger.dto.TeamUserLinkWithUserDto">
+        <id property="linkIdx" column="link_idx"/>
+        <result property="teamIdx" column="team_idx"/>
+        <result property="teamName" column="team_name"/>
+        <result property="userIdx" column="user_idx"/>
+        <result property="email" column="email"/>
+        <result property="userName" column="user_name"/>
+    </resultMap>
+
     <sql id="sqlUserListCondition">
         FROM user
         WHERE is_deleted = 'N'
@@ -65,14 +74,12 @@
         WHERE is_deleted = 'N'
     </select>
 
-    <select id="getUserListByTeamIdx" parameterType="long" resultMap="UserMap">
-        SELECT user.user_idx
+    <select id="getUserListByTeamIdx" parameterType="long" resultMap="TeamUserLinkWithUserMap">
+        SELECT team_user_link.link_idx
+             , team_user_link.team_idx
+             , user.user_idx
              , user.email
              , user.user_name
-             , user.phone_number
-             , user.admin_yn
-             , user.leader_yn
-             , user.is_deleted
         FROM team_user_link
         INNER JOIN user
            ON user.user_idx = team_user_link.user_idx
@@ -164,10 +171,10 @@
     </select>
 
     <select id="getTeamListByUserIdx" parameterType="long" resultMap="TeamMap">
-        SELECT team.team_idx
+        SELECT team_user_link.link_idx
+             , team_user_link.user_idx
+             , team.team_idx
              , team.team_name
-             , team.created_date
-             , team.updated_date
         FROM team_user_link
         INNER JOIN team
            ON team.team_idx = team_user_link.team_idx

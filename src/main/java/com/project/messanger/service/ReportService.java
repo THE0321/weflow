@@ -1,6 +1,7 @@
 package com.project.messanger.service;
 
 import com.project.messanger.dto.ReportDto;
+import com.project.messanger.dto.ReportWithUserDto;
 import com.project.messanger.mapper.ReportMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,10 +30,10 @@ public class ReportService {
     /*
      * get report list
      * @param Map<String, Object>
-     * return List<ReportDto>
+     * return List<ReportWithUserDto>
      */
     @Transactional(readOnly = true)
-    public List<ReportDto> getReportList(Map<String, Object> param) {
+    public List<ReportWithUserDto> getReportList(Map<String, Object> param) {
         int page = param.get("page") != null ? (int)param.get("page") : 1;
 
         param.putIfAbsent("limit", 10);
@@ -45,10 +46,10 @@ public class ReportService {
     /*
      * get report by idx
      * @param long
-     * return ReportDto
+     * return ReportWithUserDto
      */
     @Transactional(readOnly = true)
-    public ReportDto getReportByIdx(long reportIdx) {
+    public ReportWithUserDto getReportByIdx(long reportIdx) {
         return reportMapper.getReportByIdx(reportIdx);
     }
 

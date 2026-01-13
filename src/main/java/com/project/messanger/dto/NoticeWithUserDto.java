@@ -7,20 +7,15 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class GoalAndLogDto {
-    private long goalIdx;
+public class NoticeWithUserDto {
+    private long noticeIdx;
     private String title;
-    private String description;
-    private String status;
-    private long targetValue;
+    private String content;
+    private String linkUrl;
     private String startDate;
     private String endDate;
+    private String isActive;
     private long creatorIdx;
     private String creatorName;
     private String createdDate;
-    private String updatedDate;
-
-    private long progressValue;
-    private String content;
-    private String logDate;
 }

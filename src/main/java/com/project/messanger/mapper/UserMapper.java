@@ -1,6 +1,7 @@
 package com.project.messanger.mapper;
 
 import com.project.messanger.dto.TeamDto;
+import com.project.messanger.dto.TeamUserLinkWithUserDto;
 import com.project.messanger.dto.TeamUserLinkDto;
 import com.project.messanger.dto.UserDto;
 import org.apache.ibatis.annotations.Mapper;
@@ -16,7 +17,7 @@ public interface UserMapper {
 
     List<UserDto> getAllUserList();
 
-    List<UserDto> getUserListByTeamIdx(long teamIdx);
+    List<TeamUserLinkWithUserDto> getUserListByTeamIdx(long teamIdx);
 
     UserDto getUserByIdx(long userIdx);
 

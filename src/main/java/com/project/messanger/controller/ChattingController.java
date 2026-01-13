@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import java.util.ArrayList;
@@ -90,7 +89,7 @@ public class ChattingController {
 
             if (multipartHttpServletRequest != null && multipartHttpServletRequest.getFile("file") != null) {
                 FileDto fileDto = fileService.uploadFile(multipartHttpServletRequest);
-                fileDto.setUserIdx(loginInfo.getUserIdx());
+                fileDto.setCreatorIdx(loginInfo.getUserIdx());
 
                 chattingMessageDto.setFileIdx(fileService.insertFile(fileDto));
             }
@@ -163,10 +162,10 @@ public class ChattingController {
                 return result;
             }
 
-            List<ChattingUserLinkDto> chattingUserLinkList = chattingService.getChattingUserLink(chattingIdx);
+            List<ChattingUserLinkWithUserDto> chattingUserLinkList = chattingService.getChattingUserLink(chattingIdx);
             if (!loginInfo.getAdminYn().equals("Y") && chattingDto.getCreatorIdx() != loginInfo.getUserIdx()) {
                 List<Long> chattingUserIdxList = new ArrayList<>(chattingUserLinkList.stream()
-                        .map(ChattingUserLinkDto::getUserIdx)
+                        .map(ChattingUserLinkWithUserDto::getUserIdx)
                         .toList());
 
                 if (!chattingUserIdxList.contains(loginInfo.getUserIdx())) {
@@ -217,7 +216,7 @@ public class ChattingController {
                 userIdxList = new ArrayList<>();
             }
 
-            userIdxList.add(0, chattingDto.getCreatorIdx());
+            userIdxList.addFirst(chattingDto.getCreatorIdx());
             chattingService.insertChattingUserLinkByUserIdx(chattingIdx, userIdxList);
 
             result.put("success", true);

@@ -1,9 +1,6 @@
 package com.project.messanger.controller;
 
-import com.project.messanger.dto.NotificationDto;
-import com.project.messanger.dto.ScheduleAttenderLinkDto;
-import com.project.messanger.dto.ScheduleDto;
-import com.project.messanger.dto.UserDto;
+import com.project.messanger.dto.*;
 import com.project.messanger.service.NotificationService;
 import com.project.messanger.service.ScheduleService;
 import com.project.messanger.util.AuthUtil;
@@ -64,8 +61,9 @@ public class ScheduleController {
             }
 
             // 일정 목록 조회
-            List<ScheduleDto> scheduleList = scheduleService.getScheduleList(param);
+            List<ScheduleWithUserDto> scheduleList = scheduleService.getScheduleList(param);
             result.put("list", scheduleList);
+            result.put("count", scheduleService.getScheduleCount(param));
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "일정을 불러올 수 없습니다.");
@@ -134,14 +132,14 @@ public class ScheduleController {
             }
 
             // 일정 조회
-            ScheduleDto scheduleDto = scheduleService.getScheduleByIdx(param);
+            ScheduleWithUserDto scheduleDto = scheduleService.getScheduleByIdx(param);
 
             result.put("success", scheduleDto != null);
             if (scheduleDto == null) {
                 result.put("error", "조회할 데이터가 없습니다.");
             } else {
                 // 일정 참석자 조회
-                List<ScheduleAttenderLinkDto> scheduleAttenderList = scheduleService.getScheduleAttenderLinkList(scheduleIdx);
+                List<ScheduleAttenderLinkWithUserDto> scheduleAttenderList = scheduleService.getScheduleAttenderLinkList(scheduleIdx);
 
                 result.put("detail", scheduleDto);
                 result.put("attender_list", scheduleAttenderList);
@@ -196,7 +194,7 @@ public class ScheduleController {
 
             long scheduleIdx = scheduleService.insertSchedule(scheduleDto);
 
-            userIdxList.add(0, scheduleDto.getCreatorIdx());
+            userIdxList.addFirst(scheduleDto.getCreatorIdx());
             scheduleService.insertScheduleAttenderLinkByUserIdx(scheduleIdx, userIdxList, true);
 
             // 알림 등록
@@ -245,7 +243,7 @@ public class ScheduleController {
             param.put("schedule_idx", scheduleIdx);
 
             // 수정할 데이터 확인
-            ScheduleDto scheduleInfo = scheduleService.getScheduleByIdx(param);
+            ScheduleWithUserDto scheduleInfo = scheduleService.getScheduleByIdx(param);
             if (scheduleInfo == null) {
                 result.put("success", false);
                 result.put("error", "수정할 데이터가 없습니다.");
@@ -318,7 +316,7 @@ public class ScheduleController {
             param.put("schedule_idx", scheduleIdx);
 
             // 삭제할 데이터 확인
-            ScheduleDto beforeData = scheduleService.getScheduleByIdx(param);
+            ScheduleWithUserDto beforeData = scheduleService.getScheduleByIdx(param);
             if (beforeData == null) {
                 result.put("success", false);
                 result.put("error", "삭제할 데이터가 없습니다.");
@@ -376,7 +374,7 @@ public class ScheduleController {
             param.put("schedule_idx", scheduleIdx);
 
             // 승인할 데이터 확인
-            ScheduleDto beforeData = scheduleService.getScheduleByIdx(param);
+            ScheduleWithUserDto beforeData = scheduleService.getScheduleByIdx(param);
             if(beforeData == null) {
                 result.put("success", false);
                 result.put("error", "승인할 데이터가 없습니다.");

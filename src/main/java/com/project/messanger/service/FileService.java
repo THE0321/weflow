@@ -1,6 +1,7 @@
 package com.project.messanger.service;
 
 import com.project.messanger.dto.FileDto;
+import com.project.messanger.dto.FileWithUserDto;
 import com.project.messanger.dto.GoalAndLogDto;
 import com.project.messanger.dto.NoticeDto;
 import com.project.messanger.mapper.FileMapper;
@@ -35,10 +36,10 @@ public class FileService {
     /*
      * get file list
      * @param Map<String, Object>
-     * return List<FileDto>
+     * return List<FileWithUserDto>
      */
     @Transactional(readOnly = true)
-    public List<FileDto> getFileList(Map<String, Object> param) {
+    public List<FileWithUserDto> getFileList(Map<String, Object> param) {
         int page = param.get("page") != null ? (int)param.get("page") : 1;
 
         param.putIfAbsent("limit", 10);

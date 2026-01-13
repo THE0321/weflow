@@ -1,5 +1,6 @@
 package com.project.messanger.mapper;
 
+import com.project.messanger.dto.NoticeWithUserDto;
 import com.project.messanger.dto.NoticeDto;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -8,9 +9,11 @@ import java.util.Map;
 
 @Mapper
 public interface NoticeMapper {
-    List<NoticeDto> getNoticeList(Map<String, Object> param);
+    long getNoticeCount(Map<String, Object> param);
 
-    NoticeDto getNoticeByIdx(Map<String, Object> param);
+    List<NoticeWithUserDto> getNoticeList(Map<String, Object> param);
+
+    NoticeWithUserDto getNoticeByIdx(Map<String, Object> param);
 
     long insertNotice(NoticeDto noticeDto);
 

@@ -13,6 +13,19 @@
         <result property="creatorIdx" column="creator_idx"/>
     </resultMap>
 
+    <sql id="sqlNotificationListCondition">
+        FROM notification
+        WHERE creator_idx = #{user_idx}
+        <if test="type != null">
+            AND type = #{type}
+        </if>
+    </sql>
+    
+    <select id="getNotificationCount" parameterType="hashmap" resultType="long">
+        SELECT COUNT(notification_idx)
+        <include refid="sqlNotificationListCondition" />
+    </select>
+
     <select id="getNotificationList" parameterType="hashmap" resultMap="NotificationMap">
         SELECT notification_idx
              , type
@@ -20,11 +33,7 @@
              , is_read
              , link_url
              , creator_idx
-        FROM notification
-        WHERE creator_idx = #{user_idx}
-        <if test="type != null">
-            AND type = #{type}
-        </if>
+        <include refid="sqlNotificationListCondition" />
         ORDER BY created_date DESC
         LIMIT ${limit} OFFSET ${offset}
     </select>

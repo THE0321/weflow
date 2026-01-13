@@ -71,7 +71,6 @@ public class GoalController {
                 result.put("count", goalService.getGoalCount(param));
             }
         } catch (Exception e) {
-            e.printStackTrace();
             result.put("success", false);
             result.put("error", "목표를 불러올 수 없습니다.");
         }
@@ -145,7 +144,7 @@ public class GoalController {
             }
 
             // 목표 담당자 확인
-            List<GoalUserLinkDto> goalUserLinkList = goalService.getGoalUserLink(goalIdx);
+            List<GoalUserLinkWithUserDto> goalUserLinkList = goalService.getGoalUserLink(goalIdx);
             if (goalUserLinkList == null) {
                 result.put("success", false);
                 result.put("error", "목표 상세를 불러올 수 없습니다.");
@@ -154,7 +153,7 @@ public class GoalController {
             } else if (loginInfo.getLeaderYn().equals("N") && loginInfo.getAdminYn().equals("N")) {
                 List<Long> teamIdxList = authUtil.getTeamList(session);
                 boolean isMyGoal = false;
-                for (GoalUserLinkDto goalUserLinkDto : goalUserLinkList) {
+                for (GoalUserLinkWithUserDto goalUserLinkDto : goalUserLinkList) {
                     if (goalUserLinkDto.getUserIdx() == loginInfo.getUserIdx() ||
                             teamIdxList.contains(goalUserLinkDto.getTeamIdx())) {
                         isMyGoal = true;
@@ -359,7 +358,6 @@ public class GoalController {
                 result.put("error", "목표를 수정하는데 실패했습니다.");
             }
         } catch (Exception e) {
-            e.printStackTrace();
             result.put("success", false);
             result.put("error", "목표를 수정하는데 실패했습니다.");
         }
@@ -422,7 +420,7 @@ public class GoalController {
 
         try {
             // 목표 담당자 확인
-            List<GoalUserLinkDto> goalUserLinkList = goalService.getGoalUserLink(goalIdx);
+            List<GoalUserLinkWithUserDto> goalUserLinkList = goalService.getGoalUserLink(goalIdx);
             if (goalUserLinkList == null) {
                 result.put("success", false);
                 result.put("error", "실적을 조회할 수 없습니다.");
@@ -431,7 +429,7 @@ public class GoalController {
             } else if (loginInfo.getLeaderYn().equals("N") && loginInfo.getAdminYn().equals("N")) {
                 List<Long> teamIdxList = authUtil.getTeamList(session);
                 boolean isMyGoal = false;
-                for (GoalUserLinkDto goalUserLinkDto : goalUserLinkList) {
+                for (GoalUserLinkWithUserDto goalUserLinkDto : goalUserLinkList) {
                     if (goalUserLinkDto.getUserIdx() == loginInfo.getUserIdx() ||
                             teamIdxList.contains(goalUserLinkDto.getTeamIdx())) {
                         isMyGoal = true;
@@ -448,7 +446,7 @@ public class GoalController {
             }
 
             // 목표 로그 조회
-            List<GoalLogDto> goalLogList = goalService.getGoalLog(goalIdx);
+            List<GoalLogWithUserDto> goalLogList = goalService.getGoalLog(goalIdx);
 
             result.put("success", goalLogList != null);
             if (goalLogList == null) {
@@ -483,7 +481,7 @@ public class GoalController {
 
         try {
             // 목표 담당자 확인
-            List<GoalUserLinkDto> goalUserLinkList = goalService.getGoalUserLink(goalIdx);
+            List<GoalUserLinkWithUserDto> goalUserLinkList = goalService.getGoalUserLink(goalIdx);
             if (goalUserLinkList == null) {
                 result.put("success", false);
                 result.put("error", "실적을 등록할 수 없습니다.");
@@ -492,7 +490,7 @@ public class GoalController {
             } else if (loginInfo.getLeaderYn().equals("N") && loginInfo.getAdminYn().equals("N")) {
                 List<Long> teamIdxList = authUtil.getTeamList(session);
                 boolean isMyGoal = false;
-                for (GoalUserLinkDto goalUserLinkDto : goalUserLinkList) {
+                for (GoalUserLinkWithUserDto goalUserLinkDto : goalUserLinkList) {
                     if (goalUserLinkDto.getUserIdx() == loginInfo.getUserIdx() ||
                             teamIdxList.contains(goalUserLinkDto.getTeamIdx())) {
                         isMyGoal = true;
@@ -554,7 +552,7 @@ public class GoalController {
 
         try {
             // 목표 담당자 확인
-            List<GoalUserLinkDto> goalUserLinkList = goalService.getGoalUserLink(goalIdx);
+            List<GoalUserLinkWithUserDto> goalUserLinkList = goalService.getGoalUserLink(goalIdx);
             if (goalUserLinkList == null) {
                 result.put("success", false);
                 result.put("error", "실적을 수정할 수 없습니다.");
@@ -563,7 +561,7 @@ public class GoalController {
             } else if (loginInfo.getLeaderYn().equals("N") && loginInfo.getAdminYn().equals("N")) {
                 List<Long> teamIdxList = authUtil.getTeamList(session);
                 boolean isMyGoal = false;
-                for (GoalUserLinkDto goalUserLinkDto : goalUserLinkList) {
+                for (GoalUserLinkWithUserDto goalUserLinkDto : goalUserLinkList) {
                     if (goalUserLinkDto.getUserIdx() == loginInfo.getUserIdx() ||
                             teamIdxList.contains(goalUserLinkDto.getTeamIdx())) {
                         isMyGoal = true;
@@ -580,7 +578,7 @@ public class GoalController {
             }
 
             // 수정할 데이터 확인
-            List<GoalLogDto> goalLogList = goalService.getGoalLog(goalIdx);
+            List<GoalLogWithUserDto> goalLogList = goalService.getGoalLog(goalIdx);
             if (goalLogList.getFirst().getLogIdx() != logIdx) {
                 result.put("success", false);
                 result.put("error", "실적을 수정할 수 없습니다.");
@@ -627,7 +625,7 @@ public class GoalController {
 
         try {
             // 목표 담당자 확인
-            List<GoalUserLinkDto> goalUserLinkList = goalService.getGoalUserLink(goalIdx);
+            List<GoalUserLinkWithUserDto> goalUserLinkList = goalService.getGoalUserLink(goalIdx);
             if (goalUserLinkList == null) {
                 result.put("success", false);
                 result.put("error", "실적을 삭제할 수 없습니다.");
@@ -636,7 +634,7 @@ public class GoalController {
             } else if (loginInfo.getLeaderYn().equals("N") && loginInfo.getAdminYn().equals("N")) {
                 List<Long> teamIdxList = authUtil.getTeamList(session);
                 boolean isMyGoal = false;
-                for (GoalUserLinkDto goalUserLinkDto : goalUserLinkList) {
+                for (GoalUserLinkWithUserDto goalUserLinkDto : goalUserLinkList) {
                     if (goalUserLinkDto.getUserIdx() == loginInfo.getUserIdx() ||
                             teamIdxList.contains(goalUserLinkDto.getTeamIdx())) {
                         isMyGoal = true;
@@ -653,7 +651,7 @@ public class GoalController {
             }
 
             // 삭제할 데이터 확인
-            List<GoalLogDto> goalLogList = goalService.getGoalLog(goalIdx);
+            List<GoalLogWithUserDto> goalLogList = goalService.getGoalLog(goalIdx);
             if (goalLogList.getFirst().getLogIdx() != logIdx) {
                 result.put("success", false);
                 result.put("error", "실적을 삭제할 수 없습니다.");

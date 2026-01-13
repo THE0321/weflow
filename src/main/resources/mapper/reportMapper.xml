@@ -15,48 +15,73 @@
         <result property="updatedDate" column="updated_date"/>
     </resultMap>
 
+    <resultMap id="ReportWithUserMap" type="com.project.messanger.dto.ReportWithUserDto">
+        <id property="reportIdx" column="report_idx"/>
+        <result property="title" column="title"/>
+        <result property="description" column="description"/>
+        <result property="type" column="type"/>
+        <result property="approverIdx" column="approver_idx"/>
+        <result property="approverName" column="approver_name"/>
+        <result property="creatorIdx" column="creator_idx"/>
+        <result property="creatorName" column="creator_name"/>
+        <result property="createdDate" column="created_date"/>
+        <result property="updatedDate" column="updated_date"/>
+    </resultMap>
+
     <sql id="sqlReportListCondition">
         FROM report
+        INNER JOIN user AS creator
+           ON creator.user_idx = report.creator_idx
+        LEFT JOIN user AS approver
+          ON approver.user_idx = report.approver_idx
         <where>
             <if test="type != null">
-                AND UPPER(type) = #{type}
+                AND UPPER(report.type) = #{type}
             </if>
             <if test="title != null">
-                AND UPPER(title) LIKE CONCAT('%', UPPER(#{title}), '%')
+                AND UPPER(report.title) LIKE CONCAT('%', UPPER(#{title}), '%')
             </if>
         </where>
     </sql>
 
     <select id="getReportCount" parameterType="hashmap" resultType="long">
-        SELECT COUNT(report_idx)
+        SELECT COUNT(report.report_idx)
         <include refid="sqlReportListCondition" />
     </select>
 
-    <select id="getReportList" parameterType="hashmap" resultMap="ReportMap">
-        SELECT report_idx
-             , title
-             , description
-             , type
-             , approver_idx
-             , creator_idx
-             , created_date
-             , updated_date
+    <select id="getReportList" parameterType="hashmap" resultMap="NoticeWithUserMap">
+        SELECT report.report_idx
+             , report.title
+             , report.description
+             , report.type
+             , report.approver_idx
+             , approver.user_name AS approver_name
+             , report.creator_idx
+             , creator.user_name AS creator_name
+             , report.created_date
+             , report.updated_date
         <include refid="sqlReportListCondition" />
-        ORDER BY report_idx DESC
+        ORDER BY report.report_idx DESC
         LIMIT ${limit} OFFSET ${offset}
     </select>
     
-    <select id="getReportByIdx" parameterType="long" resultMap="ReportMap">
-        SELECT report_idx
-             , title
-             , description
-             , type
-             , approver_idx
-             , creator_idx
-             , created_date
-             , updated_date
+    <select id="getReportByIdx" parameterType="long" resultMap="NoticeWithUserMap">
+        SELECT report.report_idx
+             , report.title
+             , report.description
+             , report.type
+             , report.approver_idx
+             , approver.user_name AS approver_name
+             , report.creator_idx
+             , creator.user_name AS creator_name
+             , report.created_date
+             , report.updated_date
         FROM report
-        WHERE report_idx = #{reportIdx}
+        INNER JOIN user AS creator
+           ON creator.user_idx = report.creator_idx
+        LEFT JOIN user AS approver
+          ON approver.user_idx = report.approver_idx
+        WHERE report.report_idx = #{reportIdx}
     </select>
 
     <insert id="insertReport" parameterType="com.project.messanger.dto.ReportDto" useGeneratedKeys="true" keyProperty="reportIdx" keyColumn="report_idx">

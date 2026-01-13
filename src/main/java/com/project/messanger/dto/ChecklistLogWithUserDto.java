@@ -7,12 +7,12 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class FileDto {
-    private long fileIdx;
-    private String name;
-    private String filePath;
-    private long size;
-    private String isDrive;
+public class ChecklistLogWithUserDto {
+    private long logIdx;
+    private long itemIdx;
+    private String isChecked;
+    private String content;
     private long creatorIdx;
+    private String creatorName;
     private String createdDate;
 }

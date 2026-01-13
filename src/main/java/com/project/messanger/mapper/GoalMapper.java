@@ -19,9 +19,9 @@ public interface GoalMapper {
 
     HashMap<String, Object> getGoalGraph(Map<String, Object> param);
 
-    List<GoalLogDto> getGoalLog(long logIdx);
+    List<GoalLogWithUserDto> getGoalLog(long logIdx);
 
-    List<GoalUserLinkDto> getGoalUserLink(long goalIdx);
+    List<GoalUserLinkWithUserDto> getGoalUserLink(long goalIdx);
 
     long insertGoal(GoalDto goalDto);
 

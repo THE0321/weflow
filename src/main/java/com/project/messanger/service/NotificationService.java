@@ -1,6 +1,7 @@
 package com.project.messanger.service;
 
 import com.project.messanger.dto.NotificationDto;
+import com.project.messanger.dto.TeamUserLinkWithUserDto;
 import com.project.messanger.dto.UserDto;
 import com.project.messanger.mapper.NotificationMapper;
 import com.project.messanger.mapper.UserMapper;
@@ -19,6 +20,16 @@ public class NotificationService {
     public NotificationService(NotificationMapper notificationMapper, UserMapper userMapper) {
         this.notificationMapper = notificationMapper;
         this.userMapper = userMapper;
+    }
+
+    /*
+     * get notification count
+     * @param Map<String, Object>
+     * return long
+     */
+    @Transactional(readOnly = true)
+    public long getNotificationCount(Map<String, Object> param) {
+        return notificationMapper.getNotificationCount(param);
     }
 
     /*
@@ -102,7 +113,7 @@ public class NotificationService {
 
         for (long teamIdx : teamIdxList) {
             List<Long> userIdxList = new ArrayList<>(userMapper.getUserListByTeamIdx(teamIdx).stream()
-                    .map(UserDto::getUserIdx)
+                    .map(TeamUserLinkWithUserDto::getUserIdx)
                     .toList());
 
             for (long userIdx : userIdxList) {

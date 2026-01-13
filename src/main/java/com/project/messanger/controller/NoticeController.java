@@ -1,6 +1,7 @@
 package com.project.messanger.controller;
 
 import com.project.messanger.dto.NoticeDto;
+import com.project.messanger.dto.NoticeWithUserDto;
 import com.project.messanger.dto.UserDto;
 import com.project.messanger.service.NoticeService;
 import com.project.messanger.util.AuthUtil;
@@ -42,7 +43,7 @@ public class NoticeController {
             param.put("is_admin", authUtil.authCheck(session, true));
 
             // 공지사항 조회
-            List<NoticeDto> noticeList = noticeService.getNoticeList(param);
+            List<NoticeWithUserDto> noticeList = noticeService.getNoticeList(param);
             boolean isEmpty = noticeList.isEmpty();
 
             result.put("success", !isEmpty);
@@ -50,6 +51,7 @@ public class NoticeController {
                 result.put("error", "조회할 데이터가 없습니다.");
             } else {
                 result.put("list", noticeList);
+                result.put("count", noticeService.getNoticeCount(param));
             }
         } catch (Exception e) {
             result.put("success", false);
@@ -72,7 +74,7 @@ public class NoticeController {
             param.put("is_admin", authUtil.authCheck(session, true));
 
             // 공지사항 조회
-            NoticeDto noticeDto = noticeService.getNoticeByIdx(param);
+            NoticeWithUserDto noticeDto = noticeService.getNoticeByIdx(param);
 
             result.put("success", noticeDto != null);
             if (noticeDto == null) {
@@ -158,7 +160,7 @@ public class NoticeController {
             param.put("is_admin", authUtil.authCheck(session, true));
 
             // 수정할 데이터 확인
-            NoticeDto beforeData = noticeService.getNoticeByIdx(param);
+            NoticeWithUserDto beforeData = noticeService.getNoticeByIdx(param);
             if (beforeData == null) {
                 result.put("success", false);
                 result.put("error", "수정할 데이터가 없습니다.");
@@ -212,7 +214,7 @@ public class NoticeController {
         param.put("is_admin", authUtil.authCheck(session, true));
 
         // 삭제할 데이터 확인
-        NoticeDto beforeData = noticeService.getNoticeByIdx(param);
+        NoticeWithUserDto beforeData = noticeService.getNoticeByIdx(param);
         if (beforeData == null) {
             result.put("success", false);
             result.put("error", "수정할 데이터가 없습니다.");

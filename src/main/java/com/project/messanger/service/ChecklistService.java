@@ -30,9 +30,9 @@ public class ChecklistService {
     /*
      * get checklist list
      * @param Map<String, Object>
-     * return List<ChecklistDto>
+     * return List<ChecklistWithUserDto>
      */
-    public List<ChecklistDto> getChecklistList(Map<String, Object> param) {
+    public List<ChecklistWithUserDto> getChecklistList(Map<String, Object> param) {
         int page = param.get("page") != null ? (int)param.get("page") : 1;
 
         param.putIfAbsent("limit", 10);
@@ -45,9 +45,9 @@ public class ChecklistService {
     /*
      * get checklist main list
      * @param Map<String, Object>
-     * return List<ChecklistDto>
+     * return List<ChecklistWithUserDto>
      */
-    public List<ChecklistDto> getChecklistMainList(Map<String, Object> param) {
+    public List<ChecklistWithUserDto> getChecklistMainList(Map<String, Object> param) {
         return checklistMapper.getChecklistMainList(param);
     }
 
@@ -170,10 +170,10 @@ public class ChecklistService {
     /*
      * get checklist user link
      * @param long
-     * return List<ChecklistUserLinkDto>
+     * return List<ChecklistUserLinkWithUserDto>
      */
     @Transactional(readOnly = true)
-    public List<ChecklistUserLinkDto> getChecklistUserLink(long checklistIdx) {
+    public List<ChecklistUserLinkWithUserDto> getChecklistUserLink(long checklistIdx) {
         return checklistMapper.getChecklistUserLink(checklistIdx);
     }
 
@@ -224,7 +224,7 @@ public class ChecklistService {
     public int insertChecklistLog(ChecklistLogDto checklistLogDto) {
         // 마지막 등록된 결과 조회
         if (checklistLogDto.getIsChecked() == null) {
-            ChecklistLogDto lastData = checklistMapper.getChecklistLogLast(checklistLogDto.getItemIdx());
+            ChecklistLogWithUserDto lastData = checklistMapper.getChecklistLogLast(checklistLogDto.getItemIdx());
             if (lastData != null) {
                 checklistLogDto.setIsChecked(lastData.getIsChecked());
             }
@@ -262,7 +262,7 @@ public class ChecklistService {
     public int insertChecklistUserLinkByTeamIdx(long checklistIdx, List<Long> teamIdxList) {
         List<ChecklistUserLinkDto> valueList = new ArrayList<>();
         List<Long> checklistUserList = new ArrayList<>(getChecklistUserLink(checklistIdx).stream()
-                .map(ChecklistUserLinkDto::getTeamIdx)
+                .map(ChecklistUserLinkWithUserDto::getTeamIdx)
                 .toList());
 
         // 값 리스트
@@ -296,7 +296,7 @@ public class ChecklistService {
     public int insertChecklistUserLinkByUserIdx(long checklistIdx, List<Long> userIdxList) {
         List<ChecklistUserLinkDto> valueList = new ArrayList<>();
         List<Long> checklistUserList = new ArrayList<>(getChecklistUserLink(checklistIdx).stream()
-                .map(ChecklistUserLinkDto::getUserIdx)
+                .map(ChecklistUserLinkWithUserDto::getUserIdx)
                 .toList());
 
         // 값 리스트

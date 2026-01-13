@@ -13,6 +13,24 @@
         <result property="endDate" column="end_date"/>
         <result property="isAllday" column="is_allday"/>
         <result property="approverIdx" column="approver_idx"/>
+        <result property="creatorIdx" column="creator_idx"/>
+        <result property="createdDate" column="created_date"/>
+        <result property="updatedDate" column="updated_date"/>
+    </resultMap>
+
+    <resultMap id="ScheduleWithUserMap" type="com.project.messanger.dto.ScheduleWithUserDto">
+        <id property="scheduleIdx" column="schedule_idx"/>
+        <result property="title" column="title"/>
+        <result property="description" column="description"/>
+        <result property="location" column="location"/>
+        <result property="startDate" column="start_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="isAllday" column="is_allday"/>
+        <result property="approverIdx" column="approver_idx"/>
+        <result property="approverName" column="approver_name"/>
+        <result property="creatorIdx" column="creator_idx"/>
+        <result property="creatorName" column="creator_name"/>
+        <result property="createdDate" column="created_date"/>
         <result property="updatedDate" column="updated_date"/>
     </resultMap>
 
@@ -23,35 +41,61 @@
         <result property="isAttend" column="is_attend"/>
     </resultMap>
 
-    <select id="getScheduleList" parameterType="hashmap" resultMap="ScheduleMap">
-        SELECT schedule_idx
-             , title
-             , description
-             , location
-             , start_date
-             , end_date
-             , is_allday
-        approver_idx
-        updated_date
+    <resultMap id="ScheduleAttenderLinkWithUserMap" type="com.project.messanger.dto.ScheduleAttenderLinkWithUserDto">
+        <id property="linkIdx" column="link_idx"/>
+        <result property="scheduleIdx" column="schedule_idx"/>
+        <result property="userIdx" column="user_idx"/>
+        <result property="email" column="email"/>
+        <result property="userName" column="user_name"/>
+        <result property="isAttend" column="is_attend"/>
+    </resultMap>
+
+    <sql id="sqlScheduleListCondition">
         FROM schedule
+        INNER JOIN user AS creator
+           ON creator.user_idx = schedule.creator_idx
+        LEFT JOIN user AS approver
+          ON approver.user_idx = schedule.approver_idx
         <where>
             <if test="title != null">
-                AND (UPPER(title) LIKE CONCAT('%', UPPER(#{title}), '%') OR UPPER(description) LIKE CONCAT('%', UPPER(#{title}), '%'))
+                AND (UPPER(schedule.title) LIKE CONCAT('%', UPPER(#{title}), '%') OR UPPER(schedule.description) LIKE CONCAT('%', UPPER(#{title}), '%'))
             </if>
             <if test="schedule_date != null">
-                AND (start_date IS NULL OR DATE_FORMAT(start_date, '%Y-%m-%d') &lt;= #{schedule_date})
-                AND (end_date IS NULL OR DATE_FORMAT(end_date, '%Y-%m-%d') &gt;= #{schedule_date})
+                AND (schedule.start_date IS NULL OR DATE_FORMAT(schedule.start_date, '%Y-%m-%d') &lt;= #{schedule_date})
+                AND (schedule.end_date IS NULL OR DATE_FORMAT(schedule.end_date, '%Y-%m-%d') &gt;= #{schedule_date})
             </if>
             <if test="user_idx != null">
                 AND EXISTS (
                     SELECT 1
                     FROM schedule_attender_link
-                    WHERE schedule_idx = schedule_idx
-                      AND user_idx = #{user_idx}
+                    WHERE schedule_attender_link.schedule_idx = schedule.schedule_idx
+                      AND schedule_attender_link.user_idx = #{user_idx}
                 )
             </if>
         </where>
-        ORDER BY start_date ASC, end_date ASC
+    </sql>
+
+    <select id="getScheduleCount" parameterType="hashmap" resultType="long">
+        SELECT COUNT(schedule.schedule_idx)
+        <include refid="sqlScheduleListCondition"/>
+    </select>
+
+    <select id="getScheduleList" parameterType="hashmap" resultMap="ScheduleWithUserMap">
+        SELECT schedule.schedule_idx
+             , schedule.title
+             , schedule.description
+             , schedule.location
+             , schedule.start_date
+             , schedule.end_date
+             , schedule.is_allday
+             , schedule.approver_idx
+             , approver.user_name AS approver_name
+             , schedule.creator_idx
+             , creator.user_name AS creator_name
+             , schedule.created_date
+             , schedule.updated_date
+        <include refid="sqlScheduleListCondition"/>
+        ORDER BY schedule.start_date ASC, schedule.end_date ASC
         LIMIT ${limit} OFFSET ${offset}
     </select>
 
@@ -64,6 +108,8 @@
              , end_date
              , is_allday
              , approver_idx
+             , creator_idx
+             , created_date
              , updated_date
         FROM schedule
         <where>
@@ -83,24 +129,32 @@
         ORDER BY start_date ASC, end_date ASC
     </select>
 
-    <select id="getScheduleByIdx" parameterType="hashmap" resultMap="ScheduleMap">
-        SELECT schedule_idx
-             , title
-             , description
-             , location
-             , start_date
-             , end_date
-             , is_allday
-             , approver_idx
-             , updated_date
+    <select id="getScheduleByIdx" parameterType="hashmap" resultMap="ScheduleWithUserMap">
+        SELECT schedule.schedule_idx
+             , schedule.title
+             , schedule.description
+             , schedule.location
+             , schedule.start_date
+             , schedule.end_date
+             , schedule.is_allday
+             , schedule.approver_idx
+             , approver.user_name AS approver_name
+             , schedule.creator_idx
+             , creator.user_name AS creator_name
+             , schedule.created_date
+             , schedule.updated_date
         FROM schedule
-        WHERE schedule_idx = #{schedule_idx}
+        INNER JOIN user AS creator
+           ON creator.user_idx = schedule.creator_idx
+        LEFT JOIN user AS approver
+          ON approver.user_idx = schedule.approver_idx
+        WHERE schedule.schedule_idx = #{schedule_idx}
         <if test="user_idx != null">
             AND EXISTS (
                 SELECT 1
                 FROM schedule_attender_link
-                WHERE schedule_idx = schedule_idx
-                AND user_idx = #{user_idx}
+                WHERE schedule_attender_link.schedule_idx = schedule.schedule_idx
+                  AND schedule_attender_link.user_idx = #{user_idx}
             )
         </if>
     </select>
@@ -141,13 +195,17 @@
         WHERE schedule_idx = #{scheduleIdx}
     </delete>
 
-    <select id="getScheduleAttenderLinkList" parameterType="long" resultMap="ScheduleAttenderLinkMap">
-        SELECT link_idx
-             , schedule_idx
-             , user_idx
-             , is_attend
+    <select id="getScheduleAttenderLinkList" parameterType="long" resultMap="ScheduleAttenderLinkWithUserMap">
+        SELECT schedule_attender_link.link_idx
+             , schedule_attender_link.schedule_idx
+             , schedule_attender_link.user_idx
+             , user.email
+             , user.user_name
+             , schedule_attender_link.is_attend
         FROM schedule_attender_link
-        WHERE schedule_idx = #{scheduleIdx}
+        INNER JOIN user
+           ON user.user_idx = schedule_attender_link.user_idx
+        WHERE schedule_attender_link.schedule_idx = #{scheduleIdx}
     </select>
 
     <select id="getScheduleAttenderLinkByIdx" parameterType="long" resultMap="ScheduleAttenderLinkMap">

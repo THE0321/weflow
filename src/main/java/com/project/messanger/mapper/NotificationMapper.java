@@ -8,6 +8,8 @@ import java.util.Map;
 
 @Mapper
 public interface NotificationMapper {
+    long getNotificationCount(Map<String, Object> param);
+
     List<NotificationDto> getNotificationList(Map<String, Object> param);
 
     NotificationDto getNotificationByIdx(long notificationIdx);

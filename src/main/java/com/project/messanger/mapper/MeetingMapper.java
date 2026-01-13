@@ -1,8 +1,6 @@
 package com.project.messanger.mapper;
 
-import com.project.messanger.dto.MeetingAttenderLinkDto;
-import com.project.messanger.dto.MeetingRoomDto;
-import com.project.messanger.dto.ReservationDto;
+import com.project.messanger.dto.*;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -10,11 +8,11 @@ import java.util.Map;
 
 @Mapper
 public interface MeetingMapper {
-    List<ReservationDto> getReservationList(Map<String, Object> param);
+    List<ReservationWithUserDto> getReservationList(Map<String, Object> param);
 
     List<ReservationDto> getReservationListByMonth(Map<String, Object> param);
 
-    ReservationDto getReservationByIdx(Map<String, Object> param);
+    ReservationWithUserDto getReservationByIdx(Map<String, Object> param);
 
     long insertReservation(ReservationDto reservationDto);
 
@@ -22,7 +20,7 @@ public interface MeetingMapper {
 
     int deleteReservation(long reservationIdx);
 
-    List<MeetingAttenderLinkDto> getMeetingAttenderLink(long reservationIdx);
+    List<MeetingAttenderLinkWithUserDto> getMeetingAttenderLink(long reservationIdx);
 
     MeetingAttenderLinkDto getMeetingAttenderLinkByIdx(long linkIdx);
 

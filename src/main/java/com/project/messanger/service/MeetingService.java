@@ -1,8 +1,6 @@
 package com.project.messanger.service;
 
-import com.project.messanger.dto.MeetingAttenderLinkDto;
-import com.project.messanger.dto.MeetingRoomDto;
-import com.project.messanger.dto.ReservationDto;
+import com.project.messanger.dto.*;
 import com.project.messanger.mapper.MeetingMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,10 +21,10 @@ public class MeetingService {
     /*
      * get reservation list
      * @param Map<String, Object>
-     * return List<ReservationDto>
+     * return List<ReservationWithUserDto>
      */
     @Transactional(readOnly = true)
-    public List<ReservationDto> getReservationList(Map<String, Object> param) {
+    public List<ReservationWithUserDto> getReservationList(Map<String, Object> param) {
         int page = param.get("page") != null ? (int)param.get("page") : 1;
 
         param.putIfAbsent("limit", 10);
@@ -49,10 +47,10 @@ public class MeetingService {
     /*
      * get reservation by idx
      * @param long
-     * return ReservationDto
+     * return ReservationWithUserDto
      */
     @Transactional(readOnly = true)
-    public ReservationDto getReservationByIdx(Map<String, Object> param) {
+    public ReservationWithUserDto getReservationByIdx(Map<String, Object> param) {
         return meetingMapper.getReservationByIdx(param);
     }
 
@@ -89,10 +87,10 @@ public class MeetingService {
     /*
      * get schedule attender link
      * @param Map<String, Object>
-     * return List<ScheduleDto>
+     * return List<MeetingAttenderLinkWithUserDto>
      */
     @Transactional(readOnly = true)
-    public List<MeetingAttenderLinkDto> getMeetingAttenderLink(long reservationIdx) {
+    public List<MeetingAttenderLinkWithUserDto> getMeetingAttenderLink(long reservationIdx) {
         return meetingMapper.getMeetingAttenderLink(reservationIdx);
     }
 
@@ -135,7 +133,7 @@ public class MeetingService {
     public int insertMeetingAttenderLinkByUserIdx(long reservationIdx, List<Long> userIdxList, boolean isCreate) {
         List<MeetingAttenderLinkDto> valueList = new ArrayList<>();
         List<Long> meetingAttenderList = new ArrayList<>(getMeetingAttenderLink(reservationIdx).stream()
-                .map(MeetingAttenderLinkDto::getUserIdx)
+                .map(MeetingAttenderLinkWithUserDto::getUserIdx)
                 .toList());
 
         // 값 리스트
@@ -173,11 +171,11 @@ public class MeetingService {
      */
     @Transactional
     public int deleteMeetingAttenderLink(long reservationIdx, List<Long> deleteUserIdxList) {
-        List<MeetingAttenderLinkDto> meetingAttenderList = getMeetingAttenderLink(reservationIdx);
+        List<MeetingAttenderLinkWithUserDto> meetingAttenderList = getMeetingAttenderLink(reservationIdx);
 
         // 이미 참석 확정한 목록 제거
         List<Long> attenderIdxList = new ArrayList<>();
-        for (MeetingAttenderLinkDto meetingAttenderLinkDto : meetingAttenderList) {
+        for (MeetingAttenderLinkWithUserDto meetingAttenderLinkDto : meetingAttenderList) {
             if (meetingAttenderLinkDto.getIsAttend().equals("Y")) {
                 attenderIdxList.add(meetingAttenderLinkDto.getUserIdx());
             }

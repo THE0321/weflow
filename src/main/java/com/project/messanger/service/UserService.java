@@ -2,6 +2,7 @@ package com.project.messanger.service;
 
 import com.project.messanger.dto.TeamDto;
 import com.project.messanger.dto.TeamUserLinkDto;
+import com.project.messanger.dto.TeamUserLinkWithUserDto;
 import com.project.messanger.dto.UserDto;
 import com.project.messanger.mapper.UserMapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -23,8 +24,13 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    /*
+     * get team user link by team idx
+     * @param long
+     * return List<TeamUserLinkWithUserDto>
+     */
     @Transactional(readOnly = true)
-    public List<UserDto> getUserListByTeamIdx(long teamIdx) {
+    public List<TeamUserLinkWithUserDto> getUserListByTeamIdx(long teamIdx) {
         return userMapper.getUserListByTeamIdx(teamIdx);
     }
 
@@ -272,7 +278,7 @@ public class UserService {
     public int insertUserLinkByTeamIdx(long teamIdx, List<Long> userIdxList) {
         List<TeamUserLinkDto> valueList = new ArrayList<>();
         List<Long> teamUserList = new ArrayList<>(getUserListByTeamIdx(teamIdx).stream()
-                .map(UserDto::getUserIdx)
+                .map(TeamUserLinkWithUserDto::getUserIdx)
                 .toList());
 
         // 값 리스트

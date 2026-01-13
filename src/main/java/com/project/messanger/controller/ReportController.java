@@ -1,6 +1,7 @@
 package com.project.messanger.controller;
 
 import com.project.messanger.dto.ReportDto;
+import com.project.messanger.dto.ReportWithUserDto;
 import com.project.messanger.dto.ScheduleDto;
 import com.project.messanger.dto.UserDto;
 import com.project.messanger.service.ReportService;
@@ -56,7 +57,7 @@ public class ReportController {
             }
 
             // 보고서 목록 조회
-            List<ReportDto> reportList = reportService.getReportList(param);
+            List<ReportWithUserDto> reportList = reportService.getReportList(param);
             result.put("list", reportList);
             result.put("count", reportService.getReportCount(param));
         } catch (Exception e) {
@@ -83,7 +84,7 @@ public class ReportController {
 
         try {
             // 보고서 조회
-            ReportDto reportDto = reportService.getReportByIdx(reportIdx);
+            ReportWithUserDto reportDto = reportService.getReportByIdx(reportIdx);
             if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N") && reportDto.getCreatorIdx() != loginInfo.getUserIdx()) {
                 result.put("success", true);
                 result.put("detail", reportDto);
@@ -160,7 +161,7 @@ public class ReportController {
         try {
             // 관리자 또는 팀장이 확인하지 않은 보고서만 수정 가능
             if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N")) {
-                ReportDto reportDto = reportService.getReportByIdx(reportIdx);
+                ReportWithUserDto reportDto = reportService.getReportByIdx(reportIdx);
                 if (reportDto.getApproverIdx() != 0 || reportDto.getCreatorIdx() != loginInfo.getUserIdx()) {
                     result.put("success", false);
                     result.put("error", "보고서를 수정하는데 실패했습니다.");
@@ -208,7 +209,7 @@ public class ReportController {
         try {
             // 관리자 또는 팀장이 확인하지 않은 보고서만 삭제 가능
             if (loginInfo.getAdminYn().equals("N") && loginInfo.getLeaderYn().equals("N")) {
-                ReportDto reportDto = reportService.getReportByIdx(reportIdx);
+                ReportWithUserDto reportDto = reportService.getReportByIdx(reportIdx);
                 if (reportDto.getApproverIdx() != 0 || reportDto.getCreatorIdx() != loginInfo.getUserIdx()) {
                     result.put("success", false);
                     result.put("error", "보고서를 삭제하는데 실패했습니다.");
@@ -254,7 +255,7 @@ public class ReportController {
 
         try {
             // 승인할 데이터 확인
-            ReportDto beforeData = reportService.getReportByIdx(reportIdx);
+            ReportWithUserDto beforeData = reportService.getReportByIdx(reportIdx);
             if(beforeData == null) {
                 result.put("success", false);
                 result.put("error", "승인할 데이터가 없습니다.");

@@ -97,12 +97,23 @@ public class ChattingService {
     /*
      * get chatting user link
      * @param long
-     * return List<ChattingUserLinkDto>
+     * return List<ChattingUserLinkWithUserDto>
      */
-    @Transactional
-    public List<ChattingUserLinkDto> getChattingUserLink(long chattingIdx)
+    @Transactional(readOnly = true)
+    public List<ChattingUserLinkWithUserDto> getChattingUserLink(long chattingIdx)
     {
         return chattingMapper.getChattingUserLink(chattingIdx);
+    }
+
+    /*
+     * get chatting user link by idx
+     * @param long
+     * return ChattingUserLinkDto
+     */
+    @Transactional(readOnly = true)
+    public ChattingUserLinkDto getChattingUserLinkByIdx(long linkIdx)
+    {
+        return chattingMapper.getChattingUserLinkByIdx(linkIdx);
     }
 
     /*
@@ -124,7 +135,7 @@ public class ChattingService {
     public int insertChattingUserLinkByUserIdx(long chattingIdx, List<Long> userIdxList) {
         List<ChattingUserLinkDto> valueList = new ArrayList<>();
         List<Long> chattingUserList = new ArrayList<>(getChattingUserLink(chattingIdx).stream()
-                .map(ChattingUserLinkDto::getUserIdx)
+                .map(ChattingUserLinkWithUserDto::getUserIdx)
                 .toList());
 
         // 값 리스트

@@ -16,47 +16,75 @@
         <result property="createdDate" column="created_date"/>
     </resultMap>
 
-    <select id="getNoticeList" parameterType="hashmap" resultMap="NoticeMap">
-        SELECT notice_idx
-             , title
-             , content
-             , linkUrl
-             , start_date
-             , end_date
-             , is_active
-             , creator_idx
-             , created_date
+    <resultMap id="NoticeWithUserMap" type="com.project.messanger.dto.NoticeWithUserDto">
+        <id property="noticeIdx" column="notice_idx"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="linkUrl" column="linkUrl"/>
+        <result property="startDate" column="start_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="isActive" column="is_active"/>
+        <result property="creatorIdx" column="creator_idx"/>
+        <result property="creatorName" column="creator_name"/>
+        <result property="createdDate" column="created_date"/>
+    </resultMap>
+
+    <sql id="sqlNoticeListCondition">
         FROM notice
+        INNER JOIN user
+           ON user.user_idx = notice.creator_idx
         <where>
             <if test="!is_admin">
-                AND (start_date IS NULL OR start_date &lt;= SYSDATE())
-                AND (end_date IS NULL OR end_date &gt;= SYSDATE())
-                AND is_active = 'Y'
+                AND (notice.start_date IS NULL OR notice.start_date &lt;= SYSDATE())
+                AND (notice.end_date IS NULL OR notice.end_date &gt;= SYSDATE())
+                AND notice.is_active = 'Y'
             </if>
             <if test="title != null">
-                AND UPPER(title) LIKE CONCAT('%', UPPER(#{title}), '%')
+                AND UPPER(notice.title) LIKE CONCAT('%', UPPER(#{title}), '%')
             </if>
         </where>
-        ORDER BY start_date DESC
+    </sql>
+
+    <select id="getNoticeCount" parameterType="hashmap" resultType="long">
+        SELECT COUNT(notice.notice_idx)
+        <include refid="sqlNoticeListCondition" />
+    </select>
+
+    <select id="getNoticeList" parameterType="hashmap" resultMap="NoticeWithUserMap">
+        SELECT notice.notice_idx
+             , notice.title
+             , notice.content
+             , notice.linkUrl
+             , notice.start_date
+             , notice.end_date
+             , notice.is_active
+             , notice.creator_idx
+             , user.user_name AS creator_name
+             , notice.created_date
+        <include refid="sqlNoticeListCondition" />
+        ORDER BY notice.start_date DESC
         LIMIT ${limit} OFFSET ${offset}
     </select>
 
-    <select id="getNoticeByIdx" parameterType="long" resultMap="NoticeMap">
-        SELECT notice_idx
-             , title
-             , content
-             , linkUrl
-             , start_date
-             , end_date
-             , is_active
-             , creator_idx
-             , created_date
+    <select id="getNoticeByIdx" parameterType="long" resultMap="NoticeWithUserMap">
+        SELECT notice.notice_idx
+             , notice.title
+             , notice.content
+             , notice.linkUrl
+             , notice.start_date
+             , notice.end_date
+             , notice.is_active
+             , notice.creator_idx
+             , user.user_name AS creator_name
+             , notice.created_date
         FROM notice
-        WHERE notice_idx = #{notice_idx}
+        INNER JOIN user
+           ON user.user_idx = notice.creator_idx
+        WHERE notice.notice_idx = #{notice_idx}
         <if test="!is_admin">
-            AND (start_date IS NULL OR start_date &lt;= SYSDATE())
-            AND (end_date IS NULL OR end_date &gt;= SYSDATE())
-            AND is_active = 'Y'
+            AND (notice.start_date IS NULL OR notice.start_date &lt;= SYSDATE())
+            AND (notice.end_date IS NULL OR notice.end_date &gt;= SYSDATE())
+            AND notice.is_active = 'Y'
         </if>
     </select>
 

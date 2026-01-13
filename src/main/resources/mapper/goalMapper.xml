@@ -24,11 +24,30 @@
         <result property="userIdx" column="user_idx"/>
     </resultMap>
 
+    <resultMap id="GoalUserLinkWithUserMap" type="com.project.messanger.dto.GoalUserLinkWithUserDto">
+        <id property="linkIdx" column="link_idx"/>
+        <result property="goalIdx" column="goal_idx"/>
+        <result property="teamIdx" column="team_idx"/>
+        <result property="teamName" column="team_name"/>
+        <result property="userIdx" column="user_idx"/>
+        <result property="email" column="email"/>
+        <result property="userName" column="user_name"/>
+    </resultMap>
+
     <resultMap id="GoalLogMap" type="com.project.messanger.dto.GoalLogDto">
         <id property="logIdx" column="log_idx"/>
         <result property="progressValue" column="progress_value"/>
         <result property="content" column="content"/>
         <result property="creatorIdx" column="creator_idx"/>
+        <result property="createdDate" column="created_date"/>
+    </resultMap>
+
+    <resultMap id="GoalLogWithUserMap" type="com.project.messanger.dto.GoalLogWithUserDto">
+        <id property="logIdx" column="log_idx"/>
+        <result property="progressValue" column="progress_value"/>
+        <result property="content" column="content"/>
+        <result property="creatorIdx" column="creator_idx"/>
+        <result property="creatorName" column="creator_name"/>
         <result property="createdDate" column="created_date"/>
     </resultMap>
 
@@ -41,6 +60,7 @@
         <result property="startDate" column="start_date"/>
         <result property="endDate" column="end_date"/>
         <result property="creatorIdx" column="creator_idx"/>
+        <result property="creatorName" column="creator_name"/>
         <result property="createdDate" column="created_date"/>
         <result property="updatedDate" column="updated_date"/>
 
@@ -50,56 +70,9 @@
     </resultMap>
 
     <sql id="sqlGoalListCondition">
-        <where>
-            <if test="title != null">
-                AND UPPER(title) LIKE CONCAT('%', UPPER(#{title}), '%')
-            </if>
-            <if test="status != null">
-                AND UPPER(status) = UPPER(#{status})
-            </if>
-            <if test="user_idx != null">
-                AND (
-                EXISTS (
-                SELECT 1
-                FROM goal_user_link
-                WHERE goal_idx = goal.goal_idx
-                AND user_idx = #{user_idx}
-                )
-                <if test="team_idx_list != null">
-                    OR EXISTS (
-                    SELECT 1
-                    FROM goal_user_link
-                    WHERE goal_idx = goal.goal_idx
-                    AND team_idx IN <foreach collection="team_idx_list" item="teamIdx" open="(" close=")" separator=",">#{teamIdx}</foreach>
-                    )
-                </if>
-                )
-            </if>
-        </where>
-        ORDER BY goal.goal_idx DESC
-    </sql>
-
-    <select id="getGoalCount" parameterType="hashmap" resultType="long">
-        SELECT COUNT(goal.goal_idx)
         FROM goal
-        <include refid="sqlGoalListCondition" />
-    </select>
-
-    <select id="getGoalList" parameterType="hashmap" resultMap="GoalAndLogMap">
-        SELECT goal.goal_idx
-             , goal.title
-             , goal.description
-             , goal.status
-             , goal.target_value
-             , goal.start_date
-             , goal.end_date
-             , goal.creator_idx
-             , goal.created_date
-             , goal.updated_date
-             , goal_log.progress_value
-             , goal_log.content
-             , goal_log.created_date AS log_date
-        FROM goal
+        INNER JOIN user
+          ON user.user_idx = goal.creator_idx
         LEFT JOIN
         (
             SELECT goal_idx
@@ -115,6 +88,55 @@
             )
         ) goal_log
         ON goal.goal_idx = goal_log.goal_idx
+        <where>
+            <if test="title != null">
+                AND UPPER(goal.title) LIKE CONCAT('%', UPPER(#{title}), '%')
+            </if>
+            <if test="status != null">
+                AND UPPER(goal.status) = UPPER(#{status})
+            </if>
+            <if test="user_idx != null">
+                AND (
+                    EXISTS (
+                        SELECT 1
+                        FROM goal_user_link
+                        WHERE goal_user_link.goal_idx = goal.goal_idx
+                          AND goal_user_link.user_idx = #{user_idx}
+                    )
+                    <if test="team_idx_list != null">
+                        OR EXISTS (
+                            SELECT 1
+                            FROM goal_user_link
+                            WHERE goal_user_link.goal_idx = goal.goal_idx
+                            AND goal_user_link.team_idx IN <foreach collection="team_idx_list" item="teamIdx" open="(" close=")" separator=",">#{teamIdx}</foreach>
+                        )
+                    </if>
+                )
+            </if>
+        </where>
+        ORDER BY goal.goal_idx DESC
+    </sql>
+
+    <select id="getGoalCount" parameterType="hashmap" resultType="long">
+        SELECT COUNT(goal.goal_idx)
+        <include refid="sqlGoalListCondition" />
+    </select>
+
+    <select id="getGoalList" parameterType="hashmap" resultMap="GoalAndLogMap">
+        SELECT goal.goal_idx
+             , goal.title
+             , goal.description
+             , goal.status
+             , goal.target_value
+             , goal.start_date
+             , goal.end_date
+             , goal.creator_idx
+             , user.user_name AS creator_name
+             , goal.created_date
+             , goal.updated_date
+             , goal_log.progress_value
+             , goal_log.content
+             , goal_log.created_date AS log_date
         <include refid="sqlGoalListCondition" />
         LIMIT ${limit} OFFSET ${offset}
     </select>
@@ -128,12 +150,15 @@
              , goal.start_date
              , goal.end_date
              , goal.creator_idx
+             , user.user_name AS creator_name
              , goal.created_date
              , goal.updated_date
              , goal_log.progress_value
              , goal_log.content
              , goal_log.created_date AS log_date
         FROM goal
+        INNER JOIN user
+           ON user.user_idx = goal.creator_idx
         LEFT JOIN
         (
             SELECT goal_idx
@@ -149,24 +174,24 @@
             )
         ) goal_log
         ON goal.goal_idx = goal_log.goal_idx
-        WHERE status != 'COMPLETED'
+        WHERE goal.status != 'COMPLETED'
         AND (
             EXISTS (
                 SELECT 1
                 FROM goal_user_link
-                WHERE goal_idx = goal.goal_idx
-                AND user_idx = #{user_idx}
+                WHERE goal_user_link.goal_idx = goal.goal_idx
+                  AND goal_user_link.user_idx = #{user_idx}
             )
             <if test="team_idx_list != null">
                 OR EXISTS (
                     SELECT 1
                     FROM goal_user_link
-                    WHERE goal_idx = goal.goal_idx
-                    AND team_idx IN <foreach collection="team_idx_list" item="teamIdx" open="(" close=")" separator=",">#{teamIdx}</foreach>
+                    WHERE goal_user_link.goal_idx = goal.goal_idx
+                      AND goal_user_link.team_idx IN <foreach collection="team_idx_list" item="teamIdx" open="(" close=")" separator=",">#{teamIdx}</foreach>
                 )
             </if>
         )
-        ORDER BY DATEDIFF(SYSDATE(), end_date) DESC
+        ORDER BY DATEDIFF(SYSDATE(), goal.end_date) DESC
         LIMIT 10
     </select>
 
@@ -194,24 +219,34 @@
         FROM goal_log
     </select>
 
-    <select id="getGoalLog" parameterType="long" resultMap="GoalLogMap">
-        SELECT log_idx
-             , progress_value
-             , content
-             , creator_idx
-             , created_date
+    <select id="getGoalLog" parameterType="long" resultMap="GoalLogWithUserMap">
+        SELECT goal_log.log_idx
+             , goal_log.progress_value
+             , goal_log.content
+             , goal_log.creator_idx
+             , user.user_name AS creator_name
+             , goal_log.created_date
         FROM goal_log
-        WHERE goal_idx = #{goalIdx}
-        ORDER BY log_idx DESC
+        INNER JOIN user
+           ON user.user_idx = goal_log.creator_idx
+        WHERE goal_log.goal_idx = #{goalIdx}
+        ORDER BY goal_log.log_idx DESC
     </select>
 
-    <select id="getGoalUserLink" parameterType="long" resultMap="GoalUserLinkMap">
-        SELECT link_idx
-             , goal_idx
-             , team_idx
-             , user_idx
+    <select id="getGoalUserLink" parameterType="long" resultMap="GoalUserLinkWithUserMap">
+        SELECT goal_user_link.link_idx
+             , goal_user_link.goal_idx
+             , team.team_idx
+             , team.team_name
+             , user.user_idx
+             , user.email
+             , user.user_name
         FROM goal_user_link
-        WHERE goal_idx = #{goalIdx}
+        LEFT JOIN team
+          ON team.team_idx = goal_user_link.team_idx
+        LEFT JOIN user
+          ON user.user_idx = goal_user_link.user_idx
+        WHERE goal_user_link.goal_idx = #{goalIdx}
     </select>
 
     <insert id="insertGoal" parameterType="com.project.messanger.dto.GoalDto" useGeneratedKeys="true" keyProperty="goalIdx" keyColumn="goal_idx">

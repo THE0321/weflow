@@ -61,7 +61,7 @@ public class MeetingController {
             }
 
             // 회의실 조회
-            List<ReservationDto> reservationList = meetingService.getReservationList(param);
+            List<ReservationWithUserDto> reservationList = meetingService.getReservationList(param);
             result.put("list", reservationList);
         } catch (Exception e) {
             result.put("success", false);
@@ -131,14 +131,14 @@ public class MeetingController {
             }
 
             // 회의실 조회
-            ReservationDto reservationDto = meetingService.getReservationByIdx(param);
+            ReservationWithUserDto reservationDto = meetingService.getReservationByIdx(param);
 
             result.put("success", reservationDto != null);
             if (reservationDto == null) {
                 result.put("error", "조회할 데이터가 없습니다.");
             } else {
                 // 회의 참석자 조회
-                List<MeetingAttenderLinkDto> meetingAttenderList = meetingService.getMeetingAttenderLink(reservationIdx);
+                List<MeetingAttenderLinkWithUserDto> meetingAttenderList = meetingService.getMeetingAttenderLink(reservationIdx);
 
                 result.put("detail", reservationDto);
                 result.put("attender_list", meetingAttenderList);
@@ -191,7 +191,7 @@ public class MeetingController {
             long reservationIdx = meetingService.insertReservation(reservationDto);
 
             // 회의 참석자 등록
-            userIdxList.add(0, reservationDto.getCreatorIdx());
+            userIdxList.addFirst(reservationDto.getCreatorIdx());
             meetingService.insertMeetingAttenderLinkByUserIdx(reservationIdx, userIdxList, true);
 
             // 알림 등록
@@ -240,7 +240,7 @@ public class MeetingController {
             param.put("reservation_idx", reservationIdx);
 
             // 수정할 데이터 확인
-            ReservationDto reservationInfo = meetingService.getReservationByIdx(param);
+            ReservationWithUserDto reservationInfo = meetingService.getReservationByIdx(param);
             if (reservationInfo == null) {
                 result.put("success", false);
                 result.put("error", "수정할 데이터가 없습니다.");
@@ -313,7 +313,7 @@ public class MeetingController {
             param.put("reservation_idx", reservationIdx);
 
             // 삭제할 데이터 확인
-            ReservationDto reservationInfo = meetingService.getReservationByIdx(param);
+            ReservationWithUserDto reservationInfo = meetingService.getReservationByIdx(param);
             if (reservationInfo == null) {
                 result.put("success", false);
                 result.put("error", "삭제할 데이터가 없습니다.");

@@ -2,6 +2,7 @@ package com.project.messanger.mapper;
 
 import com.project.messanger.dto.ChattingDto;
 import com.project.messanger.dto.ChattingMessageDto;
+import com.project.messanger.dto.ChattingUserLinkWithUserDto;
 import com.project.messanger.dto.ChattingUserLinkDto;
 import org.apache.ibatis.annotations.Mapper;
 
@@ -24,7 +25,9 @@ public interface ChattingMapper {
 
     int deleteChatting(long chattingIdx);
 
-    List<ChattingUserLinkDto> getChattingUserLink(long chattingIdx);
+    List<ChattingUserLinkWithUserDto> getChattingUserLink(long chattingIdx);
+
+    ChattingUserLinkDto getChattingUserLinkByIdx(long linkIdx);
 
     int insertChattingUserLink(List<ChattingUserLinkDto> list);
 

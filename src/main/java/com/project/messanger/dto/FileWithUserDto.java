@@ -7,12 +7,13 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class FileDto {
+public class FileWithUserDto {
     private long fileIdx;
     private String name;
     private String filePath;
     private long size;
     private String isDrive;
     private long creatorIdx;
+    private String creatorName;
     private String createdDate;
 }

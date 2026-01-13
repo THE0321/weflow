@@ -1,6 +1,7 @@
 package com.project.messanger.service;
 
 import com.project.messanger.dto.NoticeDto;
+import com.project.messanger.dto.NoticeWithUserDto;
 import com.project.messanger.mapper.NoticeMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,12 +18,22 @@ public class NoticeService {
     }
 
     /*
-     * get notice list
+     * get notice count
      * @param Map<String, Object>
-     * return List<NoticeDto>
+     * return long
      */
     @Transactional(readOnly = true)
-    public List<NoticeDto> getNoticeList(Map<String, Object> param) {
+    public long getNoticeCount(Map<String, Object> param) {
+        return noticeMapper.getNoticeCount(param);
+    }
+
+    /*
+     * get notice list
+     * @param Map<String, Object>
+     * return List<NoticeWithUserDto>
+     */
+    @Transactional(readOnly = true)
+    public List<NoticeWithUserDto> getNoticeList(Map<String, Object> param) {
         int page = param.get("page") != null ? (int)param.get("page") : 1;
 
         param.putIfAbsent("limit", 10);
@@ -35,10 +46,10 @@ public class NoticeService {
     /*
      * get notice by notice idx
      * @param long
-     * return NoticeDto
+     * return NoticeWithUserDto
      */
     @Transactional(readOnly = true)
-    public NoticeDto getNoticeByIdx(Map<String, Object> param) {
+    public NoticeWithUserDto getNoticeByIdx(Map<String, Object> param) {
         return noticeMapper.getNoticeByIdx(param);
     }
 

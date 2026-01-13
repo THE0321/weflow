@@ -13,6 +13,16 @@
         <result property="updatedDate" column="updated_date"/>
     </resultMap>
 
+    <resultMap id="ChecklistWithUserMap" type="com.project.messanger.dto.ChecklistWithUserDto">
+        <id property="checklistIdx" column="checklist_idx"/>
+        <result property="title" column="title"/>
+        <result property="description" column="description"/>
+        <result property="creatorIdx" column="creator_idx"/>
+        <result property="creatorName" column="creator_name"/>
+        <result property="createdDate" column="created_date"/>
+        <result property="updatedDate" column="updated_date"/>
+    </resultMap>
+
     <resultMap id="ChecklistItemMap" type="com.project.messanger.dto.ChecklistItemDto">
         <id property="itemIdx" column="item_idx"/>
         <result property="checklistIdx" column="checklist_idx"/>
@@ -27,6 +37,16 @@
         <result property="userIdx" column="user_idx"/>
     </resultMap>
 
+    <resultMap id="ChecklistUserLinkWithUserMap" type="com.project.messanger.dto.ChecklistUserLinkWithUserDto">
+        <id property="linkIdx" column="link_idx"/>
+        <result property="checklistIdx" column="checklist_idx"/>
+        <result property="teamIdx" column="team_idx"/>
+        <result property="teamName" column="team_name"/>
+        <result property="userIdx" column="user_idx"/>
+        <result property="email" column="email"/>
+        <result property="userName" column="user_name"/>
+    </resultMap>
+
     <resultMap id="ChecklistLogMap" type="com.project.messanger.dto.ChecklistLogDto">
         <id property="logIdx" column="log_idx"/>
         <result property="itemIdx" column="item_idx"/>
@@ -36,29 +56,41 @@
         <result property="createdDate" column="created_date"/>
     </resultMap>
 
+    <resultMap id="ChecklistLogWithUserMap" type="com.project.messanger.dto.ChecklistLogWithUserDto">
+        <id property="logIdx" column="log_idx"/>
+        <result property="itemIdx" column="item_idx"/>
+        <result property="isChecked" column="is_checked"/>
+        <result property="content" column="content"/>
+        <result property="creatorIdx" column="creator_idx"/>
+        <result property="creatorName" column="creator_name"/>
+        <result property="createdDate" column="created_date"/>
+    </resultMap>
+
     <sql id="sqlChecklistListCondition">
         FROM checklist
+        INNER JOIN user
+           ON user.user_idx = checklist.creator_idx
         <where>
             <if test="title != null">
-                AND UPPER(title) LIKE CONCAT('%', UPPER(#{title}), '%')
+                AND UPPER(checklist.title) LIKE CONCAT('%', UPPER(#{title}), '%')
             </if>
             <if test="status != null">
-                AND UPPER(status) LIKE CONCAT('%', UPPER(#{status}), '%')
+                AND UPPER(checklist.status) LIKE CONCAT('%', UPPER(#{status}), '%')
             </if>
             <if test="user_idx != null">
                 AND (
                     EXISTS (
                         SELECT 1
                         FROM checklist_user_link
-                        WHERE checklist_idx = checklist.checklist_idx
-                        AND user_idx = #{user_idx}
+                        WHERE checklist_user_link.checklist_idx = checklist.checklist_idx
+                        AND checklist_user_link.user_idx = #{user_idx}
                     )
                     <if test="team_idx_list != null">
                         OR EXISTS (
                             SELECT 1
                             FROM checklist_user_link
-                            WHERE checklist_idx = checklist.checklist_idx
-                            AND team_idx IN <foreach collection="team_idx_list" item="teamIdx" open="(" close=")" separator=",">#{teamIdx}</foreach>
+                            WHERE checklist_user_link.checklist_idx = checklist.checklist_idx
+                            AND checklist_user_link.team_idx IN <foreach collection="team_idx_list" item="teamIdx" open="(" close=")" separator=",">#{teamIdx}</foreach>
                         )
                     </if>
                 )
@@ -67,43 +99,47 @@
     </sql>
 
     <select id="getChecklistCount" parameterType="hashmap" resultType="long">
-        SELECT COUNT(checklist_idx)
+        SELECT COUNT(checklist.checklist_idx)
         <include refid="sqlChecklistListCondition" />
     </select>
 
-    <select id="getChecklistList" parameterType="hashmap" resultMap="ChecklistMap">
-        SELECT checklist_idx
-             , title
-             , description
-             , creator_idx
-             , created_date
-             , updated_date
+    <select id="getChecklistList" parameterType="hashmap" resultMap="ChecklistWithUserMap">
+        SELECT checklist.checklist_idx
+             , checklist.title
+             , checklist.description
+             , checklist.creator_idx
+             , user.user_name AS creator_name
+             , checklist.created_date
+             , checklist.updated_date
         <include refid="sqlChecklistListCondition" />
         LIMIT ${limit} OFFSET ${offset}
     </select>
 
-    <select id="getChecklistMainList" parameterType="hashmap" resultMap="ChecklistMap">
-        SELECT checklist_idx
-             , title
-             , description
-             , creator_idx
-             , created_date
-             , updated_date
+    <select id="getChecklistMainList" parameterType="hashmap" resultMap="ChecklistWithUserMap">
+        SELECT checklist.checklist_idx
+             , checklist.title
+             , checklist.description
+             , checklist.creator_idx
+             , user.user_name AS creator_name
+             , checklist.created_date
+             , checklist.updated_date
         FROM checklist
-        WHERE status != 'COMPLETED'
+        INNER JOIN user
+           ON user.user_idx = checklist.creator_idx
+        WHERE checklist.status != 'COMPLETED'
         AND (
             EXISTS (
                 SELECT 1
                 FROM checklist_user_link
-                WHERE checklist_idx = checklist.checklist_idx
-                AND user_idx = #{user_idx}
+                WHERE checklist_user_link.checklist_idx = checklist.checklist_idx
+                AND checklist_user_link.user_idx = #{user_idx}
             )
             <if test="team_idx_list != null">
                 OR EXISTS (
                     SELECT 1
                     FROM checklist_user_link
-                    WHERE checklist_idx = checklist.checklist_idx
-                    AND team_idx IN <foreach collection="team_idx_list" item="teamIdx" open="(" close=")" separator=",">#{teamIdx}</foreach>
+                    WHERE checklist_user_link.checklist_idx = checklist.checklist_idx
+                      AND checklist_user_link.team_idx IN <foreach collection="team_idx_list" item="teamIdx" open="(" close=")" separator=",">#{teamIdx}</foreach>
                 )
             </if>
         )
@@ -212,13 +248,20 @@
         WHERE item_idx IN <foreach collection="list" item="value" open="(" close=")" separator=",">#{value}</foreach>
     </delete>
 
-    <select id="getChecklistUserLink" parameterType="long" resultMap="ChecklistUserLinkMap">
-        SELECT link_idx
-             , checklist_idx
-             , team_idx
-             , user_idx
+    <select id="getChecklistUserLink" parameterType="long" resultMap="ChecklistUserLinkWithUserMap">
+        SELECT checklist_user_link.link_idx
+             , checklist_user_link.checklist_idx
+             , team.team_idx
+             , team.team_name
+             , user.user_idx
+             , user.email
+             , user.user_name
         FROM checklist_user_link
-        WHERE checklist_idx = #{checklistIdx}
+        LEFT JOIN team
+          ON team.team_idx = checklist_user_link.team_idx
+        LEFT JOIN user
+          ON user.user_idx = checklist_user_link.user_idx
+        WHERE checklist_user_link.checklist_idx = #{checklistIdx}
     </select>
 
     <insert id="insertChecklistUserLink" parameterType="com.project.messanger.dto.ChecklistLogDto">
@@ -256,16 +299,19 @@
           AND team_idx IN <foreach collection="team_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
     </delete>
 
-    <select id="getChecklistLogLast" parameterType="long" resultMap="ChecklistLogMap">
-        SELECT log_idx
-             , item_idx
-             , is_checked
-             , content
-             , creator_idx
-             , created_date
+    <select id="getChecklistLogLast" parameterType="long" resultMap="ChecklistUserLinkWithUserMap">
+        SELECT checklist_log.log_idx
+             , checklist_log.item_idx
+             , checklist_log.is_checked
+             , checklist_log.content
+             , checklist_log.creator_idx
+             , user.user_name AS creator_name
+             , checklist_log.created_date
         FROM checklist_log
-        WHERE item_idx = #{itemIdx}
-        ORDER BY log_idx DESC
+        INNER JOIN user
+           ON user.user_idx = checklist_log.creator_idx
+        WHERE checklist_log.item_idx = #{itemIdx}
+        ORDER BY checklist_log.log_idx DESC
         LIMIT 1
     </select>
 

@@ -19,12 +19,22 @@ public class ScheduleService {
     }
 
     /*
-     * get schedule list
+     * get schedule count
      * @param Map<String, Object>
-     * return List<ScheduleDto>
+     * return long
      */
     @Transactional(readOnly = true)
-    public List<ScheduleDto> getScheduleList(Map<String, Object> param) {
+    public long getScheduleCount(Map<String, Object> param) {
+        return scheduleMapper.getScheduleCount(param);
+    }
+
+    /*
+     * get schedule list
+     * @param Map<String, Object>
+     * return List<ScheduleWithUserDto>
+     */
+    @Transactional(readOnly = true)
+    public List<ScheduleWithUserDto> getScheduleList(Map<String, Object> param) {
         int page = param.get("page") != null ? (int)param.get("page") : 1;
 
         param.putIfAbsent("limit", 10);
@@ -47,10 +57,10 @@ public class ScheduleService {
     /*
      * get schedule by idx
      * @param long
-     * return ScheduleDto
+     * return ScheduleWithUserDto
      */
     @Transactional(readOnly = true)
-    public ScheduleDto getScheduleByIdx(Map<String, Object> param) {
+    public ScheduleWithUserDto getScheduleByIdx(Map<String, Object> param) {
         return scheduleMapper.getScheduleByIdx(param);
     }
 
@@ -87,10 +97,10 @@ public class ScheduleService {
     /*
      * get schedule attender link
      * @param Map<String, Object>
-     * return List<ScheduleDto>
+     * return List<ScheduleAttenderLinkWithUserDto>
      */
     @Transactional(readOnly = true)
-    public List<ScheduleAttenderLinkDto> getScheduleAttenderLinkList(long scheduleIdx) {
+    public List<ScheduleAttenderLinkWithUserDto> getScheduleAttenderLinkList(long scheduleIdx) {
         return scheduleMapper.getScheduleAttenderLinkList(scheduleIdx);
     }
 
@@ -123,7 +133,7 @@ public class ScheduleService {
     public int insertScheduleAttenderLinkByUserIdx(long scheduleIdx, List<Long> userIdxList, boolean isCreate) {
         List<ScheduleAttenderLinkDto> valueList = new ArrayList<>();
         List<Long> scheduleAttenderList = new ArrayList<>(getScheduleAttenderLinkList(scheduleIdx).stream()
-                .map(ScheduleAttenderLinkDto::getUserIdx)
+                .map(ScheduleAttenderLinkWithUserDto::getUserIdx)
                 .toList());
 
         // 값 리스트
@@ -167,11 +177,11 @@ public class ScheduleService {
      */
     @Transactional
     public int deleteScheduleAttenderLink(long scheduleIdx, List<Long> deleteUserIdxList) {
-        List<ScheduleAttenderLinkDto> scheduleAttenderList = getScheduleAttenderLinkList(scheduleIdx);
+        List<ScheduleAttenderLinkWithUserDto> scheduleAttenderList = getScheduleAttenderLinkList(scheduleIdx);
 
         // 이미 참석 확정한 목록 제거
         List<Long> attenderIdxList = new ArrayList<>();
-        for (ScheduleAttenderLinkDto scheduleAttenderLinkDto : scheduleAttenderList) {
+        for (ScheduleAttenderLinkWithUserDto scheduleAttenderLinkDto : scheduleAttenderList) {
             if (scheduleAttenderLinkDto.getIsAttend().equals("Y")) {
                 attenderIdxList.add(scheduleAttenderLinkDto.getUserIdx());
             }
