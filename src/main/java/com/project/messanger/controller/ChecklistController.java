@@ -210,7 +210,15 @@ public class ChecklistController {
                         .build();
 
             // 체크리스트 등록
-            long checklistIdx = checklistService.insertChecklist(checklistDto);
+            int success = checklistService.insertChecklist(checklistDto);
+            result.put("success", success != 0);
+            if (success == 0) {
+                result.put("error", "체크리스트를 등록할 수 없습니다.");
+                return result;
+            }
+
+            long checklistIdx = checklistDto.getChecklistIdx();
+            result.put("idx", checklistIdx);
 
             // 체크리스트 항목 등록
             if (itemTitleList == null)
@@ -229,7 +237,7 @@ public class ChecklistController {
                     .linkUrl("/check/" + checklistIdx)
                     .build();
 
-            // 담당자 팀 추가
+            // 담당자 팀 등록
             if (teamIdxList != null) {
                 checklistService.insertChecklistUserLinkByTeamIdx(checklistIdx, teamIdxList);
 
@@ -237,16 +245,13 @@ public class ChecklistController {
                 notificationService.insertNotificationByTeamIdx(notificationDto, teamIdxList);
             }
 
-            // 담당자 유저 추가
+            // 담당자 유저 등록
             if (userIdxList != null) {
                 checklistService.insertChecklistUserLinkByUserIdx(checklistIdx, userIdxList);
 
                 // 알림 등록
                 notificationService.insertNotificationByUserIdx(notificationDto, userIdxList);
             }
-
-            result.put("success", true);
-            result.put("idx", checklistIdx);
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "체크리스트를 등록할 수 없습니다.");
@@ -308,6 +313,11 @@ public class ChecklistController {
 
             // 체크리스트 수정
             int success = checklistService.updateChecklist(checklistDto);
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "체크리스트를 수정하는데 실패했습니다.");
+                return result;
+            }
 
             // 체크리스트 항목 수정
             if (itemTitleList != null)
@@ -366,14 +376,7 @@ public class ChecklistController {
             if (deleteTeamIdxList != null) {
                 checklistService.deleteChecklistUserLinkByTeamIdx(checklistIdx, deleteTeamIdxList);
             }
-
-            result.put("success", success != 0);
-            if (success == 0) {
-                result.put("error", "체크리스트를 수정하는데 실패했습니다.");
-            }
         } catch (Exception e) {
-            e.printStackTrace();
-
             result.put("success", false);
             result.put("error", "체크리스트를 수정하는데 실패했습니다.");
         }
@@ -415,7 +418,6 @@ public class ChecklistController {
 
             // 체크리스트 삭제
             int success = checklistService.deleteChecklist(checklistIdx);
-
             result.put("success", success == 1);
             if (success == 0) {
                 result.put("error", "체크리스트를 삭제하는데 실패했습니다.");
@@ -539,15 +541,14 @@ public class ChecklistController {
                     .build();
 
             // 체크리스트 등록
-            long logIdx = checklistService.insertChecklistLog(checklistLogDto);
-            if(logIdx == 0) {
-                result.put("success", false);
+            int success = checklistService.insertChecklistLog(checklistLogDto);
+            result.put("success", success == 0);
+            if(success == 0) {
                 result.put("error", "체크리스트 결과가 등록되지 않았습니다.");
-
                 return result;
             }
 
-            result.put("success", true);
+            long logIdx = checklistLogDto.getLogIdx();
             result.put("idx", logIdx);
         } catch (Exception e) {
             result.put("success", false);
@@ -621,8 +622,7 @@ public class ChecklistController {
 
             // 체크리스트 결과 수정
             int success = checklistService.updateChecklistLog(checklistLogDto);
-
-            result.put("success", success != 0);
+            result.put("success", success == 1);
             if (success == 0) {
                 result.put("error", "체크리스트 결과를 수정하는데 실패했습니다.");
             }
@@ -688,14 +688,10 @@ public class ChecklistController {
 
             // 체크리스트 결과 삭제
             int success = checklistService.deleteChecklistLog(logIdx);
-
-            result.put("success", success != 0);
+            result.put("success", success == 1);
             if (success == 0) {
                 result.put("error", "체크리스트 결과를 삭제하는데 실패했습니다.");
             }
-
-            result.put("success", true);
-            result.put("idx", success);
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "체크리스트 결과를 삭제하는데 실패했습니다.");

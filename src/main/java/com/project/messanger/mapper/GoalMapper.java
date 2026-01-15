@@ -23,7 +23,7 @@ public interface GoalMapper {
 
     List<GoalUserLinkWithUserDto> getGoalUserLink(long goalIdx);
 
-    long insertGoal(GoalDto goalDto);
+    int insertGoal(GoalDto goalDto);
 
     int updateGoal(GoalDto goalDto);
 
@@ -35,7 +35,7 @@ public interface GoalMapper {
 
     int deleteGoalUserLinkByTeamIdx(Map<String, Object> param);
 
-    long insertGoalLog(GoalLogDto goalLogDto);
+    int insertGoalLog(GoalLogDto goalLogDto);
 
     int updateGoalLog(GoalLogDto goalLogDto);
 

@@ -15,7 +15,7 @@ public interface ReportMapper {
 
     ReportWithUserDto getReportByIdx(long reportIdx);
 
-    long insertReport(ReportDto reportDto);
+    int insertReport(ReportDto reportDto);
 
     int updateReport(ReportDto reportDto);
 

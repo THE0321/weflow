@@ -121,9 +121,15 @@ public class NoticeController {
                     .creatorIdx(loginInfo.getUserIdx())
                     .build();
 
-            long noticeIdx = noticeService.insertNotice(noticeDto);
+            // 공지사항 등록
+            int success = noticeService.insertNotice(noticeDto);
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "공지사항을 등록하는데 실패했습니다.");
+                return result;
+            }
 
-            result.put("success", true);
+            long noticeIdx = noticeDto.getNoticeIdx();
             result.put("idx", noticeIdx);
         } catch (Exception e) {
             result.put("success", false);
@@ -181,7 +187,6 @@ public class NoticeController {
 
             // 공지사항 수정
             int success = noticeService.updateNotice(noticeDto);
-
             result.put("success", success == 1);
             if (success == 0) {
                 result.put("error", "공지사항을 수정하는데 실패했습니다.");
@@ -223,16 +228,15 @@ public class NoticeController {
         }
 
         try {
-            // 체크리스트 삭제
+            // 공지사항 삭제
             int success = noticeService.deleteNotice(noticeIdx);
-
             result.put("success", success == 1);
             if (success == 0) {
-                result.put("error", "체크리스트를 삭제하는데 실패했습니다.");
+                result.put("error", "공지사항을 삭제하는데 실패했습니다.");
             }
         } catch (Exception e) {
             result.put("success", false);
-            result.put("error", "체크리스트를 삭제하는데 실패했습니다.");
+            result.put("error", "공지사항을 삭제하는데 실패했습니다.");
         }
 
         return result;

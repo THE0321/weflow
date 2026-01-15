@@ -57,10 +57,10 @@ public class UserService {
     /*
      * insert user
      * @param UserDto
-     * return long
+     * return int
      */
     @Transactional
-    public long insertUser(UserDto userDto) {
+    public int insertUser(UserDto userDto) {
         if (userDto.getPassword() != null) {
             String encodedPassword = passwordEncoder.encode(userDto.getPassword());
             userDto.setPassword(encodedPassword);
@@ -156,7 +156,9 @@ public class UserService {
      * return long
      */
     @Transactional
-    public long insertTeam(TeamDto teamDto) { return userMapper.insertTeam(teamDto); }
+    public int insertTeam(TeamDto teamDto) {
+        return userMapper.insertTeam(teamDto);
+    }
 
     /*
      * update team
@@ -164,7 +166,9 @@ public class UserService {
      * return long
      */
     @Transactional
-    public long updateTeam(TeamDto teamDto) { return userMapper.updateTeam(teamDto); }
+    public int updateTeam(TeamDto teamDto) {
+        return userMapper.updateTeam(teamDto);
+    }
 
     /*
      * delete team
@@ -172,7 +176,9 @@ public class UserService {
      * return int
      */
     @Transactional
-    public int deleteTeam(long teamIdx) { return userMapper.deleteTeam(teamIdx); }
+    public int deleteTeam(long teamIdx) {
+        return userMapper.deleteTeam(teamIdx);
+    }
 
     /*
      * get login user idx

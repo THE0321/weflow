@@ -49,7 +49,7 @@
         <include refid="sqlReportListCondition" />
     </select>
 
-    <select id="getReportList" parameterType="hashmap" resultMap="NoticeWithUserMap">
+    <select id="getReportList" parameterType="hashmap" resultMap="ReportWithUserMap">
         SELECT report.report_idx
              , report.title
              , report.description
@@ -65,7 +65,7 @@
         LIMIT ${limit} OFFSET ${offset}
     </select>
     
-    <select id="getReportByIdx" parameterType="long" resultMap="NoticeWithUserMap">
+    <select id="getReportByIdx" parameterType="long" resultMap="ReportWithUserMap">
         SELECT report.report_idx
              , report.title
              , report.description

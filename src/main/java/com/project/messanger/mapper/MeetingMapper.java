@@ -14,7 +14,7 @@ public interface MeetingMapper {
 
     ReservationWithUserDto getReservationByIdx(Map<String, Object> param);
 
-    long insertReservation(ReservationDto reservationDto);
+    int insertReservation(ReservationDto reservationDto);
 
     int updateReservation(ReservationDto reservationDto);
 
@@ -34,7 +34,7 @@ public interface MeetingMapper {
 
     MeetingRoomDto getMeetingRoomByIdx(long roomIdx);
 
-    long insertMeetingRoom(MeetingRoomDto meetingRoomDto);
+    int insertMeetingRoom(MeetingRoomDto meetingRoomDto);
 
     int updateMeetingRoom(MeetingRoomDto meetingRoomDto);
 

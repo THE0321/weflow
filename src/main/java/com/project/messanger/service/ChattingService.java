@@ -57,20 +57,20 @@ public class ChattingService {
     /*
      * insert chatting
      * @param ChattingDto
-     * return long
+     * return int
      */
     @Transactional
-    public long insertChattingMessage(ChattingMessageDto chattingMessageDto) {
+    public int insertChattingMessage(ChattingMessageDto chattingMessageDto) {
         return chattingMapper.insertChattingMessage(chattingMessageDto);
     }
 
     /*
      * insert chatting
      * @param ChattingDto
-     * return long
+     * return int
      */
     @Transactional
-    public long insertChatting(ChattingDto chattingDto) {
+    public int insertChatting(ChattingDto chattingDto) {
         return chattingMapper.insertChatting(chattingDto);
     }
 

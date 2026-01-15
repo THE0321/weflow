@@ -23,7 +23,7 @@ public interface UserMapper {
 
     UserDto getUserByEmail(String email);
 
-    long insertUser(UserDto userDto);
+    int insertUser(UserDto userDto);
 
     int updateUser(UserDto userDto);
 
@@ -39,9 +39,9 @@ public interface UserMapper {
 
     TeamDto getTeamByIdx(long teamIdx);
 
-    long insertTeam(TeamDto teamDto);
+    int insertTeam(TeamDto teamDto);
 
-    long updateTeam(TeamDto teamDto);
+    int updateTeam(TeamDto teamDto);
 
     int deleteTeam(long teamIdx);
 

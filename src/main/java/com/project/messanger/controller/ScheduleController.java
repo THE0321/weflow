@@ -192,7 +192,15 @@ public class ScheduleController {
                 scheduleDto.setApproverIdx(loginInfo.getUserIdx());
             }
 
-            long scheduleIdx = scheduleService.insertSchedule(scheduleDto);
+            int success = scheduleService.insertSchedule(scheduleDto);
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "일정을 등록하는데 실패했습니다.");
+                return result;
+            }
+
+            long scheduleIdx = scheduleDto.getScheduleIdx();
+            result.put("idx", scheduleIdx);
 
             userIdxList.addFirst(scheduleDto.getCreatorIdx());
             scheduleService.insertScheduleAttenderLinkByUserIdx(scheduleIdx, userIdxList, true);
@@ -205,9 +213,6 @@ public class ScheduleController {
                     .build();
 
             notificationService.insertNotificationByUserIdx(notificationDto, userIdxList);
-
-            result.put("success", true);
-            result.put("idx", scheduleIdx);
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "일정을 등록하는데 실패했습니다.");
@@ -274,20 +279,19 @@ public class ScheduleController {
 
             // 일정 수정
             int success = scheduleService.updateSchedule(scheduleDto);
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "일정을 수정하는데 실패했습니다.");
+            }
 
-            // 회의 참석자 추가
+            // 일정 참석자 추가
             if (userIdxList != null) {
                 scheduleService.insertScheduleAttenderLinkByUserIdx(scheduleIdx, userIdxList, false);
             }
 
-            // 회의 참석자 삭제
+            // 일정 참석자 삭제
             if (deleteUserIdxList != null) {
                 scheduleService.deleteScheduleAttenderLink(scheduleIdx, deleteUserIdxList);
-            }
-
-            result.put("success", success != 0);
-            if (success == 0) {
-                result.put("error", "일정을 수정하는데 실패했습니다.");
             }
         } catch (Exception e) {
             result.put("success", false);
@@ -336,7 +340,6 @@ public class ScheduleController {
 
             // 체크리스트 삭제
             int success = scheduleService.deleteSchedule(scheduleIdx);
-
             result.put("success", success == 1);
             if (success == 0) {
                 result.put("error", "일정을 삭제하는데 실패했습니다.");
@@ -390,7 +393,6 @@ public class ScheduleController {
 
             // 일정 승인
             int success = scheduleService.updateSchedule(scheduleDto);
-
             result.put("success", success == 1);
             if (success == 0) {
                 result.put("error", "일정을 승인하는데 실패했습니다.");

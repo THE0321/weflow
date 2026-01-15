@@ -15,7 +15,7 @@ public interface FileMapper {
 
     FileDto getFileByIdx(long fileIdx);
 
-    long insertFile(FileDto fileDto);
+    int insertFile(FileDto fileDto);
 
     int deleteFile(long fileIdx);
 }

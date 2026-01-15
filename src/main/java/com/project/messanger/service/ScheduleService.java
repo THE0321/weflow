@@ -67,10 +67,10 @@ public class ScheduleService {
     /*
      * insert schedule
      * @param ScheduleDto
-     * return long
+     * return int
      */
     @Transactional
-    public long insertSchedule(ScheduleDto scheduleDto) {
+    public int insertSchedule(ScheduleDto scheduleDto) {
         return scheduleMapper.insertSchedule(scheduleDto);
     }
 

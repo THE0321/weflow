@@ -188,7 +188,15 @@ public class MeetingController {
             }
 
             // 회의 등록
-            long reservationIdx = meetingService.insertReservation(reservationDto);
+            int success = meetingService.insertReservation(reservationDto);
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "일정을 등록하는데 실패했습니다.");
+                return result;
+            }
+
+            long reservationIdx = reservationDto.getReservationIdx();
+            result.put("idx", reservationIdx);
 
             // 회의 참석자 등록
             userIdxList.addFirst(reservationDto.getCreatorIdx());
@@ -202,12 +210,9 @@ public class MeetingController {
                     .build();
 
             notificationService.insertNotificationByUserIdx(notificationDto, userIdxList);
-
-            result.put("success", true);
-            result.put("idx", reservationIdx);
         } catch (Exception e) {
             result.put("success", false);
-            result.put("error", "회의실을 등록하는데 실패했습니다.");
+            result.put("error", "일정을 등록하는데 실패했습니다.");
         }
 
         return result;
@@ -252,7 +257,7 @@ public class MeetingController {
             if (loginInfo.getAdminYn().equals("N")) {
                 if (reservationInfo.getCreatorIdx() != loginInfo.getUserIdx()) {
                     result.put("success", false);
-                    result.put("error", "회의실 예약을 수정하는데 실패했습니다.");
+                    result.put("error", "일정을 수정하는데 실패했습니다.");
 
                     return result;
                 }
@@ -270,6 +275,11 @@ public class MeetingController {
 
             // 회의실 예약 수정
             int success = meetingService.updateReservation(reservationDto);
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "일정을 수정하는데 실패했습니다.");
+                return result;
+            }
 
             // 회의 참석자 추가
             if (userIdxList != null) {
@@ -280,14 +290,9 @@ public class MeetingController {
             if (deleteUserIdxList != null) {
                 meetingService.deleteMeetingAttenderLink(reservationIdx, deleteUserIdxList);
             }
-
-            result.put("success", success != 0);
-            if (success == 0) {
-                result.put("error", "회의실 예약을 수정하는데 실패했습니다.");
-            }
         } catch (Exception e) {
             result.put("success", false);
-            result.put("error", "회의실 예약을 수정하는데 실패했습니다.");
+            result.put("error", "일정을 수정하는데 실패했습니다.");
         }
 
         return result;
@@ -333,14 +338,13 @@ public class MeetingController {
 
             // 회의 삭제
             int success = meetingService.deleteReservation(reservationIdx);
-
             result.put("success", success == 1);
             if (success == 0) {
-                result.put("error", "회의실 예약을 삭제하는데 실패했습니다.");
+                result.put("error", "일정을 삭제하는데 실패했습니다.");
             }
         } catch (Exception e) {
             result.put("success", false);
-            result.put("error", "회의실 예약을 삭제하는데 실패했습니다.");
+            result.put("error", "일정을 삭제하는데 실패했습니다.");
         }
 
         return result;
@@ -380,14 +384,13 @@ public class MeetingController {
 
             // 회의 참석여부 수정
             int success = meetingService.updateMeetingAttenderLink(meetingAttenderLinkDto);
-
-            result.put("success", success != 0);
+            result.put("success", success == 1);
             if (success == 0) {
-                result.put("error", "회의 참석여부를 수정하는데 실패했습니다.");
+                result.put("error", "일정 참석여부를 수정하는데 실패했습니다.");
             }
         } catch (Exception e) {
             result.put("success", false);
-            result.put("error", "회의 참석여부를 수정하는데 실패했습니다.");
+            result.put("error", "일정 참석여부를 수정하는데 실패했습니다.");
         }
 
         return result;
@@ -439,9 +442,14 @@ public class MeetingController {
                     .capacity(capacity)
                     .build();
 
-            long roomIdx = meetingService.insertMeetingRoom(meetingRoomDto);
+            int success = meetingService.insertMeetingRoom(meetingRoomDto);
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "회의실을 등록하는데 실패했습니다.");
+                return result;
+            }
 
-            result.put("success", true);
+            long roomIdx = meetingRoomDto.getRoomIdx();
             result.put("idx", roomIdx);
         } catch (Exception e) {
             result.put("success", false);
@@ -488,8 +496,7 @@ public class MeetingController {
 
             // 회의실 수정
             int success = meetingService.updateMeetingRoom(meetingRoomDto);
-
-            result.put("success", success != 0);
+            result.put("success", success == 1);
             if (success == 0) {
                 result.put("error", "회의실을 수정하는데 실패했습니다.");
             }
@@ -527,8 +534,7 @@ public class MeetingController {
 
             // 회의실 삭제
             int success = meetingService.deleteMeetingRoom(roomIdx);
-
-            result.put("success", success != 0);
+            result.put("success", success == 1);
             if (success == 0) {
                 result.put("error", "회의실을 삭제하는데 실패했습니다.");
             }

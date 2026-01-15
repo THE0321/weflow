@@ -57,10 +57,10 @@ public class MeetingService {
     /*
      * insert reservation
      * @param ReservationDto
-     * return long
+     * return int
      */
     @Transactional
-    public long insertReservation(ReservationDto reservationDto) {
+    public int insertReservation(ReservationDto reservationDto) {
         return meetingMapper.insertReservation(reservationDto);
     }
 
@@ -216,10 +216,10 @@ public class MeetingService {
     /*
      * insert meeting room
      * @param MeetingRoomDto
-     * return long
+     * return int
      */
     @Transactional
-    public long insertMeetingRoom(MeetingRoomDto meetingRoomDto) {
+    public int insertMeetingRoom(MeetingRoomDto meetingRoomDto) {
         return meetingMapper.insertMeetingRoom(meetingRoomDto);
     }
 

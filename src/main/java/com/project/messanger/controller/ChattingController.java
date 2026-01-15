@@ -94,10 +94,16 @@ public class ChattingController {
                 chattingMessageDto.setFileIdx(fileService.insertFile(fileDto));
             }
 
-            long chattingMessageIdx = chattingService.insertChattingMessage(chattingMessageDto);
+            // 채팅 등록
+            int success = chattingService.insertChattingMessage(chattingMessageDto);
+            result.put("success", success != 0);
+            if (success == 0) {
+                result.put("error", "채팅을 등록하는데 실패했습니다.");
+                return result;
+            }
 
-            result.put("success", true);
-            result.put("idx", chattingMessageIdx);
+            long messageIdx = chattingMessageDto.getMessageIdx();
+            result.put("idx", messageIdx);
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "채팅을 등록하는데 실패했습니다.");
@@ -209,18 +215,25 @@ public class ChattingController {
                     .creatorIdx(loginInfo.getUserIdx())
                     .build();
 
-            long chattingIdx = chattingService.insertChatting(chattingDto);
+            // 채팅방 등록
+            int success = chattingService.insertChatting(chattingDto);
+            result.put("success", success != 0);
+            if (success == 0) {
+                result.put("error", "채팅방을 등록하는데 실패했습니다.");
+                return result;
+            }
+
+            long chattingIdx = chattingDto.getChattingIdx();
+            result.put("idx", chattingIdx);
 
             // 채팅 멤버 추가
             if (userIdxList == null) {
                 userIdxList = new ArrayList<>();
             }
 
+            // 채팅 멤버 등록
             userIdxList.addFirst(chattingDto.getCreatorIdx());
             chattingService.insertChattingUserLinkByUserIdx(chattingIdx, userIdxList);
-
-            result.put("success", true);
-            result.put("idx", chattingIdx);
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "채팅방을 등록하는데 실패했습니다.");
@@ -255,8 +268,13 @@ public class ChattingController {
 
             // 채팅방 수정
             int success = chattingService.updateChatting(chattingDto);
+            result.put("success", success != 0);
+            if (success == 0) {
+                result.put("error", "채팅방을 수정하는데 실패했습니다.");
+                return result;
+            }
 
-            // 채팅 멤버 추가
+            // 채팅 멤버 등록
             if (userIdxList != null) {
                 chattingService.insertChattingUserLinkByUserIdx(chattingIdx, userIdxList);
             }
@@ -264,11 +282,6 @@ public class ChattingController {
             // 채팅 멤버 삭제
             if (deleteUserIdxList != null) {
                 chattingService.deleteChattingUserLink(chattingIdx, deleteUserIdxList);
-            }
-
-            result.put("success", success == 1);
-            if (success == 0) {
-                result.put("error", "채팅방을 수정하는데 실패했습니다.");
             }
         } catch (Exception e) {
             result.put("success", false);
@@ -296,7 +309,7 @@ public class ChattingController {
             // 채팅방 삭제
             int success = chattingService.deleteChatting(chattingIdx);
 
-            result.put("success", success == 1);
+            result.put("success", success != 0);
             if (success == 0) {
                 result.put("error", "채팅방을 삭제하는데 실패했습니다.");
             }

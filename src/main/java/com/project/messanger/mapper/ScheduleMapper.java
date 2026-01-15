@@ -20,7 +20,7 @@ public interface ScheduleMapper {
 
     ScheduleWithUserDto getScheduleByIdx(Map<String, Object> param);
 
-    long insertSchedule(ScheduleDto scheduleDto);
+    int insertSchedule(ScheduleDto scheduleDto);
 
     int updateSchedule(ScheduleDto scheduleDto);
 

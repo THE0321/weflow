@@ -190,7 +190,7 @@
         WHERE team_idx = #{teamIdx}
     </select>
 
-    <insert id="insertTeam" parameterType="string" useGeneratedKeys="true" keyProperty="teamIdx" keyColumn="team_idx">
+    <insert id="insertTeam" parameterType="com.project.messanger.dto.TeamDto" useGeneratedKeys="true" keyProperty="teamIdx" keyColumn="team_idx">
         INSERT team
         SET team_name = #{teamName},
             created_date = NOW(),

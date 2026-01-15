@@ -15,7 +15,7 @@ public interface NoticeMapper {
 
     NoticeWithUserDto getNoticeByIdx(Map<String, Object> param);
 
-    long insertNotice(NoticeDto noticeDto);
+    int insertNotice(NoticeDto noticeDto);
 
     int updateNotice(NoticeDto noticeDto);
 

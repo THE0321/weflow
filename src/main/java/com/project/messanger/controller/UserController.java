@@ -182,15 +182,20 @@ public class UserController {
             }
 
             // 회원등록
-            long userIdx = userService.insertUser(userDto);
+            int success = userService.insertUser(userDto);
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "회원을 등록하는데 실패했습니다.");
+                return result;
+            }
+
+            long userIdx = userDto.getUserIdx();
+            result.put("idx", userIdx);
 
             // 회원 팀 추가
             if (teamIdxList != null) {
                 userService.insertUserLinkByUserIdx(userIdx, teamIdxList);
             }
-
-            result.put("success", true);
-            result.put("idx", userIdx);
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "회원을 등록하는데 실패했습니다.");
@@ -247,6 +252,11 @@ public class UserController {
 
             // 회원 정보 수정
             int success = userService.updateUser(userDto);
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "회원을 수정하는데 실패했습니다.");
+                return result;
+            }
 
             // 회원 팀 추가
             if (teamIdxList != null) {
@@ -256,11 +266,6 @@ public class UserController {
             // 팀 삭제
             if (deleteTeamIdxList != null) {
                 userService.deleteTeamUserLinkByUserIdx(userIdx, deleteTeamIdxList);
-            }
-
-            result.put("success", success != 0);
-            if (success == 0) {
-                result.put("error", "회원을 수정하는데 실패했습니다.");
             }
         } catch (Exception e) {
             result.put("success", false);
@@ -296,7 +301,6 @@ public class UserController {
 
             // 회원 삭제
             int success = userService.deleteUser(userIdx);
-
             result.put("success", success == 1);
             if (success == 0) {
                 result.put("error", "회원을 삭제하는데 실패했습니다.");
@@ -439,15 +443,20 @@ public class UserController {
                     .build();
 
             // 팀 등록
-            long teamIdx = userService.insertTeam(teamDto);
+            int success = userService.insertTeam(teamDto);
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "팀을 등록하는데 실패했습니다.");
+                return result;
+            }
+
+            long teamIdx = teamDto.getTeamIdx();
+            result.put("idx", teamIdx);
 
             // 팀 회원 추가
             if (userIdxList != null) {
                 userService.insertUserLinkByTeamIdx(teamIdx, userIdxList);
             }
-
-            result.put("success", true);
-            result.put("idx", teamIdx);
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "팀을 등록하는데 실패했습니다.");
@@ -490,7 +499,12 @@ public class UserController {
                     .build();
 
             // 팀 수정
-            long success = userService.updateTeam(teamDto);
+            int success = userService.updateTeam(teamDto);
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "팀을 수정하는데 실패했습니다.");
+                return result;
+            }
 
             // 팀 회원 추가
             if (userIdxList != null) {
@@ -500,11 +514,6 @@ public class UserController {
             // 회원 삭제
             if (deleteUserIdxList != null) {
                 userService.deleteTeamUserLinkByTeamIdx(teamIdx, deleteUserIdxList);
-            }
-
-            result.put("success", success == 1);
-            if (success == 0) {
-                result.put("error", "팀을 수정하는데 실패했습니다.");
             }
         } catch (Exception e) {
             result.put("success", false);
@@ -540,7 +549,6 @@ public class UserController {
 
             // 팀 삭제
             int success = userService.deleteTeam(teamIdx);
-
             result.put("success", success == 1);
             if (success == 0) {
                 result.put("error", "팀을 삭제하는데 실패했습니다.");
@@ -630,7 +638,6 @@ public class UserController {
 
             // 내 정보 수정
             int success = userService.updateUser(userDto);
-
             result.put("success", success == 1);
             if (success == 0) {
                 result.put("error", "내 정보를 수정하는데 실패했습니다.");
@@ -667,7 +674,6 @@ public class UserController {
 
             // 내 비밀번호 수정
             int success = userService.updateUser(userDto);
-
             result.put("success", success == 1);
             if (success == 0) {
                 result.put("error", "내 비밀번호를 수정하는데 실패했습니다.");

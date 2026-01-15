@@ -74,10 +74,10 @@ public class ChecklistService {
     /*
      * insert checklist
      * @param ChecklistDto
-     * return long
+     * return int
      */
     @Transactional
-    public long insertChecklist(ChecklistDto checklistDto) {
+    public int insertChecklist(ChecklistDto checklistDto) {
         return checklistMapper.insertChecklist(checklistDto);
     }
 

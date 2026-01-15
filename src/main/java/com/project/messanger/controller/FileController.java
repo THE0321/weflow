@@ -104,9 +104,13 @@ public class FileController {
             fileDto.setCreatorIdx(loginInfo.getUserIdx());
 
             // 파일 등록
-            long fileIdx = fileService.insertFile(fileDto);
+            int success = fileService.insertFile(fileDto);
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "파일을 등록하는데 실패했습니다.");
+            }
 
-            result.put("success", true);
+            long fileIdx = fileDto.getFileIdx();
             result.put("idx", fileIdx);
         } catch (Exception e) {
             result.put("success", false);
@@ -138,7 +142,6 @@ public class FileController {
         try {
             // 파일 삭제
             int success = fileService.deleteFile(fileIdx);
-
             result.put("success", success == 1);
             if (success == 0) {
                 result.put("error", "파일을 삭제하는데 실패했습니다.");

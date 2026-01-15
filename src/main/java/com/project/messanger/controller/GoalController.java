@@ -251,7 +251,15 @@ public class GoalController {
                     .creatorIdx(loginInfo.getUserIdx())
                     .build();
 
-            long goalIdx = goalService.insertGoal(goalDto);
+            int success = goalService.insertGoal(goalDto);
+            result.put("success", success != 0);
+            if (success == 0) {
+                result.put("error", "목표를 등록할 수 없습니다.");
+                return result;
+            }
+
+            long goalIdx = goalDto.getGoalIdx();
+            result.put("idx", goalIdx);
 
             NotificationDto notificationDto = NotificationDto.builder()
                     .type("GOAL")
@@ -274,9 +282,6 @@ public class GoalController {
                 // 알림 등록
                 notificationService.insertNotificationByUserIdx(notificationDto, userIdxList);
             }
-
-            result.put("success", true);
-            result.put("idx", goalIdx);
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "목표를 등록할 수 없습니다.");
@@ -332,6 +337,11 @@ public class GoalController {
 
             // 목표 수정
             int success = goalService.updateGoal(goalDto);
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "목표를 수정하는데 실패했습니다.");
+                return result;
+            }
 
             // 담당자 유저 추가
             if (userIdxList != null) {
@@ -351,11 +361,6 @@ public class GoalController {
             // 담당자 팀 삭제
             if (deleteTeamIdxList != null) {
                 goalService.deleteGoalUserLinkByTeamIdx(goalIdx, deleteTeamIdxList);
-            }
-
-            result.put("success", success != 0);
-            if (success == 0) {
-                result.put("error", "목표를 수정하는데 실패했습니다.");
             }
         } catch (Exception e) {
             result.put("success", false);
@@ -389,10 +394,9 @@ public class GoalController {
                 return result;
             }
 
-            // 회원 삭제
+            // 목표 삭제
             int success = goalService.deleteGoal(goalIdx);
-
-            result.put("success", success != 0);
+            result.put("success", success == 1);
             if (success == 0) {
                 result.put("error", "목표를 삭제하는데 실패했습니다.");
             }
@@ -515,15 +519,14 @@ public class GoalController {
                     .build();
 
             // 실적 등록
-            long logIdx = goalService.insertGoalLog(goalLogDto);
-            if(logIdx == 0) {
-                result.put("success", false);
+            int success = goalService.insertGoalLog(goalLogDto);
+            result.put("success", success == 1);
+            if(success == 0) {
                 result.put("error", "실적이 등록되지 않았습니다.");
-
                 return result;
             }
 
-            result.put("success", true);
+            long logIdx = goalLogDto.getLogIdx();
             result.put("idx", logIdx);
         } catch (Exception e) {
             result.put("success", false);
@@ -595,8 +598,7 @@ public class GoalController {
 
             // 실적 수정
             int success = goalService.updateGoalLog(goalLogDto);
-
-            result.put("success", success != 0);
+            result.put("success", success == 1);
             if (success == 0) {
                 result.put("error", "실적을 수정하는데 실패했습니다.");
             }
@@ -661,8 +663,7 @@ public class GoalController {
 
             // 실적 삭제
             int success = goalService.deleteGoalLog(logIdx);
-
-            result.put("success", success != 0);
+            result.put("success", success == 1);
             if (success == 0) {
                 result.put("error", "실적을 삭제하는데 실패했습니다.");
             }

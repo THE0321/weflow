@@ -56,10 +56,10 @@ public class ReportService {
     /*
      * insert report
      * @param ReportDto
-     * return long
+     * return int
      */
     @Transactional
-    public long insertReport(ReportDto reportDto) {
+    public int insertReport(ReportDto reportDto) {
         return reportMapper.insertReport(reportDto);
     }
 

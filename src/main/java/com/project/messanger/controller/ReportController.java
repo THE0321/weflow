@@ -130,9 +130,15 @@ public class ReportController {
                 reportDto.setApproverIdx(loginInfo.getUserIdx());
             }
 
-            long reportIdx = reportService.insertReport(reportDto);
+            // 보고서 등록
+            int success = reportService.insertReport(reportDto);
+            result.put("success", success == 1);
+            if (success == 0) {
+                result.put("error", "보고서를 등록하는데 실패했습니다.");
+                return result;
+            }
 
-            result.put("success", true);
+            long reportIdx = reportDto.getReportIdx();
             result.put("idx", reportIdx);
         } catch (Exception e) {
             result.put("success", false);
@@ -179,8 +185,7 @@ public class ReportController {
 
             // 보고서 수정
             int success = reportService.updateReport(reportDto);
-
-            result.put("success", success != 0);
+            result.put("success", success == 1);
             if (success == 0) {
                 result.put("error", "보고서를 수정하는데 실패했습니다.");
             }
@@ -220,8 +225,7 @@ public class ReportController {
 
             // 보고서 삭제
             int success = reportService.deleteReport(reportIdx);
-
-            result.put("success", success != 0);
+            result.put("success", success == 1);
             if (success == 0) {
                 result.put("error", "보고서를 삭제하는데 실패했습니다.");
             }
@@ -271,8 +275,7 @@ public class ReportController {
 
             // 보고서 승인
             int success = reportService.updateReport(reportDto);
-
-            result.put("success", success != 0);
+            result.put("success", success == 1);
             if (success == 0) {
                 result.put("error", "보고서를 승인하는데 실패했습니다.");
             }

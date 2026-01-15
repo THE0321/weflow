@@ -56,10 +56,10 @@ public class NoticeService {
     /*
      * insert notice
      * @param NoticeDto
-     * return long
+     * return int
      */
     @Transactional
-    public long insertNotice(NoticeDto noticeDto) {
+    public int insertNotice(NoticeDto noticeDto) {
         return noticeMapper.insertNotice(noticeDto);
     }
 

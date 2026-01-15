@@ -103,7 +103,7 @@ public class NotificationController {
 
             // 알림 읽음 여부 수정
             int success = notificationService.updateNotification(notificationIdx);
-            result.put("success", success != 0);
+            result.put("success", success == 1);
             if (success == 0) {
                 result.put("error", "알림을 불러올 수 없습니다.");
             }

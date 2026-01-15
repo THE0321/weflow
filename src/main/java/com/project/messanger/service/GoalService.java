@@ -94,10 +94,10 @@ public class GoalService {
     /*
      * insert goal
      * @param GoalDto
-     * return long
+     * return int
      */
     @Transactional
-    public long insertGoal(GoalDto goalDto) {
+    public int insertGoal(GoalDto goalDto) {
         return goalMapper.insertGoal(goalDto);
     }
 
@@ -162,10 +162,10 @@ public class GoalService {
     /*
      * insert goal log
      * @param GoalLogDto
-     * return long
+     * return int
      */
     @Transactional
-    public long insertGoalLog(GoalLogDto goalLogDto) {
+    public int insertGoalLog(GoalLogDto goalLogDto) {
         return goalMapper.insertGoalLog(goalLogDto);
     }
 

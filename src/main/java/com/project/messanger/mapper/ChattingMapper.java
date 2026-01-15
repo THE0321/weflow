@@ -13,13 +13,13 @@ import java.util.Map;
 public interface ChattingMapper {
     List<ChattingMessageDto> getChattingMessageList(Map<String, Object> param);
 
-    long insertChattingMessage(ChattingMessageDto chattingMessageDto);
+    int insertChattingMessage(ChattingMessageDto chattingMessageDto);
 
     List<ChattingDto> getChattingList(Map<String, Object> param);
 
     ChattingDto getChattingByIdx(long chattingIdx);
 
-    long insertChatting(ChattingDto chattingDto);
+    int insertChatting(ChattingDto chattingDto);
 
     int updateChatting(ChattingDto chattingDto);
 

@@ -62,10 +62,10 @@ public class FileService {
     /*
      * insert file
      * @param ReservationDto
-     * return long
+     * return int
      */
     @Transactional
-    public long insertFile(FileDto fileDto) {
+    public int insertFile(FileDto fileDto) {
         return fileMapper.insertFile(fileDto);
     }
 
