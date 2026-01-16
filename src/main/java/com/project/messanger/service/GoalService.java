@@ -63,11 +63,11 @@ public class GoalService {
 
     /*
      * get goal graph
-     * @param Map<String, Object>
+     * @param List<GoalGraphDto>
      * return goalDto
      */
     @Transactional(readOnly = true)
-    public HashMap<String, Object> getGoalGraph(Map<String, Object> param) {
+    public List<GoalGraphDto> getGoalGraph(Map<String, Object> param) {
         return goalMapper.getGoalGraph(param);
     }
 

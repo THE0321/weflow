@@ -179,6 +179,51 @@ public class ChecklistController {
         return result;
     }
 
+    @PostMapping("/graph")
+    public Map<String, Object> getChecklistGraph(HttpServletRequest request,
+                                                 @RequestParam(value = "user_idx", required = false) Long userIdx,
+                                                 @RequestParam(value = "team_idx", required = false) List<Long> teamIdxList) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "체크리스트 그래프를 불러올 수 없습니다.");
+
+            return result;
+        }
+
+        try {
+            if (userIdx == 0 || loginInfo.getAdminYn().equals("N") || loginInfo.getLeaderYn().equals("N"))
+            {
+                userIdx = loginInfo.getUserIdx();
+                teamIdxList = authUtil.getTeamList(session);
+            }
+
+            // 파라미터 세팅
+            Map<String, Object> param = new HashMap<>();
+            param.put("user_idx", userIdx);
+            param.put("team_idx_list", teamIdxList);
+
+            // 그래프 조회
+            List<ChecklistGraphDto> graphList = checklistService.getChecklistGraph(param);
+            boolean isEmpty = graphList.isEmpty();
+
+            result.put("success", !isEmpty);
+            if (isEmpty) {
+                result.put("error", "조회할 데이터가 없습니다.");
+            } else {
+                result.put("list", graphList);
+            }
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "체크리스트 그래프를 불러올 수 없습니다.");
+        }
+
+        return result;
+    }
+
     @PostMapping("/create")
     public Map<String, Object> insertChecklist(HttpServletRequest request,
                                                @RequestParam(value = "title") String title,

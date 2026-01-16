@@ -69,6 +69,12 @@
         <result property="logDate" column="log_date"/>
     </resultMap>
 
+    <resultMap id="GoalGraphMap" type="com.project.messanger.dto.GoalGraphDto">
+        <result property="logDate" column="log_date"/>
+        <result property="progressValue" column="progress_value"/>
+        <result property="dailyIncrease" column="daily_increase"/>
+    </resultMap>
+
     <sql id="sqlGoalListCondition">
         FROM goal
         INNER JOIN user
@@ -108,7 +114,7 @@
                             SELECT 1
                             FROM goal_user_link
                             WHERE goal_user_link.goal_idx = goal.goal_idx
-                            AND goal_user_link.team_idx IN <foreach collection="team_idx_list" item="teamIdx" open="(" close=")" separator=",">#{teamIdx}</foreach>
+                            AND goal_user_link.team_idx IN <foreach collection="team_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
                         )
                     </if>
                 )
@@ -187,7 +193,7 @@
                     SELECT 1
                     FROM goal_user_link
                     WHERE goal_user_link.goal_idx = goal.goal_idx
-                      AND goal_user_link.team_idx IN <foreach collection="team_idx_list" item="teamIdx" open="(" close=")" separator=",">#{teamIdx}</foreach>
+                      AND goal_user_link.team_idx IN <foreach collection="team_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
                 )
             </if>
         )
@@ -210,13 +216,45 @@
         WHERE goal_idx = #{goalIdx}
     </select>
 
-    <select id="getGoalGraph" parameterType="hashmap" resultMap="GoalLogMap">
-        SELECT log_idx
-             , progress_value
-             , content
-             , creator_idx
-             , created_date
-        FROM goal_log
+    <select id="getGoalGraph" parameterType="hashmap" resultMap="GoalGraphMap">
+        SELECT daily_stats.log_date
+             , SUM(daily_stats.progress_value) AS progress_value
+             , SUM(daily_stats.progress_value - daily_stats.prev_progress_value) AS daily_increase
+        FROM goal
+        INNER JOIN (
+            SELECT goal_idx
+                 , log_date
+                 , progress_value
+                 , LAG(progress_value, 1, 0) OVER (PARTITION BY goal_idx ORDER BY log_date) AS prev_progress_value
+            FROM (
+                SELECT goal_idx
+                     , DATE_FORMAT(created_date, '%Y-%m-%d') AS log_date
+                     , MAX(progress_value) AS progress_value
+                FROM goal_log
+                <where>
+                    <if test="user_idx != null">
+                        EXISTS (
+                            SELECT 1
+                            FROM goal_user_link
+                            WHERE goal_user_link.goal_idx = goal_log.goal_idx
+                              AND goal_user_link.user_idx = #{user_idx}
+                        )
+                        <if test="team_idx_list != null">
+                            OR EXISTS (
+                                SELECT 1
+                                FROM goal_user_link
+                                WHERE goal_user_link.goal_idx = goal_log.goal_idx
+                                  AND goal_user_link.team_idx IN <foreach collection="team_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
+                            )
+                        </if>
+                    </if>
+                </where>
+                GROUP BY goal_idx, DATE_FORMAT(created_date, '%Y-%m-%d')
+            ) AS daily_stats
+        ) AS daily_stats
+        ON daily_stats.goal_idx = goal.goal_idx
+        GROUP BY daily_stats.log_date
+        ORDER BY daily_stats.log_date
     </select>
 
     <select id="getGoalLog" parameterType="long" resultMap="GoalLogWithUserMap">

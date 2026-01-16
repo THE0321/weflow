@@ -66,6 +66,12 @@
         <result property="createdDate" column="created_date"/>
     </resultMap>
 
+    <resultMap id="ChecklistGraphMap" type="com.project.messanger.dto.ChecklistGraphDto">
+        <result property="logDate" column="log_date"/>
+        <result property="checkCount" column="check_count"/>
+        <result property="dailyIncrease" column="daily_increase"/>
+    </resultMap>
+
     <sql id="sqlChecklistListCondition">
         FROM checklist
         INNER JOIN user
@@ -90,7 +96,7 @@
                             SELECT 1
                             FROM checklist_user_link
                             WHERE checklist_user_link.checklist_idx = checklist.checklist_idx
-                            AND checklist_user_link.team_idx IN <foreach collection="team_idx_list" item="teamIdx" open="(" close=")" separator=",">#{teamIdx}</foreach>
+                            AND checklist_user_link.team_idx IN <foreach collection="team_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
                         )
                     </if>
                 )
@@ -139,7 +145,7 @@
                     SELECT 1
                     FROM checklist_user_link
                     WHERE checklist_user_link.checklist_idx = checklist.checklist_idx
-                      AND checklist_user_link.team_idx IN <foreach collection="team_idx_list" item="teamIdx" open="(" close=")" separator=",">#{teamIdx}</foreach>
+                      AND checklist_user_link.team_idx IN <foreach collection="team_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
                 )
             </if>
         )
@@ -156,6 +162,41 @@
              , updated_date
         FROM checklist
         WHERE checklist_idx = #{checklistIdx}
+    </select>
+
+    <select id="getChecklistGraph" parameterType="hashmap" resultMap="ChecklistGraphMap">
+        SELECT daily_stats.log_date
+             , daily_stats.check_count
+             , LAG(daily_stats.check_count, 1, 0) OVER (ORDER BY daily_stats.log_date) AS daily_increase
+        FROM (
+            SELECT DATE_FORMAT(created_date, '%Y-%m-%d') AS log_date
+                 , SUM(IF(is_checked = 'Y', 1, 0)) AS check_count
+            FROM checklist_log
+            <where>
+                <if test="user_idx != null">
+                    item_idx IN (
+                        SELECT item_idx
+                        FROM checklist_item
+                        WHERE EXISTS (
+                            SELECT 1
+                            FROM checklist_user_link
+                            WHERE checklist_user_link.checklist_idx = checklist_item.checklist_idx
+                              AND checklist_user_link.user_idx = #{user_idx}
+                        )
+                        <if test="team_idx_list != null">
+                            OR EXISTS (
+                                SELECT 1
+                                FROM checklist_user_link
+                                WHERE checklist_user_link.checklist_idx = checklist_item.checklist_idx
+                                  AND checklist_user_link.team_idx IN <foreach collection="team_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
+                            )
+                        </if>
+                    )
+                </if>
+            </where>
+            GROUP BY DATE_FORMAT(created_date, '%Y-%m-%d')
+        ) AS daily_stats
+        ORDER BY daily_stats.log_date
     </select>
 
     <select id="getChecklistLog" parameterType="long" resultMap="ChecklistLogMap">

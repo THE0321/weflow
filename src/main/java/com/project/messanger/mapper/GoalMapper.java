@@ -17,7 +17,7 @@ public interface GoalMapper {
 
     GoalAndLogDto getGoalByIdx(long goalIdx);
 
-    HashMap<String, Object> getGoalGraph(Map<String, Object> param);
+    List<GoalGraphDto> getGoalGraph(Map<String, Object> param);
 
     List<GoalLogWithUserDto> getGoalLog(long logIdx);
 

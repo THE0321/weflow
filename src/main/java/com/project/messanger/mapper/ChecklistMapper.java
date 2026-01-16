@@ -16,6 +16,8 @@ public interface ChecklistMapper {
 
     ChecklistDto getChecklistByIdx(long checklistIdx);
 
+    List<ChecklistGraphDto> getChecklistGraph(Map<String, Object> param);
+
     List<ChecklistLogDto> getChecklistLog(long checklistIdx);
 
     int insertChecklist(ChecklistDto checklistDto);

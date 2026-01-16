@@ -52,13 +52,23 @@ public class ChecklistService {
     }
 
     /*
-     * get goal by goal idx
+     * get checklist by goal idx
      * @param long
      * return goalDto
      */
     @Transactional(readOnly = true)
     public ChecklistDto getChecklistByIdx(long checklistIdx) {
         return checklistMapper.getChecklistByIdx(checklistIdx);
+    }
+
+    /*
+     * get checklist by goal idx
+     * @param long
+     * return List<ChecklistGraphDto>
+     */
+    @Transactional(readOnly = true)
+    public List<ChecklistGraphDto> getChecklistGraph(Map<String, Object> param) {
+        return checklistMapper.getChecklistGraph(param);
     }
 
     /*

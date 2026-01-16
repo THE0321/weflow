@@ -181,7 +181,9 @@ public class GoalController {
     }
 
     @PostMapping("/graph")
-    public Map<String, Object> getGoalGraph(HttpServletRequest request) {
+    public Map<String, Object> getGoalGraph(HttpServletRequest request,
+                                            @RequestParam(value = "user_idx", required = false) Long userIdx,
+                                            @RequestParam(value = "team_idx", required = false) List<Long> teamIdxList) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -194,13 +196,19 @@ public class GoalController {
         }
 
         try {
+            if (userIdx == 0 || loginInfo.getAdminYn().equals("N") || loginInfo.getLeaderYn().equals("N"))
+            {
+                userIdx = loginInfo.getUserIdx();
+                teamIdxList = authUtil.getTeamList(session);
+            }
+
             // 파라미터 세팅
             Map<String, Object> param = new HashMap<>();
-            param.put("user_idx", loginInfo.getUserIdx());
-            param.put("team_idx_list", authUtil.getTeamList(session));
+            param.put("user_idx", userIdx);
+            param.put("team_idx_list", teamIdxList);
 
             // 그래프 조회
-            HashMap<String, Object> graphList = goalService.getGoalGraph(param);
+            List<GoalGraphDto> graphList = goalService.getGoalGraph(param);
             boolean isEmpty = graphList.isEmpty();
 
             result.put("success", !isEmpty);
