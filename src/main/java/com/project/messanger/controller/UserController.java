@@ -49,7 +49,7 @@ public class UserController {
             param.put("limit", limit);
             param.put("email", email);
             param.put("user_name", userName);
-            param.put("phone_number", phoneNumber);
+            param.put("phone_number", phoneNumber.replaceAll("[^0-9]", ""));
 
             // 회원 목록 조회
             List<UserDto> userList = userService.getUserList(param);
@@ -158,6 +158,12 @@ public class UserController {
         }
 
         try {
+            // 전화번호 포맷
+            if (phoneNumber != null)
+            {
+                phoneNumber = phoneNumber.replaceAll("[^0-9]", "").replaceAll("^(\\d{3})(\\d{3,4})(\\d{4})", "$1-$2-$3");
+            }
+
             // 이메일 중복 체크
             if (userService.getUserByEmail(email) != null) {
                 result.put("success", false);
@@ -226,6 +232,12 @@ public class UserController {
         }
 
         try {
+            // 전화번호 포맷
+            if (phoneNumber != null)
+            {
+                phoneNumber = phoneNumber.replaceAll("[^0-9]", "").replaceAll("^(\\d{3})(\\d{3,4})(\\d{4})", "$1-$2-$3");
+            }
+
             // 수정할 데이터 확인
             UserDto beforeData = userService.getUserByIdx(userIdx);
             if (beforeData == null) {
@@ -619,6 +631,12 @@ public class UserController {
         HttpSession session = request.getSession();
 
         try {
+            // 전화번호 포맷
+            if (phoneNumber != null)
+            {
+                phoneNumber = phoneNumber.replaceAll("[^0-9]", "").replaceAll("^(\\d{3})(\\d{3,4})(\\d{4})", "$1-$2-$3");
+            }
+
             // 로그인 정보 확인
             UserDto loginInfo = authUtil.getLoginInfo(session);
             if (loginInfo == null) {

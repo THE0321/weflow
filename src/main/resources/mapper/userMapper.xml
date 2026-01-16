@@ -41,7 +41,7 @@
             AND UPPER(user_name) LIKE CONCAT('%', UPPER(#{user_name}), '%')
         </if>
         <if test="phoneNumber != null">
-            AND UPPER(phone_number) LIKE CONCAT('%', UPPER(#{phone_number}), '%')
+            AND REPLACE(phone_number, '-', '') LIKE CONCAT('%', #{phone_number}, '%')
         </if>
     </sql>
 
