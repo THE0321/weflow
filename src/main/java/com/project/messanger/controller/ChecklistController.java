@@ -3,6 +3,7 @@ package com.project.messanger.controller;
 import com.project.messanger.dto.*;
 import com.project.messanger.service.ChecklistService;
 import com.project.messanger.service.NotificationService;
+import com.project.messanger.service.UserService;
 import com.project.messanger.util.AuthUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -20,11 +21,13 @@ import java.util.Map;
 @RequestMapping("/check")
 public class ChecklistController {
     private final ChecklistService checklistService;
+    private final UserService userService;
     private final NotificationService notificationService;
     private final AuthUtil authUtil;
 
-    public ChecklistController(ChecklistService checklistService, NotificationService notificationService, AuthUtil authUtil) {
+    public ChecklistController(ChecklistService checklistService, UserService userService, NotificationService notificationService, AuthUtil authUtil) {
         this.checklistService = checklistService;
+        this.userService = userService;
         this.notificationService = notificationService;
         this.authUtil = authUtil;
     }
@@ -60,15 +63,9 @@ public class ChecklistController {
 
             // 체크리스트 목록 조회
             List<ChecklistWithUserDto> checklistList = checklistService.getChecklistList(param);
-            boolean isEmpty = checklistList.isEmpty();
-
-            result.put("success", !isEmpty);
-            if (isEmpty) {
-                result.put("error", "조회할 데이터가 없습니다.");
-            } else {
-                result.put("list", checklistList);
-                result.put("count", checklistService.getChecklistCount(param));
-            }
+            result.put("success", true);
+            result.put("list", checklistList);
+            result.put("count", checklistService.getChecklistCount(param));
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "체크리스트를 불러올 수 없습니다.");
@@ -101,14 +98,8 @@ public class ChecklistController {
 
             // 체크리스트 메인 목록 조회
             List<ChecklistWithUserDto> checklistList = checklistService.getChecklistMainList(param);
-            boolean isEmpty = checklistList.isEmpty();
-
-            result.put("success", !isEmpty);
-            if (isEmpty) {
-                result.put("error", "조회할 데이터가 없습니다.");
-            } else {
-                result.put("list", checklistList);
-            }
+            result.put("success", true);
+            result.put("list", checklistList);
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "체크리스트를 불러올 수 없습니다.");
@@ -181,8 +172,7 @@ public class ChecklistController {
 
     @PostMapping("/graph")
     public Map<String, Object> getChecklistGraph(HttpServletRequest request,
-                                                 @RequestParam(value = "user_idx", required = false) Long userIdx,
-                                                 @RequestParam(value = "team_idx", required = false) List<Long> teamIdxList) {
+                                                 @RequestParam(value = "user_idx", required = false) Long userIdx) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -195,10 +185,14 @@ public class ChecklistController {
         }
 
         try {
-            if (userIdx == 0 || loginInfo.getAdminYn().equals("N") || loginInfo.getLeaderYn().equals("N"))
-            {
+            List<Long> teamIdxList = null;
+            if (userIdx == 0 || loginInfo.getAdminYn().equals("N") || loginInfo.getLeaderYn().equals("N")) {
                 userIdx = loginInfo.getUserIdx();
                 teamIdxList = authUtil.getTeamList(session);
+            } else {
+                teamIdxList = new ArrayList<>(userService.getTeamListByUserIdx(userIdx).stream()
+                        .map(TeamDto::getTeamIdx)
+                        .toList());
             }
 
             // 파라미터 세팅
@@ -208,14 +202,8 @@ public class ChecklistController {
 
             // 그래프 조회
             List<ChecklistGraphDto> graphList = checklistService.getChecklistGraph(param);
-            boolean isEmpty = graphList.isEmpty();
-
-            result.put("success", !isEmpty);
-            if (isEmpty) {
-                result.put("error", "조회할 데이터가 없습니다.");
-            } else {
-                result.put("list", graphList);
-            }
+            result.put("success", true);
+            result.put("list", graphList);
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "체크리스트 그래프를 불러올 수 없습니다.");
@@ -518,13 +506,8 @@ public class ChecklistController {
 
             // 체크리스트 로그 조회
             List<ChecklistLogDto> checklistLogList = checklistService.getChecklistLog(checklistIdx);
-
-            result.put("success", checklistLogList != null);
-            if (checklistLogList == null) {
-                result.put("error", "조회할 데이터가 없습니다.");
-            } else {
-                result.put("list", checklistLogList);
-            }
+            result.put("success", true);
+            result.put("list", checklistLogList);
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "실적을 조회할 수 없습니다.");

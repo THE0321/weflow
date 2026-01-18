@@ -8,7 +8,7 @@
         <id property="noticeIdx" column="notice_idx"/>
         <result property="title" column="title"/>
         <result property="content" column="content"/>
-        <result property="linkUrl" column="linkUrl"/>
+        <result property="linkUrl" column="link_url"/>
         <result property="startDate" column="start_date"/>
         <result property="endDate" column="end_date"/>
         <result property="isActive" column="is_active"/>
@@ -20,7 +20,7 @@
         <id property="noticeIdx" column="notice_idx"/>
         <result property="title" column="title"/>
         <result property="content" column="content"/>
-        <result property="linkUrl" column="linkUrl"/>
+        <result property="linkUrl" column="link_url"/>
         <result property="startDate" column="start_date"/>
         <result property="endDate" column="end_date"/>
         <result property="isActive" column="is_active"/>
@@ -54,7 +54,7 @@
         SELECT notice.notice_idx
              , notice.title
              , notice.content
-             , notice.linkUrl
+             , notice.link_url
              , notice.start_date
              , notice.end_date
              , notice.is_active
@@ -70,7 +70,7 @@
         SELECT notice.notice_idx
              , notice.title
              , notice.content
-             , notice.linkUrl
+             , notice.link_url
              , notice.start_date
              , notice.end_date
              , notice.is_active

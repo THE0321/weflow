@@ -62,6 +62,7 @@ public class ScheduleController {
 
             // 일정 목록 조회
             List<ScheduleWithUserDto> scheduleList = scheduleService.getScheduleList(param);
+            result.put("success", true);
             result.put("list", scheduleList);
             result.put("count", scheduleService.getScheduleCount(param));
         } catch (Exception e) {
@@ -98,6 +99,7 @@ public class ScheduleController {
 
             // 회원 목록 조회
             List<ScheduleDto> scheduleList = scheduleService.getScheduleListByMonth(param);
+            result.put("success", true);
             result.put("list", scheduleList);
         } catch (Exception e) {
             result.put("success", false);

@@ -58,6 +58,7 @@ public class ReportController {
 
             // 보고서 목록 조회
             List<ReportWithUserDto> reportList = reportService.getReportList(param);
+            result.put("success", true);
             result.put("list", reportList);
             result.put("count", reportService.getReportCount(param));
         } catch (Exception e) {

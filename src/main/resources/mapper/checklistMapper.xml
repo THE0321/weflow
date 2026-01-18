@@ -91,7 +91,7 @@
                         WHERE checklist_user_link.checklist_idx = checklist.checklist_idx
                         AND checklist_user_link.user_idx = #{user_idx}
                     )
-                    <if test="team_idx_list != null">
+                    <if test="team_idx_list != null and !team_idx_list.isEmpty()">
                         OR EXISTS (
                             SELECT 1
                             FROM checklist_user_link
@@ -140,7 +140,7 @@
                 WHERE checklist_user_link.checklist_idx = checklist.checklist_idx
                 AND checklist_user_link.user_idx = #{user_idx}
             )
-            <if test="team_idx_list != null">
+            <if test="team_idx_list != null and !team_idx_list.isEmpty()">
                 OR EXISTS (
                     SELECT 1
                     FROM checklist_user_link
@@ -183,7 +183,7 @@
                             WHERE checklist_user_link.checklist_idx = checklist_item.checklist_idx
                               AND checklist_user_link.user_idx = #{user_idx}
                         )
-                        <if test="team_idx_list != null">
+                        <if test="team_idx_list != null and !team_idx_list.isEmpty()">
                             OR EXISTS (
                                 SELECT 1
                                 FROM checklist_user_link

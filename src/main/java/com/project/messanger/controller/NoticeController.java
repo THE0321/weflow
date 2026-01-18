@@ -44,15 +44,9 @@ public class NoticeController {
 
             // 공지사항 조회
             List<NoticeWithUserDto> noticeList = noticeService.getNoticeList(param);
-            boolean isEmpty = noticeList.isEmpty();
-
-            result.put("success", !isEmpty);
-            if (isEmpty) {
-                result.put("error", "조회할 데이터가 없습니다.");
-            } else {
-                result.put("list", noticeList);
-                result.put("count", noticeService.getNoticeCount(param));
-            }
+            result.put("success", true);
+            result.put("list", noticeList);
+            result.put("count", noticeService.getNoticeCount(param));
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "공지사항을 불러올 수 없습니다.");

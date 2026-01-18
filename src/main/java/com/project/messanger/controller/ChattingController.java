@@ -133,7 +133,6 @@ public class ChattingController {
 
             // 채팅방 목록 조회
             List<ChattingDto> chattingList = chattingService.getChattingList(param);
-
             result.put("success", true);
             result.put("list", chattingList);
         } catch (Exception e) {

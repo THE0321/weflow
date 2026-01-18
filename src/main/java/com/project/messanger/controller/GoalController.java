@@ -3,11 +3,13 @@ package com.project.messanger.controller;
 import com.project.messanger.dto.*;
 import com.project.messanger.service.GoalService;
 import com.project.messanger.service.NotificationService;
+import com.project.messanger.service.UserService;
 import com.project.messanger.util.AuthUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,11 +18,13 @@ import java.util.Map;
 @RequestMapping("/goal")
 public class GoalController {
     private final GoalService goalService;
+    private final UserService userService;
     private final NotificationService notificationService;
     private final AuthUtil authUtil;
 
-    public GoalController(GoalService goalService, NotificationService notificationService, AuthUtil authUtil) {
+    public GoalController(GoalService goalService, UserService userService, NotificationService notificationService, AuthUtil authUtil) {
         this.goalService = goalService;
+        this.userService = userService;
         this.notificationService = notificationService;
         this.authUtil = authUtil;
     }
@@ -61,15 +65,9 @@ public class GoalController {
 
             // 목표 목록 조회
             List<GoalAndLogDto> goalList = goalService.getGoalList(param);
-            boolean isEmpty = goalList.isEmpty();
-
-            result.put("success", !isEmpty);
-            if (isEmpty) {
-                result.put("error", "조회할 데이터가 없습니다.");
-            } else {
-                result.put("list", goalList);
-                result.put("count", goalService.getGoalCount(param));
-            }
+            result.put("success", true);
+            result.put("list", goalList);
+            result.put("count", goalService.getGoalCount(param));
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "목표를 불러올 수 없습니다.");
@@ -103,14 +101,8 @@ public class GoalController {
 
             // 목표 조회
             List<GoalAndLogDto> goalList = goalService.getGoalMainList(param);
-            boolean isEmpty = goalList.isEmpty();
-
-            result.put("success", !isEmpty);
-            if (isEmpty) {
-                result.put("error", "조회할 데이터가 없습니다.");
-            } else {
-                result.put("list", goalList);
-            }
+            result.put("success", true);
+            result.put("list", goalList);
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "목표를 불러올 수 없습니다.");
@@ -173,6 +165,7 @@ public class GoalController {
             result.put("detail", goalAndLogDto);
             result.put("user_link_list", goalUserLinkList);
         } catch (Exception e) {
+            e.printStackTrace();
             result.put("success", false);
             result.put("error", "목표 상세를 불러올 수 없습니다.");
         }
@@ -182,8 +175,7 @@ public class GoalController {
 
     @PostMapping("/graph")
     public Map<String, Object> getGoalGraph(HttpServletRequest request,
-                                            @RequestParam(value = "user_idx", required = false) Long userIdx,
-                                            @RequestParam(value = "team_idx", required = false) List<Long> teamIdxList) {
+                                            @RequestParam(value = "user_idx", required = false) Long userIdx) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
 
@@ -196,10 +188,14 @@ public class GoalController {
         }
 
         try {
-            if (userIdx == 0 || loginInfo.getAdminYn().equals("N") || loginInfo.getLeaderYn().equals("N"))
-            {
+            List<Long> teamIdxList = null;
+            if (userIdx == 0 || loginInfo.getAdminYn().equals("N") || loginInfo.getLeaderYn().equals("N")) {
                 userIdx = loginInfo.getUserIdx();
                 teamIdxList = authUtil.getTeamList(session);
+            } else {
+                teamIdxList = new ArrayList<>(userService.getTeamListByUserIdx(userIdx).stream()
+                        .map(TeamDto::getTeamIdx)
+                        .toList());
             }
 
             // 파라미터 세팅
@@ -209,14 +205,8 @@ public class GoalController {
 
             // 그래프 조회
             List<GoalGraphDto> graphList = goalService.getGoalGraph(param);
-            boolean isEmpty = graphList.isEmpty();
-
-            result.put("success", !isEmpty);
-            if (isEmpty) {
-                result.put("error", "조회할 데이터가 없습니다.");
-            } else {
-                result.put("list", graphList);
-            }
+            result.put("success", true);
+            result.put("list", graphList);
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "목표 그래프를 불러올 수 없습니다.");
@@ -459,13 +449,8 @@ public class GoalController {
 
             // 목표 로그 조회
             List<GoalLogWithUserDto> goalLogList = goalService.getGoalLog(goalIdx);
-
-            result.put("success", goalLogList != null);
-            if (goalLogList == null) {
-                result.put("error", "조회할 데이터가 없습니다.");
-            } else {
-                result.put("list", goalLogList);
-            }
+            result.put("success", true);
+            result.put("list", goalLogList);
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "실적을 조회할 수 없습니다.");

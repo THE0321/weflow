@@ -53,13 +53,9 @@ public class NotificationController {
             List<NotificationDto> notificationList = notificationService.getNotificationList(param);
             boolean isEmpty = notificationList.isEmpty();
 
-            result.put("success", !isEmpty);
-            if (isEmpty) {
-                result.put("error", "조회할 데이터가 없습니다.");
-            } else {
-                result.put("list", notificationList);
-                result.put("count", notificationService.getNotificationCount(param));
-            }
+            result.put("success", true);
+            result.put("list", notificationList);
+            result.put("count", notificationService.getNotificationCount(param));
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "알림을 불러올 수 없습니다.");

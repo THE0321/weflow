@@ -56,15 +56,9 @@ public class FileController {
             param.put("name", name);
 
             List<FileWithUserDto> fileList = fileService.getFileList(param);
-            boolean isEmpty = fileList.isEmpty();
-
-            long listCount = 0;
-            if (!isEmpty) {
-                listCount = fileService.getFileCount(param);
-            }
-
+            result.put("success", true);
             result.put("list", fileList);
-            result.put("count", listCount);
+            result.put("count", fileService.getFileCount(param));
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "파일을 조회하는데 실패했습니다.");

@@ -43,25 +43,24 @@ public class UserController {
         }
 
         try {
+            if (phoneNumber != null)
+            {
+                phoneNumber = phoneNumber.replaceAll("[^0-9]", "");
+            }
+
             // 파라미터 세팅
             Map<String, Object> param = new HashMap<>();
             param.put("page", page);
             param.put("limit", limit);
             param.put("email", email);
             param.put("user_name", userName);
-            param.put("phone_number", phoneNumber.replaceAll("[^0-9]", ""));
+            param.put("phone_number", phoneNumber);
 
             // 회원 목록 조회
             List<UserDto> userList = userService.getUserList(param);
-            boolean isEmpty = userList.isEmpty();
-
-            result.put("success", !isEmpty);
-            if (isEmpty) {
-                result.put("error", "조회할 데이터가 없습니다.");
-            } else {
-                result.put("list", userList);
-                result.put("count", userService.getUserCount(param));
-            }
+            result.put("success", true);
+            result.put("list", userList);
+            result.put("count", userService.getUserCount(param));
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "회원 정보를 불러올 수 없습니다.");
@@ -86,14 +85,7 @@ public class UserController {
         try {
             // 전체 회원 목록 조회
             List<UserDto> userList = userService.getAllUserList();
-            boolean isEmpty = userList.isEmpty();
-
-            result.put("success", !isEmpty);
-            if (isEmpty) {
-                result.put("error", "조회할 데이터가 없습니다.");
-            } else {
-                result.put("list", userList);
-            }
+            result.put("list", userList);
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "회원 정보를 불러올 수 없습니다.");
@@ -349,15 +341,9 @@ public class UserController {
 
             // 팀 목록 조회
             List<TeamDto> teamList = userService.getTeamList(param);
-            boolean isEmpty = teamList.isEmpty();
-
-            result.put("success", !isEmpty);
-            if (isEmpty) {
-                result.put("error", "조회할 데이터가 없습니다.");
-            } else {
-                result.put("list", teamList);
-                result.put("count", userService.getTeamCount(param));
-            }
+            result.put("success", true);
+            result.put("list", teamList);
+            result.put("count", userService.getTeamCount(param));
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "팀 목록을 조회하는데 실패했습니다.");
@@ -382,14 +368,8 @@ public class UserController {
         try {
             // 팀 목록 조회
             List<TeamDto> teamList = userService.getAllTeamList();
-            boolean isEmpty = teamList.isEmpty();
-
-            result.put("success", !isEmpty);
-            if (isEmpty) {
-                result.put("error", "조회할 데이터가 없습니다.");
-            } else {
-                result.put("list", teamList);
-            }
+            result.put("success", true);
+            result.put("list", teamList);
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "팀 목록을 조회하는데 실패했습니다.");
@@ -619,6 +599,20 @@ public class UserController {
         session.removeAttribute("login_info");
 
         result.put("success", true);
+        return result;
+    }
+
+    @PostMapping("/check")
+    public Map<String, Object> userLoginCheck(HttpServletRequest request) {
+        UserDto loginInfo = authUtil.getLoginInfo(request.getSession());
+        Map<String, Object> result = new HashMap<>();
+
+        result.put("success", loginInfo != null);
+        if (loginInfo != null)
+        {
+            result.put("login_info", loginInfo);
+        }
+
         return result;
     }
 
