@@ -89,16 +89,13 @@
                         SELECT 1
                         FROM checklist_user_link
                         WHERE checklist_user_link.checklist_idx = checklist.checklist_idx
-                        AND checklist_user_link.user_idx = #{user_idx}
+                          AND (
+                            checklist_user_link.user_idx = #{user_idx}
+                            <if test="team_idx_list != null and !team_idx_list.isEmpty()">
+                                OR checklist_user_link.team_idx IN <foreach collection="team_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
+                            </if>
+                          )
                     )
-                    <if test="team_idx_list != null and !team_idx_list.isEmpty()">
-                        OR EXISTS (
-                            SELECT 1
-                            FROM checklist_user_link
-                            WHERE checklist_user_link.checklist_idx = checklist.checklist_idx
-                            AND checklist_user_link.team_idx IN <foreach collection="team_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
-                        )
-                    </if>
                 )
             </if>
         </where>
@@ -138,16 +135,13 @@
                 SELECT 1
                 FROM checklist_user_link
                 WHERE checklist_user_link.checklist_idx = checklist.checklist_idx
-                AND checklist_user_link.user_idx = #{user_idx}
+                  AND (
+                    checklist_user_link.user_idx = #{user_idx}
+                    <if test="team_idx_list != null and !team_idx_list.isEmpty()">
+                        OR checklist_user_link.team_idx IN <foreach collection="team_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
+                    </if>
+                  )
             )
-            <if test="team_idx_list != null and !team_idx_list.isEmpty()">
-                OR EXISTS (
-                    SELECT 1
-                    FROM checklist_user_link
-                    WHERE checklist_user_link.checklist_idx = checklist.checklist_idx
-                      AND checklist_user_link.team_idx IN <foreach collection="team_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
-                )
-            </if>
         )
         ORDER BY created_date DESC
         LIMIT 10
@@ -172,28 +166,24 @@
             SELECT DATE_FORMAT(created_date, '%Y-%m-%d') AS log_date
                  , SUM(IF(is_checked = 'Y', 1, 0)) AS check_count
             FROM checklist_log
-            <where>
-                <if test="user_idx != null">
-                    item_idx IN (
-                        SELECT item_idx
-                        FROM checklist_item
-                        WHERE EXISTS (
-                            SELECT 1
-                            FROM checklist_user_link
-                            WHERE checklist_user_link.checklist_idx = checklist_item.checklist_idx
-                              AND checklist_user_link.user_idx = #{user_idx}
-                        )
-                        <if test="team_idx_list != null and !team_idx_list.isEmpty()">
-                            OR EXISTS (
-                                SELECT 1
-                                FROM checklist_user_link
-                                WHERE checklist_user_link.checklist_idx = checklist_item.checklist_idx
-                                  AND checklist_user_link.team_idx IN <foreach collection="team_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
-                            )
-                        </if>
+            WHERE DATE_SUB(NOW(), INTERVAL 1 MONTH) &lt;= created_date
+            <if test="user_idx != null">
+                AND item_idx IN (
+                    SELECT item_idx
+                    FROM checklist_item
+                    WHERE EXISTS (
+                        SELECT 1
+                        FROM checklist_user_link
+                        WHERE checklist_user_link.checklist_idx = checklist_item.checklist_idx
+                          AND (
+                            checklist_user_link.user_idx = #{user_idx}
+                            <if test="team_idx_list != null and !team_idx_list.isEmpty()">
+                                OR checklist_user_link.team_idx IN <foreach collection="team_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
+                            </if>
+                          )
                     )
-                </if>
-            </where>
+                )
+            </if>
             GROUP BY DATE_FORMAT(created_date, '%Y-%m-%d')
         ) AS daily_stats
         ORDER BY daily_stats.log_date

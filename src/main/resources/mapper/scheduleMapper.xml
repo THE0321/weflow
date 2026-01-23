@@ -166,7 +166,7 @@
             <if test="location != null"> location = #{location},</if>
             <if test="startDate != null"> start_date = #{startDate},</if>
             <if test="endDate != null"> end_date = #{endDate},</if>
-            <if test="approverIdx != null"> approver_idx = #{approverIdx},</if>
+            <if test="approverIdx != null and approverIdx != 0"> approver_idx = #{approverIdx},</if>
             <choose>
                 <when test="isAllday != null"> is_allday = #{isAllday},</when>
                 <otherwise> is_allday = 'N',</otherwise>
@@ -183,8 +183,7 @@
             <if test="location != null"> location = #{location},</if>
             <if test="startDate != null"> start_date = #{startDate},</if>
             <if test="endDate != null"> end_date = #{endDate},</if>
-            <if test="approverIdx != null"> approver_idx = #{approverIdx},</if>
-            <if test="creatorIdx != null"> creator_idx = #{creatorIdx},</if>
+            <if test="approverIdx != null and approverIdx != 0"> approver_idx = #{approverIdx},</if>
             <if test="isAllday != null"> is_allday = #{isAllday},</if>
             updated_date = NOW()
         WHERE schedule_idx = #{scheduleIdx}

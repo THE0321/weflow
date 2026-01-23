@@ -83,7 +83,7 @@
     <insert id="insertChattingMessage" parameterType="com.project.messanger.dto.ChattingMessageDto" useGeneratedKeys="true" keyProperty="messageIdx" keyColumn="message_idx">
         INSERT chatting_message
         SET chatting_idx = #{chattingIdx},
-            <if test="fileIdx != null"> file_idx = #{fileIdx},</if>
+            <if test="fileIdx != null and fileIdx != 0"> file_idx = #{fileIdx},</if>
             content = #{content},
             creator_idx = #{creatorIdx},
             created_date = NOW()

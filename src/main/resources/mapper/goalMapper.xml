@@ -107,16 +107,13 @@
                         SELECT 1
                         FROM goal_user_link
                         WHERE goal_user_link.goal_idx = goal.goal_idx
-                          AND goal_user_link.user_idx = #{user_idx}
+                          AND (
+                            goal_user_link.user_idx = #{user_idx}
+                            <if test="team_idx_list != null and !team_idx_list.isEmpty()">
+                                OR goal_user_link.team_idx IN <foreach collection="team_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
+                            </if>
+                          )
                     )
-                    <if test="team_idx_list != null and !team_idx_list.isEmpty()">
-                        OR EXISTS (
-                            SELECT 1
-                            FROM goal_user_link
-                            WHERE goal_user_link.goal_idx = goal.goal_idx
-                            AND goal_user_link.team_idx IN <foreach collection="team_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
-                        )
-                    </if>
                 )
             </if>
         </where>
@@ -186,16 +183,13 @@
                 SELECT 1
                 FROM goal_user_link
                 WHERE goal_user_link.goal_idx = goal.goal_idx
-                  AND goal_user_link.user_idx = #{user_idx}
+                  AND (
+                    goal_user_link.user_idx = #{user_idx}
+                    <if test="team_idx_list != null and !team_idx_list.isEmpty()">
+                        OR goal_user_link.team_idx IN <foreach collection="team_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
+                    </if>
+                  )
             )
-            <if test="team_idx_list != null and !team_idx_list.isEmpty()">
-                OR EXISTS (
-                    SELECT 1
-                    FROM goal_user_link
-                    WHERE goal_user_link.goal_idx = goal.goal_idx
-                      AND goal_user_link.team_idx IN <foreach collection="team_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
-                )
-            </if>
         )
         ORDER BY DATEDIFF(SYSDATE(), goal.end_date) DESC
         LIMIT 10
@@ -231,24 +225,20 @@
                      , DATE_FORMAT(created_date, '%Y-%m-%d') AS log_date
                      , MAX(progress_value) AS progress_value
                 FROM goal_log
-                <where>
-                    <if test="user_idx != null">
-                        EXISTS (
-                            SELECT 1
-                            FROM goal_user_link
-                            WHERE goal_user_link.goal_idx = goal_log.goal_idx
-                              AND goal_user_link.user_idx = #{user_idx}
-                        )
-                        <if test="team_idx_list != null and !team_idx_list.isEmpty()">
-                            OR EXISTS (
-                                SELECT 1
-                                FROM goal_user_link
-                                WHERE goal_user_link.goal_idx = goal_log.goal_idx
-                                  AND goal_user_link.team_idx IN <foreach collection="team_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
-                            )
-                        </if>
-                    </if>
-                </where>
+                WHERE DATE_SUB(NOW(), INTERVAL 1 MONTH) &lt;= created_date
+                <if test="user_idx != null">
+                    AND EXISTS (
+                        SELECT 1
+                        FROM goal_user_link
+                        WHERE goal_user_link.goal_idx = goal_log.goal_idx
+                          AND (
+                            goal_user_link.user_idx = #{user_idx}
+                            <if test="team_idx_list != null and !team_idx_list.isEmpty()">
+                                OR goal_user_link.team_idx IN <foreach collection="team_idx_list" item="value" open="(" close=")" separator=",">#{value}</foreach>
+                            </if>
+                          )
+                    )
+                </if>
                 GROUP BY goal_idx, DATE_FORMAT(created_date, '%Y-%m-%d')
             ) AS daily_stats
         ) AS daily_stats
@@ -306,7 +296,7 @@
     <update id="updateGoal" parameterType="com.project.messanger.dto.GoalDto">
         UPDATE goal
         SET <if test="title != null"> title = #{title},</if>
-            <if test="targetValue != null">target_value = #{targetValue},</if>
+            <if test="targetValue != null and targetValue != 0">target_value = #{targetValue},</if>
             <if test="status != null">status = #{status},</if>
             <if test="description != null"> description = #{description},</if>
             <if test="startDate != null"> start_date = #{startDate},</if>
@@ -379,7 +369,7 @@
     <update id="updateGoalLog" parameterType="com.project.messanger.dto.GoalLogDto">
         UPDATE goal_log
         SET <if test="content != null"> content = #{content},</if>
-            <if test="progressValue != null"> progress_value = #{progressValue},</if>
+            <if test="progressValue != null and progressValue != 0"> progress_value = #{progressValue},</if>
             created_date = NOW()
         WHERE log_idx = #{logIdx}
     </update>

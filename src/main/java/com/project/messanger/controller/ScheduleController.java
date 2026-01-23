@@ -248,6 +248,9 @@ public class ScheduleController {
         try {
             Map<String, Object> param = new HashMap<>();
             param.put("schedule_idx", scheduleIdx);
+            if (loginInfo.getAdminYn().equals("N")) {
+                param.put("user_idx", loginInfo.getUserIdx());
+            }
 
             // 수정할 데이터 확인
             ScheduleWithUserDto scheduleInfo = scheduleService.getScheduleByIdx(param);

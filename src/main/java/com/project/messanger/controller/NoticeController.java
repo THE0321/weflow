@@ -55,6 +55,24 @@ public class NoticeController {
         return result;
     }
 
+    @PostMapping("/main/list")
+    public Map<String, Object> getNoticeList(HttpServletRequest request) {
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        try {
+            // 공지사항 조회
+            List<NoticeDto> noticeList = noticeService.getNoticeActiveList();
+            result.put("success", true);
+            result.put("list", noticeList);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("error", "공지사항을 불러올 수 없습니다.");
+        }
+
+        return result;
+    }
+
     @PostMapping("/detail")
     public Map<String, Object> getNoticeDetail(HttpServletRequest request,
                                                @RequestParam("notice_idx") long noticeIdx) {

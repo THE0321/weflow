@@ -76,7 +76,7 @@ public class GoalController {
         return result;
     }
 
-    @PostMapping("/list/main")
+    @PostMapping("/main/list")
     public Map<String, Object> getGoalMainList(HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
         HttpSession session = request.getSession();
@@ -165,7 +165,6 @@ public class GoalController {
             result.put("detail", goalAndLogDto);
             result.put("user_link_list", goalUserLinkList);
         } catch (Exception e) {
-            e.printStackTrace();
             result.put("success", false);
             result.put("error", "목표 상세를 불러올 수 없습니다.");
         }
@@ -189,7 +188,7 @@ public class GoalController {
 
         try {
             List<Long> teamIdxList = null;
-            if (userIdx == 0 || loginInfo.getAdminYn().equals("N") || loginInfo.getLeaderYn().equals("N")) {
+            if (userIdx == null || userIdx == 0 || loginInfo.getAdminYn().equals("N") || loginInfo.getLeaderYn().equals("N")) {
                 userIdx = loginInfo.getUserIdx();
                 teamIdxList = authUtil.getTeamList(session);
             } else {
@@ -208,6 +207,7 @@ public class GoalController {
             result.put("success", true);
             result.put("list", graphList);
         } catch (Exception e) {
+            e.printStackTrace();
             result.put("success", false);
             result.put("error", "목표 그래프를 불러올 수 없습니다.");
         }

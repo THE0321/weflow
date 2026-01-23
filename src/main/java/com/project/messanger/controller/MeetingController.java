@@ -145,7 +145,7 @@ public class MeetingController {
             }
         } catch (Exception e) {
             result.put("success", false);
-            result.put("error", "회의실 상세를 불러올 수 없습니다.");
+            result.put("error", "회의 상세를 불러올 수 없습니다.");
         }
 
         return result;
@@ -345,6 +345,61 @@ public class MeetingController {
         } catch (Exception e) {
             result.put("success", false);
             result.put("error", "일정을 삭제하는데 실패했습니다.");
+        }
+
+        return result;
+    }
+
+    @PostMapping("/approver")
+    public Map<String, Object> approverReservation(HttpServletRequest request,
+                                                @RequestParam(value = "reservation_idx") long reservationIdx){
+        Map<String, Object> result = new HashMap<>();
+        HttpSession session = request.getSession();
+
+        UserDto loginInfo = authUtil.getLoginInfo(session);
+        if (loginInfo == null) {
+            result.put("success", false);
+            result.put("error", "로그인 해주세요.");
+
+            return result;
+        } else if (loginInfo.getAdminYn().equals("N")) {
+            // 권한 체크
+            result.put("success", false);
+            result.put("error", "일정을 승인할 권한이 없습니다.");
+
+            return result;
+        }
+
+        try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("reservation_idx", reservationIdx);
+
+            // 승인할 데이터 확인
+            ReservationWithUserDto beforeData = meetingService.getReservationByIdx(param);
+            if(beforeData == null) {
+                result.put("success", false);
+                result.put("error", "승인할 데이터가 없습니다.");
+
+                return result;
+            }
+
+            // ReservationDto 객체 생성
+            ReservationDto reservationDto = ReservationDto.builder()
+                    .reservationIdx(reservationIdx)
+                    .approverIdx(loginInfo.getUserIdx())
+                    .build();
+
+            // 일정 승인
+            int success = meetingService.updateReservation(reservationDto);
+            result.put("success", success == 1);
+            if (success == 0) {
+                System.out.println("success = 0");
+                result.put("error", "일정을 승인하는데 실패했습니다.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            result.put("success", false);
+            result.put("error", "일정을 승인하는데 실패했습니다.");
         }
 
         return result;

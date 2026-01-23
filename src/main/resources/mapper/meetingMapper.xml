@@ -132,7 +132,7 @@
              , reservation.updated_date
         FROM reservation
         INNER JOIN user
-          AND user.user_idx = reservation.creator_idx
+           ON user.user_idx = reservation.creator_idx
         WHERE reservation.reservation_idx = #{reservation_idx}
         <if test="user_idx != null">
         AND EXISTS (
@@ -158,12 +158,12 @@
 
     <update id="updateReservation" parameterType="com.project.messanger.dto.ReservationDto">
         UPDATE reservation
-        SET <if test="roomIdx != null"> room_idx = #{roomIdx},</if>
+        SET <if test="roomIdx != null and roomIdx != 0"> room_idx = #{roomIdx},</if>
             <if test="description != null"> description = #{description},</if>
             <if test="startDate != null"> start_date = #{startDate},</if>
             <if test="endDate != null"> end_date = #{endDate},</if>
-            <if test="approverIdx != null"> approver_idx = #{approverIdx},</if>
-            <if test="creatorIdx != null"> creator_idx = #{creatorIdx},</if>
+            <if test="approverIdx != null and approverIdx != 0"> approver_idx = #{approverIdx},</if>
+            <if test="creatorIdx != null and creatorIdx != 0"> creator_idx = #{creatorIdx},</if>
             updated_date = NOW()
         WHERE reservation_idx = #{reservationIdx}
     </update>

@@ -89,7 +89,7 @@
         SET title = #{title},
             <if test="description != null"> description = #{description},</if>
             type = #{type},
-            <if test="approverIdx"> approver_idx = #{approverIdx},</if>
+            <if test="approverIdx != null and approverIdx != 0"> approver_idx = #{approverIdx},</if>
             creator_idx = #{creatorIdx},
             created_date = NOW(),
             updated_date = NOW()
@@ -99,7 +99,7 @@
         UPDATE report
         SET <if test="title != null"> title = #{title},</if>
             <if test="description != null"> description = #{description},</if>
-            <if test="approverIdx != null"> approver_idx = #{approverIdx},</if>
+            <if test="approverIdx != null and approverIdx != 0"> approver_idx = #{approverIdx},</if>
             updated_date = NOW()
         WHERE report_idx = #{reportIdx}
     </update>

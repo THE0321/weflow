@@ -13,6 +13,8 @@ public interface NoticeMapper {
 
     List<NoticeWithUserDto> getNoticeList(Map<String, Object> param);
 
+    List<NoticeDto> getNoticeActiveList();
+
     NoticeWithUserDto getNoticeByIdx(Map<String, Object> param);
 
     int insertNotice(NoticeDto noticeDto);

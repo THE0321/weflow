@@ -66,6 +66,21 @@
         LIMIT ${limit} OFFSET ${offset}
     </select>
 
+    <select id="getNoticeActiveList" resultMap="NoticeMap">
+        SELECT notice_idx
+             , title
+             , content
+             , link_url
+             , start_date
+             , end_date
+             , is_active
+             , creator_idx
+             , created_date
+        FROM notice
+        WHERE NOW() BETWEEN start_date AND end_date
+          AND is_active = 'Y'
+    </select>
+
     <select id="getNoticeByIdx" parameterType="long" resultMap="NoticeWithUserMap">
         SELECT notice.notice_idx
              , notice.title

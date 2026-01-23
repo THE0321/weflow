@@ -12,10 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/check")
@@ -186,7 +183,7 @@ public class ChecklistController {
 
         try {
             List<Long> teamIdxList = null;
-            if (userIdx == 0 || loginInfo.getAdminYn().equals("N") || loginInfo.getLeaderYn().equals("N")) {
+            if (userIdx == null || userIdx == 0 || loginInfo.getAdminYn().equals("N") || loginInfo.getLeaderYn().equals("N")) {
                 userIdx = loginInfo.getUserIdx();
                 teamIdxList = authUtil.getTeamList(session);
             } else {
@@ -372,11 +369,15 @@ public class ChecklistController {
                     updateIdxList.add(i);
                 }
 
-                // 수정한 항목 목록 제거
-                for (int idx : updateIdxList) {
-                    itemIdxList.remove(idx);
-                    itemTitleList.remove(idx);
-                    itemDescriptionList.remove(idx);
+                if (!updateIdxList.isEmpty()) {
+                    Collections.reverse(updateIdxList);
+
+                    // 수정한 항목 목록 제거
+                    for (int idx : updateIdxList) {
+                        itemIdxList.remove(idx);
+                        itemTitleList.remove(idx);
+                        itemDescriptionList.remove(idx);
+                    }
                 }
 
                 // 체크리스트 항목 등록
@@ -410,6 +411,7 @@ public class ChecklistController {
                 checklistService.deleteChecklistUserLinkByTeamIdx(checklistIdx, deleteTeamIdxList);
             }
         } catch (Exception e) {
+            e.printStackTrace();
             result.put("success", false);
             result.put("error", "체크리스트를 수정하는데 실패했습니다.");
         }

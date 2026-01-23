@@ -44,6 +44,15 @@ public class NoticeService {
     }
 
     /*
+     * get notice active list
+     * return List<NoticeWithUserDto>
+     */
+    @Transactional
+    public List<NoticeDto> getNoticeActiveList() {
+        return noticeMapper.getNoticeActiveList();
+    }
+
+    /*
      * get notice by notice idx
      * @param long
      * return NoticeWithUserDto
