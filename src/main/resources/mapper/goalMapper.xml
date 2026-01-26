@@ -117,7 +117,6 @@
                 )
             </if>
         </where>
-        ORDER BY goal.goal_idx DESC
     </sql>
 
     <select id="getGoalCount" parameterType="hashmap" resultType="long">
@@ -141,6 +140,7 @@
              , goal_log.content
              , goal_log.created_date AS log_date
         <include refid="sqlGoalListCondition" />
+        ORDER BY FIELD(goal.status, 'PROGRESS', 'WAIT', 'HOLD', 'COMPLETED') ASC, goal.goal_idx DESC
         LIMIT ${limit} OFFSET ${offset}
     </select>
 

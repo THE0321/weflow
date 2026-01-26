@@ -17,6 +17,7 @@
         <id property="checklistIdx" column="checklist_idx"/>
         <result property="title" column="title"/>
         <result property="description" column="description"/>
+        <result property="status" column="status"/>
         <result property="creatorIdx" column="creator_idx"/>
         <result property="creatorName" column="creator_name"/>
         <result property="createdDate" column="created_date"/>
@@ -110,11 +111,13 @@
         SELECT checklist.checklist_idx
              , checklist.title
              , checklist.description
+             , checklist.status
              , checklist.creator_idx
              , user.user_name AS creator_name
              , checklist.created_date
              , checklist.updated_date
         <include refid="sqlChecklistListCondition" />
+        ORDER BY FIELD(checklist.status, 'INCOMPLETE', 'COMPLETED') ASC, checklist.checklist_idx DESC
         LIMIT ${limit} OFFSET ${offset}
     </select>
 
@@ -122,6 +125,7 @@
         SELECT checklist.checklist_idx
              , checklist.title
              , checklist.description
+             , checklist.status
              , checklist.creator_idx
              , user.user_name AS creator_name
              , checklist.created_date
@@ -143,7 +147,7 @@
                   )
             )
         )
-        ORDER BY created_date DESC
+        ORDER BY FIELD(checklist.status, 'INCOMPLETE', 'COMPLETED') ASC, checklist.checklist_idx DESC
         LIMIT 10
     </select>
 
@@ -151,6 +155,7 @@
         SELECT checklist_idx
              , title
              , description
+             , status
              , creator_idx
              , created_date
              , updated_date

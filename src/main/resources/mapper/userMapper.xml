@@ -59,6 +59,7 @@
              , leader_yn
              , is_deleted
         <include refid="sqlUserListCondition" />
+        ORDER BY email ASC
         LIMIT ${limit} OFFSET ${offset}
     </select>
 
@@ -145,7 +146,6 @@
                 AND UPPER(team_name) LIKE CONCAT('%', UPPER(#{team_name}), '%')
             </if>
         </where>
-        ORDER BY team_idx DESC
     </sql>
 
     <select id="getTeamCount" parameterType="hashmap" resultType="long">
@@ -159,6 +159,7 @@
              , created_date
              , updated_date
         <include refid="sqlTeamListCondition" />
+        ORDER BY team_name ASC
         LIMIT ${limit} OFFSET ${offset}
     </select>
 
