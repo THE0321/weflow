@@ -1,7 +1,7 @@
 <div align="center">
 
 <!-- 프로젝트 로고가 있다면 아래 src에 이미지 주소를 넣으세요 -->
-<img src="https://via.placeholder.com/150?text=We+Flow" width="150" height="150" alt="We Flow Logo">
+<img src="https://github.com/THE0321/weflow/blob/master/assets/logo.png?raw=true" width="150" height="150" alt="We Flow Logo">
 
 # We Flow
 ### "Flow like water, Work smarter."
